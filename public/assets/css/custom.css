@@ -1,0 +1,13 @@
+.dataTables_length {
+  display: inline-block;
+  margin-right: 5px;
+}
+
+#materials_filter {
+  display: inline-block;
+  float: right;
+}
+
+.dropdown-icon-disabled.dropdown-toggle::after {
+  display: none !important;
+}
