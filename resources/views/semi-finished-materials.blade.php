@@ -42,7 +42,7 @@
                                 <td>{{ $material->commodity->commodity_name }}</td>
                                 <td>{{ $material->category->category_name }}</td>
                                 <td width="10%">
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
+                                    <a href="#" role="button" data-matid="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
                                         <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
                                     </a> / 
                                     <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / 
@@ -61,7 +61,7 @@
         </div>
     </div>
 
-    <x-adminlte-modal id="modalView" title="View Material" icon="fas fa-box" scrollable>
+    <!-- <x-adminlte-modal id="modalView" title="View Material" icon="fas fa-box" scrollable>
         <div class="row" id="view-material-modal">
             <div class="col-12">
                 <h2 class="text-secondary text-center">Loading...</h2>
@@ -70,7 +70,7 @@
         <x-slot name="footerSlot">
             <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
         </x-slot>
-    </x-adminlte-modal>
+    </x-adminlte-modal> -->
 
     <x-adminlte-modal id="modalEdit" title="Edit Material" icon="fas fa-box" size='lg' scrollable>
         <form action="/" id="edit-material-form" method="post" enctype="multipart/form-data">
@@ -89,6 +89,30 @@
             </x-slot>
         </form>
     </x-adminlte-modal>
+
+    <x-modaltabs id="modalView" title="View Semi Finished Material">
+        <x-slot name="header">
+            <ul class="nav nav-pills nav-fill">
+                <li class="nav-item">
+                    <a class="nav-link active" id="overview-tab" data-toggle="tab" data-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="documents-tab" data-toggle="tab" data-target="#documents" type="button" role="tab" aria-controls="documents" aria-selected="false">Documents</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="boms-tab" data-toggle="tab" data-target="#boms" type="button" role="tab" aria-controls="boms" aria-selected="false">Bill of Materials</a>
+                </li>
+            </ul>
+        </x-slot>
+        <x-slot name="body">
+            <div class="tab-content" id="view-material-modal">
+                
+            </div>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </x-slot>
+    </x-modaltabs>
 @stop
 
 
@@ -141,14 +165,33 @@
             $('#modalView').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');
+                var materialDesc = button.data('desc');
                 var modal = $(this)
-                
+                modal.find(".nav-link").removeClass('active');
+                modal.find(".nav-link:first").addClass('active');
                 $.ajax({
                     url: '/app/semi-finished-materials/' + materialId + '/show',
                     method: 'GET',
                     success: function(response) {
                         if (response.status) {
                             $("#view-material-modal").html(response.html);
+                            $("#boms-table").DataTable({
+                                "responsive": true,
+                                "lengthChange": false,
+                                "autoWidth": true,
+                                "paging": false,
+                                "searching": false,
+                                "info": false,
+                                "buttons": [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: [0, 1, 2, 3]
+                                        },
+                                        title: materialDesc + " - BOM List",
+                                    }
+                                ],
+                            }).buttons().container().appendTo('#export-section');
                         }
                     },
                     error: function(error) {
@@ -198,11 +241,13 @@
                     theme: 'bootstrap4',
                     ajax: {
                         url: '{{ route("semi.getRawMaterials") }}',
+                        method: 'POST',
                         dataType: 'json',
                         delay: 250,
                         data: function (params) {
                             return {
-                                q: params.term 
+                                q: params.term,
+                                _token: '{{ csrf_token() }}',
                             };
                         },
                         processResults: function (data) {
@@ -250,11 +295,7 @@
 
             // Function to remove the closest raw material item
             $(document).on('click', '.remove-raw-quantity-item', function () {
-                if ($('.raw-with-quantity').length > 1) {
-                    $(this).closest('.raw-with-quantity').remove();
-                } else {
-                    alert("At least one Raw Material item should be present.");
-                }
+                $(this).closest('.raw-with-quantity').remove();
             });
 
             $('.btn-save-material').click(function () {
@@ -277,6 +318,31 @@
                 });
 
                 $('#modalEdit').modal('hide');
+            });
+
+            $(document).on('click', '.btn-destroy-attachment', function() {
+                var attachmentId = $(this).data('attid');
+                var _obj = $(this);
+                $.ajax({
+                    url: '/app/material-attachment/' + attachmentId + '/destroy',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')            
+                    },
+                    success: function(response) {
+                        if (response.status) {
+                            toastr.success(response.message);
+                            _obj.closest('.col-md-4').remove();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
+                    }
+                });
             });
         });
     </script>

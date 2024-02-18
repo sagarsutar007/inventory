@@ -54,7 +54,7 @@ class BOMController extends Controller
         if ($columnName === 'part_code') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
                 ->orderBy('materials.part_code', $columnSortOrder);
-        } elseif ($columnName === 'material_name') {
+        } elseif ($columnName === 'description') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
                 ->orderBy('materials.description', $columnSortOrder);
         } elseif ($columnName === 'uom_text') {
@@ -112,7 +112,6 @@ class BOMController extends Controller
 
         return response()->json($response);
     }
-
     public function show(Bom $bom)
     {
 

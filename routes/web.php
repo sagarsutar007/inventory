@@ -11,6 +11,7 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\UomunitController;
 use App\Http\Controllers\BOMController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\AttachmentsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('app/vendor/autocomplete', [VendorController::class, 'autocomplete'])->name('vendors.autocomplete');
     Route::post('app/unit/store', [UomunitController::class, 'store'])->name('uom.store');
     Route::post('app/unit/search', [UomunitController::class, 'search'])->name('uom.search');
+    Route::post('app/material-attachment/{attachment}/destroy/', [AttachmentsController::class, 'destroy'])->name('attachment.destroy');
 
     // Commodity Routes
     Route::prefix('/app/commodities')->group(function () {
@@ -104,6 +106,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{material}/edit', [FinishedMaterialController::class, 'edit'])->name('finished.edit');
         Route::post('/{material}/update', [FinishedMaterialController::class, 'update'])->name('finished.update');
         Route::delete('/{material}', [FinishedMaterialController::class, 'destroy'])->name('finished.destroy');
+        Route::post('/check-partcode', [FinishedMaterialController::class, 'checkPartcode'])->name('finished.checkPartcode');
+        Route::get('/suggest-partcode', [FinishedMaterialController::class, 'suggestPartcode'])->name('finished.suggest.partcode');
     });
 
     // Bill of materials Routes
@@ -119,11 +123,11 @@ Route::middleware(['auth'])->group(function () {
     // Warehouse Routes
     Route::prefix('/app/warehouse')->group(function () {
         Route::get('', [WarehouseController::class, 'index'])->name('wh');
-        // Route::post('/get-bom', [BOMController::class, 'getBom'])->name('bom.getBom');
-        // Route::get('/{bom}/show', [BOMController::class, 'show'])->name('bom.show');
-        // Route::get('/{bom}/edit', [BOMController::class, 'edit'])->name('bom.edit');
+        Route::post('/get-records', [WarehouseController::class, 'fetchRecords'])->name('wh.getWarehouseRecords');
+        Route::post('/issue', [WarehouseController::class, 'issue'])->name('wh.issue');
+        Route::post('/receive', [WarehouseController::class, 'receive'])->name('wh.receive');
         // Route::post('/{bom}/update', [BOMController::class, 'update'])->name('bom.update');
-        // Route::delete('/{bom}', [BOMController::class, 'destroy'])->name('bom.destroy');
+        Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('wh.destroy');
     });
     
     Route::prefix('/app/roles')->group(function () {

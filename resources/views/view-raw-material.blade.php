@@ -1,160 +1,120 @@
-<div class="col-md-12">
-    <input type="hidden" id="material-id" value="{{ $material->material_id }}">
-    <div class="raw-material-item-container">
-        <div class="row">
-            <div class="col-12 col-md-9">
-                <div class="form-group">
-                    <label>Material Name</label>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" name="description" placeholder="Enter material name" value="{{ $material->description }}" readonly disabled>
+<div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="home-tab">
+    <div class="row">
+        <div class="col-md-5">
+            <h6>Material Information</h6>
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+                    <div class="text-center">
+                        @php $imageFound = false; @endphp
+                        @foreach($attachments as $attachment)
+                            @if($attachment->type === 'image')
+                                <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
+                                @php $imageFound = true; break; @endphp
+                            @endif
+                        @endforeach
+                        @if (!$imageFound)
+                            <!-- Default image if no image is found -->
+                            <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/default-image.jpg') }}" alt="Default Image">
+                        @endif
                     </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-3">
-                <div class="form-group">
-                    <label>Opening Balance</label>
-                    <div class="input-group mb-3">
-                        <input type="number" class="form-control" name="opening_balance" placeholder="Opening Bal." value="{{ $material->opening_balance }}" readonly disabled>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6">
-                <div class="form-group">
-                    <label>Make</label>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" name="make" placeholder="Make" value="{{ $material->make }}" readonly disabled>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6">
-                <div class="form-group">
-                    <label>MPN</label>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control" name="mpn" placeholder="MPN" value="{{ $material->mpn }}" readonly disabled>
-                    </div>
+                    <h3 class="profile-username text-center">{{ $material->description }}</h3>
+                    <p class="text-muted text-center">{{ $material->part_code }}</p>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label>Measurement Unit</label>
-                    <div class="input-group mb-3">
-                        <select class="form-control select2" id="uom" name="uom_id" readonly disabled>
-                            <option value=""></option>
-                            @foreach($uoms as $unit)
-                                @if($material->uom_id == $unit->uom_id)
-                                    <option value="{{$unit->uom_id}}" selected>{{$unit->uom_text}}</option>
-                                @else
-                                    <option value="{{$unit->uom_id}}">{{$unit->uom_text}}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label>Commodity</label>
-                    <div class="input-group mb-3">
-                        <select class="form-control" id="commodity" name="commodity_id" readonly disabled>
-                            <option value=""></option>
-                            @foreach($commodities as $cmdty)
-                                @if($material->commodity_id == $cmdty->commodity_id)
-                                    <option value="{{$cmdty->commodity_id}}" selected>{{$cmdty->commodity_name}}</option>
-                                @else
-                                    <option value="{{$cmdty->commodity_id}}">{{$cmdty->commodity_name}}</option>
-                                @endif
-                            @endforeach 
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label>Category</label>
-                    <div class="input-group mb-3">
-                        <select class="form-control" id="category" name="category_id" readonly disabled>
-                            <option value=""></option>
-                            @foreach($categories as $ctg)
-                                @if($material->category_id == $ctg->category_id)
-                                    <option value="{{$ctg->category_id}}" selected>{{$ctg->category_name}}</option>
-                                @else
-                                    <option value="{{$ctg->category_id}}">{{$ctg->category_name}}</option>
-                                @endif
-                            @endforeach  
-                        </select>
-                    </div>
+        <div class="col-md-7">
+            <h6>More Information</h6>
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+                    <p class="text-muted mb-0"><strong class="text-dark">Make</strong> : {{ $material->make }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">MPN</strong> : {{ $material->mpn }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Commodity</strong> : {{ $commodity->commodity_name }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Category</strong> : {{ $category->category_name }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Measurement Unit</strong> : {{ $uom->uom_text }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Additional Notes</strong> : {{ $material->additional_notes }}</p>
                 </div>
             </div>
         </div>
-        <!-- <div class="row">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <input type="file" name="photo" class="custom-file-input" id="material-img" accept="image/*">
-                            <label class="custom-file-label" for="material-img">Material Photo</label>
+    </div>
+    
+</div>
+<div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="profile-tab">
+    <h6>Uploaded Documents</h6>
+    <div class="row">
+        @foreach($attachments as $attachment)
+            @if($attachment->type === 'image')
+                <div class="col-md-4">
+                    <div class="card card-primary card-outline">
+                        <img class="img-fluid" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Material Image</h5><br>
+                            <a href="{{ asset('assets/uploads/materials/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <input type="file" name="pdf" class="custom-file-input" id="material-pdf" accept="application/pdf">
-                            <label class="custom-file-label" for="material-pdf">Material PDF</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <div class="input-group">
-                        <div class="custom-file">
-                            <input type="file" name="doc" class="custom-file-input" id="material-doc">
-                            <label class="custom-file-label" for="material-doc">Material Document</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> -->
-        <div class="form-group">
-            <label>Additional Notes</label>
-            <div class="input-group mb-3">
-                <textarea class="form-control" name="additional_notes" placeholder="Additional notes" readonly disabled>{{ $material->additional_notes }}</textarea>
-            </div>
-        </div>
-        <h6>Vendors</h6>
-        <div class="vendor-price-container">
-            @if(count($purchases))
-                @foreach($purchases as $purchase)
-                    <div class="vendor-with-price">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <input type="text" class="form-control sug-vendor" name="vendor[]" placeholder="Vendor name" value="{{ $purchase->vendor->vendor_name }}" readonly disabled>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="input-group mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text"><i class="fas fa-times remove-vendor-price-item"></i></span>
-                                    </div>
-                                    <input type="number" class="form-control" name="price[]" placeholder="Price" value="{{ $purchase->price }}" readonly disabled>
-                                </div>
-                            </div>
-                        </div>                            
-                    </div>
-                @endforeach
-            @else
-                <div class="vendor-with-price">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <p class="text-center">No vendors found! Please add a new vendor.</p>
-                        </div>
-                    </div>                            
                 </div>
             @endif
+
+            @if($attachment->type === 'pdf')
+                <div class="col-md-4">
+                    <div class="card card-primary card-outline">
+                        <img class="img-fluid" src="{{ asset('assets/img/pdf.png') }}" alt="Attachment Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Material PDF</h5><br>
+                            <a href="{{ asset('assets/uploads/pdf/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if($attachment->type === 'doc')
+                <div class="col-md-4">
+                    <div class="card card-primary card-outline">
+                        <img class="img-fluid" src="{{ asset('assets/img/documents.jpg') }}" alt="Attachment Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Material Document</h5><br>
+                            <a href="{{ asset('assets/uploads/doc/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endforeach
+    </div>
+</div>
+<div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+    <h6>Vendors</h6>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sno.</th>
+                            <th>Vendor Name</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(count($purchases))
+                            @foreach($purchases as $purchase)
+                                <tr>
+                                    <td>{{ $loop->iteration }}.</td>
+                                    <td>{{ $purchase->vendor->vendor_name }}</td>
+                                    <td>{{ $purchase->price }}</td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="3">No vendors records found!</td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

@@ -48,7 +48,8 @@ class FinishedMaterialController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'description' => 'required|string|unique:materials,description,NULL,material_id,type,semi-finished',
+            'part_code' => 'required|string|unique:materials,part_code,NULL,material_id,type,finished',
+            'description' => 'required|string|unique:materials,description,NULL,material_id,type,finished',
             'uom_id' => 'required|exists:uom_units,uom_id',
             'commodity_id' => 'required|exists:commodities,commodity_id',
             'category_id' => 'required|exists:categories,category_id',
@@ -63,9 +64,8 @@ class FinishedMaterialController extends Controller
 
         
         $material = new Material($validatedData);
-        $newPartCode = 'FG'.$this->generatePartCode($validatedData['commodity_id'], $validatedData['category_id']);
+        // $newPartCode = 'FG'.$this->generatePartCode($validatedData['commodity_id'], $validatedData['category_id']);
         $material->type = "finished";
-        $material->part_code = $newPartCode;
         $material->created_by = Auth::id();
         $material->updated_by = Auth::id();
         $material->save();
@@ -137,6 +137,39 @@ class FinishedMaterialController extends Controller
         return redirect()->route('finished')->with('success', 'Material added successfully.');
     }
 
+    public function checkPartcode(Request $request)
+    {
+        $partCode = $request->input('part_code');
+        $existingMaterial = Material::where('part_code', $partCode)->where('type', 'finished')->first();
+        if ($existingMaterial) {
+            return response()->json(['exists' => true]);
+        } else {
+            return response()->json(['exists' => false]);
+        }
+    }
+
+
+    public function suggestPartcode(Request $request)
+    {
+        $commodityId = $request->input('commodity_id');
+        $categoryId = $request->input('category_id');
+        $suggestedPartCode = 'FG' . $this->generatePartCode($commodityId, $categoryId);
+        $existingMaterial = Material::where('part_code', $suggestedPartCode)->where('type', 'finished')->first();
+
+        if ($existingMaterial) {
+            $lastChar = substr($suggestedPartCode, -1);
+            if(is_numeric($lastChar)) {
+                $lastDigit = intval($lastChar);
+                $suggestedPartCode = substr($suggestedPartCode, 0, -1) . ($lastDigit + 1);
+            } else {
+                $suggestedPartCode .= '_1';
+            }
+        }
+
+        return response()->json(['suggested_part_code' => $suggestedPartCode]);
+    }
+
+
     /**
      * Display the specified resource.
      */
@@ -180,7 +213,7 @@ class FinishedMaterialController extends Controller
         $uom = $material->uom()->first();
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
-        $boms = $material->bom->with('bomRecords')->get();
+        $bomRecords = $material->bom->bomRecords;
 
         $context = [
             'material' => $material,
@@ -188,7 +221,7 @@ class FinishedMaterialController extends Controller
             'commodity' => $commodity,
             'category' => $category,
             'uom' => $uom,
-            'boms' => $boms,
+            'bomRecords' => $bomRecords,
             'uoms' => $uoms,
             'categories' => $categories,
             'commodities' => $commodities,
@@ -315,10 +348,21 @@ class FinishedMaterialController extends Controller
                             }
                         }
                     }
+
+                    //fetch all bom records and those not in the request should be deleted.
+                    $deleteBoms = BomRecord::where('bom_id', $material->bom->bom_id)->whereNotIn(
+                        'material_id',
+                        $rawMaterials
+                    )->get();
+                    foreach ($deleteBoms as $delBom) {
+                        $delBom->delete();
+                    }
                 } else {
                     DB::rollBack();
                     return response()->json(['status' => false, 'message' => 'Materials and quantities count mismatch'], 400);
                 }
+            } else {
+                $material->bom->bomRecords()->delete();
             }
             
             DB::commit();

@@ -1,24 +1,34 @@
 @extends('adminlte::page')
 
-@section('title', 'Bill of Materials')
+@section('title', 'Warehouse')
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Bill of Materials</h3>
+                    <h3 class="card-title">Warehouse</h3>
+                    <div class="card-tools">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right" role="menu">
+                                <a class="dropdown-item" data-toggle="modal" data-target="#modalIssue"><i class="fa fa-minus text-danger"></i> Issue</a>
+                                <a class="dropdown-item" data-toggle="modal" data-target="#modalReceived"><i class="fa fa-plus text-primary"></i> Receive</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <table id="materials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
                                 <th width="5%">Sno.</th>
-                                <th width="10%">Code</th>
-                                <th>Material Name</th>
+                                <th width="10%">Part Code</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
                                 <th>Unit</th>
-                                <th>Commodity</th>
-                                <th>Category</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -30,31 +40,50 @@
         </div>
     </div>
 
-    <x-adminlte-modal id="modalView" title="View Material" icon="fas fa-box" scrollable>
-        <div class="row" id="view-material-modal">
-            <div class="col-12">
-                <h2 class="text-secondary text-center">Loading...</h2>
-            </div>
-        </div>
-        <x-slot name="footerSlot">
-            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
-        </x-slot>
-    </x-adminlte-modal>
-
-    <x-adminlte-modal id="modalEdit" title="Edit Material" icon="fas fa-box" size='lg' scrollable>
-        <form action="/" id="edit-material-form" method="post" enctype="multipart/form-data">
+    <x-adminlte-modal id="modalIssue" title="Issue material" icon="fas fa-box">
+        <form action="/" id="issue-material-form" method="post" enctype="multipart/form-data">
             @csrf
-            <div class="row" id="edit-material-modal">
+            <div class="row" id="issue-material-modal">
                 <div class="col-12">
-                    <h2 class="text-secondary text-center">Loading...</h2>
+                    <div class="form-group">
+                        <label for="issue-material">Choose Material</label>
+                        <select name="material_id" class="form-control select2" id="issue-material" style="width: 100%;">
+
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="txt-material">Quantity</label>
+                        <input name="quantity" type="number" class="form-control" placeholder="Enter Quantity" step="0.001">
+                    </div>
                 </div>
             </div>
             <x-slot name="footerSlot">
-                <button type="button" class="btn btn-sm btn-outline-secondary add-raw-quantity-item">
-                    <i class="fas fa-fw fa-plus"></i> Add BOM Item
-                </button>
                 <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
-                <x-adminlte-button class="btn-sm btn-save-material" theme="outline-primary" label="Save"/>
+                <x-adminlte-button class="btn-sm btn-issue-material" theme="outline-primary" label="Issue"/>
+            </x-slot>
+        </form>
+    </x-adminlte-modal>
+
+    <x-adminlte-modal id="modalReceived" title="Recieve Material" icon="fas fa-box">
+        <form action="/" id="recieve-material-form" method="post" enctype="multipart/form-data">
+            @csrf
+            <div class="row" id="receive-material-modal">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="receive-material">Choose Material</label>
+                        <select name="material_id" class="form-control select2" id="receive-material" style="width: 100%;">
+
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="txt-material">Quantity</label>
+                        <input name="quantity" type="number" class="form-control" placeholder="Enter Quantity" step="0.001">
+                    </div>
+                </div>
+            </div>
+            <x-slot name="footerSlot">
+                <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+                <x-adminlte-button class="btn-sm btn-receive-material" theme="primary" label="Receive"/>
             </x-slot>
         </form>
     </x-adminlte-modal>
@@ -93,7 +122,7 @@
                 "serverSide": true,
                 "stateSave": true,
                 "ajax": {
-                    "url": "{{ route('bom.getBom') }}",
+                    "url": "{{ route('wh.getWarehouseRecords') }}",
                     "type": "POST",
                     "data": function ( d ) {
                         d._token = '{{ csrf_token() }}';
@@ -103,9 +132,8 @@
                     { "data": "sno", "name": "sno"},
                     { "data": "code", "name": "part_code" },
                     { "data": "material_name", "name": "description" },
+                    { "data": "quantity", "name": "quantity" },
                     { "data": "unit", "name": "uom_text" },
-                    { "data": "commodity", "name": "commodity_name" },
-                    { "data": "category", "name": "category_name" },
                     { "data": "action" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
@@ -114,7 +142,7 @@
                 "order": [[ 0, "asc" ]],
                 "columnDefs": [
                     {
-                        "targets": [6],
+                        "targets": [5],
                         "orderable": false
                     }
                 ],
@@ -136,61 +164,27 @@
                 toastr.success('{{ session('success') }}');
             @endif
 
-            $('#modalView').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-                var bomId = button.data('bomid');
-                var modal = $(this)
-                $.ajax({
-                    url: '/app/bill-of-materials/' + bomId + '/show',
-                    method: 'GET',
-                    success: function(response) {
-                        if (response.status) {
-                            $("#view-material-modal").html(response.html);
-                        }
-                    },
-                    error: function(error) {
-                        console.error('Error:', error);
-                    }
-                });
+            $('#modalIssue').on('show.bs.modal', function (event) {
+                initializeRawMaterialsSelect2($('#issue-material'));
             });
 
-            $('#modalEdit').on('show.bs.modal', function (event) {
-                var button = $(event.relatedTarget);
-                var bomId = button.data('bomid');
-                var modal = $(this)
-                
-                $.ajax({
-                    url: '/app/bill-of-materials/' + bomId + '/edit',
-                    method: 'GET',
-                    success: function(response) {
-                        if (response.status) {
-                            $("#edit-material-modal").html(response.html);
-
-                            $('.raw-materials').each(function() {
-                                initializeRawMaterialsSelect2($(this));
-                            });
-                        }
-                    },
-                    error: function(error) {
-                        console.error('Error:', error);
-                    }
-                });
+            $('#modalReceived').on('show.bs.modal', function (event) {
+                initializeRawMaterialsSelect2($('#receive-material'));
             });
 
             function initializeRawMaterialsSelect2(selectElement) {
                 selectElement.select2({
-                    placeholder: 'Select Material',
+                    placeholder: 'Raw materials',
                     theme: 'bootstrap4',
                     ajax: {
-                        url: '{{ route("finished.getMaterials") }}',
-                        dataType: 'json',
+                        url: '{{ route("semi.getRawMaterials") }}',
                         method: 'POST',
+                        dataType: 'json',
                         delay: 250,
                         data: function (params) {
                             return {
                                 q: params.term,
-                                _token: '{{ csrf_token() }}'
-
+                                _token : '{{ csrf_token() }}',
                             };
                         },
                         processResults: function (data) {
@@ -208,55 +202,32 @@
                 });
             }
 
-            // Function to add a new raw material item
-            $(document).on('click', ".add-raw-quantity-item", function () {
-                var newItem = `
-                    <div class="raw-with-quantity">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <select class="form-control raw-materials" name="raw[]" style="width:100%;">
-                                    <option value=""></option>  
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="input-group mb-3">
-                                    <input type="number" class="form-control" name="quantity[]" placeholder="Quantity">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text"><i class="fas fa-times remove-raw-quantity-item"></i></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>                            
-                    </div>
-                `;
-                var $newItem = $(newItem);
-                $(".raw-materials-container").append($newItem);
-                
-                var newSelect = $newItem.find('.raw-materials');
-                initializeRawMaterialsSelect2(newSelect);
+            $('.btn-issue-material').click(function () {
+                var _url = '{{ route('wh.issue') }}';
+                var _formData = new FormData($('#issue-material-form')[0]);
+                makeRequest(_url, _formData);
+
+                $('#modalIssue').modal('hide');
             });
 
-            // Function to remove the closest raw material item
-            $(document).on('click', '.remove-raw-quantity-item', function () {
-                if ($('.raw-with-quantity').length > 1) {
-                    $(this).closest('.raw-with-quantity').remove();
-                } else {
-                    alert("At least one Raw Material item should be present.");
-                }
+            $('.btn-receive-material').click(function () {
+                var _url = '{{ route('wh.receive') }}';
+                var _formData = new FormData($('#recieve-material-form')[0]);
+                makeRequest(_url, _formData);
+                $('#modalReceived').modal('hide');
             });
 
-            $('.btn-save-material').click(function () {
-                var bomId = $("#bom-id").val();
-                var formData = new FormData($('#edit-material-form')[0]);
+            function makeRequest(_url, _formData) {
                 $.ajax({
-                    url: '/app/bill-of-materials/' + bomId + '/update', 
+                    url: _url, 
                     type: 'POST',
-                    data: formData,
+                    data: _formData,
                     processData: false,
                     contentType: false,
                     success: function (response) {
                         if (response.status) {
                             toastr.success(response.message);
+                            window.location.reload();
                         } else {
                             toastr.error(response.message);
                         }
@@ -267,9 +238,7 @@
                         toastr.error(response.message);
                     }
                 });
-
-                $('#modalEdit').modal('hide');
-            });
+            }
         });
     </script>
 @stop

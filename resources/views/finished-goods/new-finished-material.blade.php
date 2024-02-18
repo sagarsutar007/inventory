@@ -17,7 +17,14 @@
                 <div class="card-body">
                     <div class="raw-material-item-container">
                         <div class="row">
-                            <div class="col-12 col-md-10">
+                            <div class="col-12 col-md-3">
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="partcode" name="part_code" placeholder="Enter Part Code">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-7">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
                                         <input type="text" class="form-control" name="description" placeholder="Enter material name">
@@ -38,6 +45,11 @@
                                     </div>
                                 </div>
                             </div> -->
+                        </div>
+                        <div class="row m-0 p-0">
+                            <div class="col-12 m-0 p-0">
+                                <p class="partcode_msg"></p>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
@@ -109,7 +121,6 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="form-group">
                             <div class="input-group mb-3">
                                 <textarea class="form-control" name="additional_notes" placeholder="Additional notes"></textarea>
@@ -164,6 +175,107 @@
             $('#category').select2({
                 placeholder: 'Category',
                 theme: 'bootstrap4'
+            });
+
+            $(document).on('blur', '#partcode', function() {
+                validatePartcode($(this).val());
+            });
+
+            $('#commodity, #category').on('change input', function() {
+                suggestPartcode();
+            });
+
+            function validatePartcode(partcode) {
+                if (partcode) {
+                    if (partcode.length >= 12) {
+                        
+
+                        // Make AJAX request to check if part code exists
+                        $.ajax({
+                            url: '{{ route("finished.checkPartcode") }}',
+                            type: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: {
+                                part_code: partcode
+                            },
+                            success: function(response) {
+                                if (response.exists) {
+                                    // Part code exists
+                                    $('#partcode').css({
+                                        'border': '1px solid red',
+                                        'background': '#FF000014'
+                                    });
+                                    $(".partcode_msg")
+                                        .addClass('text-danger')
+                                        .text("Part code already exists.");
+                                } else {
+                                    $('#partcode').css({
+                                        'border': '1px solid #1a8300',
+                                        'background': '#56ff001f'
+                                    });
+                                    $(".partcode_msg").text("Part code is available.");
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error(error);
+                                // Handle error if necessary
+                            }
+                        });
+                    } else {
+                        $('#partcode').css({
+                            'border': '1px solid red',
+                            'background': '#FF000014'
+                        });
+                        $(".partcode_msg")
+                            .addClass('text-danger')
+                            .text("Part code must be at least 12 characters long.");
+                    }
+                } else {
+                    $('#partcode').css({
+                        'border': '1px solid red',
+                        'background': '#FF000014'
+                    });
+                }
+            }
+
+            $('#commodity, #category').change(function() {
+                suggestPartcode();
+            });
+
+            function suggestPartcode() {
+                let commodityId = $('#commodity').val();
+                let categoryId = $('#category').val();
+
+                // Make AJAX request to fetch suggested part code
+
+                if (commodityId.length > 0 && categoryId.length > 0) {
+                    $.ajax({
+                        url: '{{ route("finished.suggest.partcode") }}',
+                        type: 'GET',
+                        data: {
+                            commodity_id: commodityId,
+                            category_id: categoryId
+                        },
+                        success: function(response) {
+                            $('.partcode_msg').addClass("text-success").html(`Suggested: <span class="suggested_partcode">` + response.suggested_part_code + `</span>`);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(error);
+                        }
+                    });
+                }
+            }
+
+            $(document).on('click', '.suggested_partcode', function(){
+                $("#partcode")
+                .css({
+                    'border': '1px solid #1a8300',
+                    'background': '#56ff001f'
+                })
+                .val($(this).text());
+                $(this).parent().empty();
             });
 
             // Function to initialize Select2 for raw materials dropdowns

@@ -11,3 +11,13 @@
 .dropdown-icon-disabled.dropdown-toggle::after {
   display: none !important;
 }
+
+.partcode_msg {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.suggested_partcode {
+  font-weight: bold;
+  cursor: pointer;
+}

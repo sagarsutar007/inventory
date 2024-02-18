@@ -96,18 +96,30 @@
             </x-slot>
         </form>
     </x-adminlte-modal>
-
-    <x-adminlte-modal id="modalView" title="View Raw Material" icon="fas fa-box" size='lg' scrollable>
-        <div class="row" id="view-material-modal">
-            <div class="col-12">
-                <h2 class="text-secondary text-center">Loading...</h2>
-            </div>
-        </div>
-        <x-slot name="footerSlot">
-            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+    
+    <x-modaltabs id="modalView" title="View Raw Material">
+        <x-slot name="header">
+            <ul class="nav nav-pills nav-fill">
+                <li class="nav-item">
+                    <a class="nav-link active" id="overview-tab" data-toggle="tab" data-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="documents-tab" data-toggle="tab" data-target="#documents" type="button" role="tab" aria-controls="documents" aria-selected="true">Documents</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="vendors-tab" data-toggle="tab" data-target="#vendors" type="button" role="tab" aria-controls="vendors" aria-selected="true">Vendors</a>
+                </li>
+            </ul>
         </x-slot>
-    </x-adminlte-modal>
-
+        <x-slot name="body">
+            <div class="tab-content" id="view-material-modal">
+                
+            </div>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </x-slot>
+    </x-modaltabs>
 @stop
 
 
@@ -212,7 +224,8 @@
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');
                 var modal = $(this)
-                
+                modal.find(".nav-link").removeClass('active');
+                modal.find(".nav-link:first").addClass('active');
                 $.ajax({
                     url: '/app/raw-materials/' + materialId + '/show',
                     method: 'GET',
@@ -294,7 +307,6 @@
                 $('#modalEdit').modal('hide');
             });
 
-
             $('.btn-save-clone-material').click(function () {
                 var formData = new FormData($('#clone-material-form')[0]);
                 $.ajax({
@@ -326,6 +338,31 @@
                 });
 
                 
+            });
+
+            $(document).on('click', '.btn-destroy-attachment', function() {
+                var attachmentId = $(this).data('attid');
+                var _obj = $(this);
+                $.ajax({
+                    url: '/app/material-attachment/' + attachmentId + '/destroy',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')            
+                    },
+                    success: function(response) {
+                        if (response.status) {
+                            toastr.success(response.message);
+                            _obj.closest('.col-md-4').remove();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
+                    }
+                });
             });
 
             // Show Error Messages

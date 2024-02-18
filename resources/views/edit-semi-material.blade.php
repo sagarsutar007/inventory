@@ -133,5 +133,56 @@
                 <p class="text-secondary">No Bill of Materials found! To create a new one press <code>Add BOM Item</code> button.</p>
             @endif
         </div>
+        
+        <h6>Uploaded Documents</h6>
+        <p class="text-danger">Note: Deleting this picture will instatntly delete the document from your account. Please make sure you want to do that before proceeding.</p>
+        <div class="row">
+            @foreach($attachments as $attachment)
+                @if($attachment->type === 'image')
+                    <div class="col-md-4">
+                        <div class="card card-primary card-outline">
+                            <img class="img-fluid" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
+                            <div class="card-body">
+                                <h5 class="card-title">Material Image</h5><br>
+                                <div class="btn-group w-100">
+                                    <a href="{{ asset('assets/uploads/materials/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                                    <button type="button" data-attid="{{ $attachment->mat_doc_id }}" class="btn btn-danger btn-block mt-3 btn-destroy-attachment">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($attachment->type === 'pdf')
+                    <div class="col-md-4">
+                        <div class="card card-primary card-outline">
+                            <img class="img-fluid" src="{{ asset('assets/img/pdf.png') }}" alt="Attachment Image">
+                            <div class="card-body">
+                                <h5 class="card-title">Material PDF</h5><br>
+                                <div class="btn-group w-100">
+                                    <a href="{{ asset('assets/uploads/pdf/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                                    <button type="button" data-attid="{{ $attachment->mat_doc_id }}" class="btn btn-danger btn-block mt-3 btn-destroy-attachment">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($attachment->type === 'doc')
+                    <div class="col-md-4">
+                        <div class="card card-primary card-outline">
+                            <img class="img-fluid" src="{{ asset('assets/img/documents.jpg') }}" alt="Attachment Image">
+                            <div class="card-body">
+                                <h5 class="card-title">Material Document</h5><br>
+                                <div class="btn-group w-100">
+                                    <a href="{{ asset('assets/uploads/doc/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                                    <button type="button" data-attid="{{ $attachment->mat_doc_id }}" class="btn btn-danger btn-block mt-3 btn-destroy-attachment">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @endforeach
+        </div>
     </div>
 </div>

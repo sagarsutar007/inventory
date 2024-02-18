@@ -1,71 +1,101 @@
-<div class="col-md-12">
-    <h5 class="text-dark"></h5>
-    <div class="card card-primary card-outline">
-        <div class="card-body box-profile">
-            <div class="text-center">
-                @php $imageFound = false; @endphp
-                @foreach($attachments as $attachment)
-                    @if($attachment->type === 'image')
-                        <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
-                        @php $imageFound = true; break; @endphp
-                    @endif
-                @endforeach
-                @if (!$imageFound)
-                    <!-- Default image if no image is found -->
-                    <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/default-image.jpg') }}" alt="Default Image">
-                @endif
+<div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="home-tab">
+    <div class="row">
+        <div class="col-md-5">
+            <h6>Material Information</h6>
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+                    <div class="text-center">
+                        @php $imageFound = false; @endphp
+                        @foreach($attachments as $attachment)
+                            @if($attachment->type === 'image')
+                                <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
+                                @php $imageFound = true; break; @endphp
+                            @endif
+                        @endforeach
+                        @if (!$imageFound)
+                            <!-- Default image if no image is found -->
+                            <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/default-image.jpg') }}" alt="Default Image">
+                        @endif
+                    </div>
+                    <h3 class="profile-username text-center">{{ $material->description }}</h3>
+                    <p class="text-muted text-center">{{ $material->part_code }}</p>
+                </div>
             </div>
-            <h3 class="profile-username text-center">{{ $material->description }}</h3>
-            <p class="text-muted text-center">{{ $material->part_code }}</p>
-            <hr>
-            <strong>Commodity</strong>
-            <p class="text-muted">{{ $commodity->commodity_name }}</p>
-            <hr>
-            <strong>Category</strong>
-            <p class="text-muted">{{ $category->category_name }}</p>
-            <hr>
-            <strong>Measurement Unit</strong>
-            <p class="text-muted">{{ $uom->uom_text }}</p>
-            <hr>
-            <strong>Additional Notes</strong>
-            <p class="text-muted">{{ $material->additional_notes }}</p>
+        </div>
+        <div class="col-md-7">
+            <h6>More Information</h6>
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+                    <p class="text-muted mb-0"><strong class="text-dark">Make</strong> : {{ $material->make }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">MPN</strong> : {{ $material->mpn }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Commodity</strong> : {{ $commodity->commodity_name }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Category</strong> : {{ $category->category_name }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Measurement Unit</strong> : {{ $uom->uom_text }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Additional Notes</strong> : {{ $material->additional_notes }}</p>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+<div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="profile-tab">
+    <h6>Uploaded Documents</h6>
+    <div class="row">
+        @foreach($attachments as $attachment)
+            @if($attachment->type === 'image')
+                <div class="col-md-4">
+                    <div class="card card-primary card-outline">
+                        <img class="img-fluid" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Material Image</h5><br>
+                            <a href="{{ asset('assets/uploads/materials/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
-    <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title">Attachments</h3>
-        </div>
+            @if($attachment->type === 'pdf')
+                <div class="col-md-4">
+                    <div class="card card-primary card-outline">
+                        <img class="img-fluid" src="{{ asset('assets/img/pdf.png') }}" alt="Attachment Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Material PDF</h5><br>
+                            <a href="{{ asset('assets/uploads/pdf/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if($attachment->type === 'doc')
+                <div class="col-md-4">
+                    <div class="card card-primary card-outline">
+                        <img class="img-fluid" src="{{ asset('assets/img/documents.jpg') }}" alt="Attachment Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Material Document</h5><br>
+                            <a href="{{ asset('assets/uploads/doc/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endforeach
+    </div>
+</div>
+<div class="tab-pane fade" id="boms" role="tabpanel" aria-labelledby="boms-tab">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6>Bill of materials</h6>
+        <div id="export-section"></div>
+    </div>
+    
+    <div class="card">
         <div class="card-body">
-            <strong><i class="fas fa-file-pdf mr-1"></i> PDFs</strong>
-            <p class="text-muted">
-                @foreach($attachments as $attachment)
-                    @if($attachment->type === 'pdf')
-                        <a href="{{ asset('assets/uploads/pdf/' . $attachment->path) }}" class="btn btn-link" target="_blank">Download PDF</a> <br>
-                    @endif
-                @endforeach
-            </p>
-            <hr>
-            <strong><i class="fas fa-file-word mr-1"></i> Documents</strong>
-            <p class="text-muted">
-                @foreach($attachments as $attachment)
-                    @if($attachment->type === 'doc')
-                        <a href="{{ asset('assets/uploads/doc/' . $attachment->path) }}" class="btn btn-link" target="_blank">Download File</a> <br>
-                    @endif
-                @endforeach
-            </p>
-        </div>
-    </div>
-
-    <div class="card card-primary">
-        <div class="card-header">
-            <h3 class="card-title">Bill of Material</h3>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-striped">
+            <table class="table table-bordered table-striped" id="boms-table" style="width:100%;">
                 <thead>
                     <tr>
-                        <th style="width: 10px">#</th>
+                        <th style="width: 5px">#</th>
                         <th>Raw Material</th>
                         <th>Quantity</th>
                         <th>Unit</th>
@@ -81,6 +111,10 @@
                                 <td>{{ $bomRecord->material->uom->uom_text }}</td>
                             </tr>
                         @endforeach
+                    @else
+                        <tr>
+                            <td colspan="4">Bill of material records not found!</td>
+                        </tr>
                     @endif
                 </tbody>
             </table>

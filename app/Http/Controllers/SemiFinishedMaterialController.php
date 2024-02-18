@@ -301,28 +301,38 @@ class SemiFinishedMaterialController extends Controller
                 $rawMaterials = $request->input('raw');
                 $quantities = $request->input('quantity');
 
-                if (count($rawMaterials) === count($quantities)) {
-                    foreach ($rawMaterials as $index => $rawMaterialId) {
-                        if (!empty($rawMaterialId)) {
-                            $bomRecord = BomRecord::where('bom_id', $material->bom->bom_id)
-                                ->where('material_id', $rawMaterialId)
-                                ->first();
-
-                            if ($bomRecord) {
-                                $bomRecord->quantity = $quantities[$index];
-                                $bomRecord->save();
-                            } else {
-                                $material->bom->bomRecords()->create([
-                                    'material_id' => $rawMaterialId,
-                                    'quantity' => $quantities[$index],
-                                ]);
-                            }
-                        }
-                    }
-                } else {
-                    DB::rollBack();
+                if (count($rawMaterials) !== count($quantities)) {
                     return response()->json(['status' => false, 'message' => 'Raw materials and quantities count mismatch'], 400);
                 }
+
+                foreach ($rawMaterials as $index => $rawMaterialId) {
+                    if (!empty($rawMaterialId)) {
+                        $bomRecord = BomRecord::where('bom_id', $material->bom->bom_id)
+                            ->where('material_id', $rawMaterialId)
+                            ->first();
+
+                        if ($bomRecord) {
+                            $bomRecord->quantity = $quantities[$index];
+                            $bomRecord->save();
+                        } else {
+                            $material->bom->bomRecords()->create([
+                                'material_id' => $rawMaterialId,
+                                'quantity' => $quantities[$index],
+                            ]);
+                        }
+                    }
+                }
+
+                //fetch all bom records and those not in the request should be deleted.
+                $deleteBoms = BomRecord::where('bom_id', $material->bom->bom_id)->whereNotIn(
+                    'material_id',
+                    $rawMaterials
+                )->get();
+                foreach ($deleteBoms as $delBom) {
+                    $delBom->delete();
+                }
+            } else {
+                $material->bom->bomRecords()->delete();
             }
             
             DB::commit();
@@ -367,16 +377,21 @@ class SemiFinishedMaterialController extends Controller
     {
         $searchTerm = $request->input('q');
 
-        if (empty($searchTerm)) {
-            $materials = RawMaterial::select('material_id', 'description', 'part_code')->limit(10)->get();
-        }else {
-            $materials = Material::select('material_id', 'description', 'part_code')
-            ->where('description', 'like', '%' . $searchTerm . '%')
-            ->orWhere('part_code', 'like', '%' . $searchTerm . '%')
-            ->where('type', '=', 'raw')
-            ->orderBy('description')
-            ->get();
-        }
+        $materials = RawMaterial::select('materials.material_id', 'materials.description', 'materials.part_code')
+        ->when(!empty($searchTerm), function ($query) use ($searchTerm) {
+            $query->where(function ($subquery) use ($searchTerm) {
+                $subquery->where('description', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
+            });
+        })
+        ->where('type', '=', 'raw')
+        ->whereExists(function ($query) {
+            $query->select(DB::raw(1))
+                ->from('material_purchases')
+                ->whereColumn('material_purchases.material_id', 'materials.material_id');
+        })
+        ->orderBy('description')
+        ->get();
         return response()->json($materials);
     }
 

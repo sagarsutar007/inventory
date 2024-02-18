@@ -106,27 +106,75 @@
         </div>
         <h6>Bill of Material</h6>
         <div class="raw-materials-container">
-            @foreach($boms as $bom)
-                @foreach($bom->bomRecords as $index => $bomRecord)
-                    <div class="raw-with-quantity">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <select class="form-control raw-materials" name="raw[]" style="width:100%;">
-                                    <option value=""></option>  
-                                    <option value="{{ $bomRecord->material_id }}" selected>{{ $bomRecord->material->description ."-". $bomRecord->material->part_code }}</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="input-group mb-3">
-                                    <input type="number" class="form-control" name="quantity[]" placeholder="Quantity" value="{{ $bomRecord->quantity }}">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text"><i class="fas fa-times remove-raw-quantity-item"></i></span>
-                                    </div>
+            @foreach($bomRecords as $index => $bomRecord)
+                <div class="raw-with-quantity">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <select class="form-control raw-materials" name="raw[]" style="width:100%;">
+                                <option value=""></option>  
+                                <option value="{{ $bomRecord->material_id }}" selected>{{ $bomRecord->material->description ."-". $bomRecord->material->part_code }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group mb-3">
+                                <input type="number" class="form-control" name="quantity[]" placeholder="Quantity" value="{{ $bomRecord->quantity }}">
+                                <div class="input-group-append">
+                                    <span class="input-group-text"><i class="fas fa-times remove-raw-quantity-item"></i></span>
                                 </div>
                             </div>
-                        </div>                            
+                        </div>
+                    </div>                            
+                </div>
+            @endforeach
+        </div>
+        <h6>Uploaded Documents</h6>
+        <p class="text-danger">Note: Deleting this picture will instatntly delete the document from your account. Please make sure you want to do that before proceeding.</p>
+        <div class="row">
+            @foreach($attachments as $attachment)
+                @if($attachment->type === 'image')
+                    <div class="col-md-4">
+                        <div class="card card-primary card-outline">
+                            <img class="img-fluid" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
+                            <div class="card-body">
+                                <h5 class="card-title">Material Image</h5><br>
+                                <div class="btn-group w-100">
+                                    <a href="{{ asset('assets/uploads/materials/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                                    <button type="button" data-attid="{{ $attachment->mat_doc_id }}" class="btn btn-danger btn-block mt-3 btn-destroy-attachment">Delete</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                @endforeach
+                @endif
+
+                @if($attachment->type === 'pdf')
+                    <div class="col-md-4">
+                        <div class="card card-primary card-outline">
+                            <img class="img-fluid" src="{{ asset('assets/img/pdf.png') }}" alt="Attachment Image">
+                            <div class="card-body">
+                                <h5 class="card-title">Material PDF</h5><br>
+                                <div class="btn-group w-100">
+                                    <a href="{{ asset('assets/uploads/pdf/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                                    <button type="button" data-attid="{{ $attachment->mat_doc_id }}" class="btn btn-danger btn-block mt-3 btn-destroy-attachment">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($attachment->type === 'doc')
+                    <div class="col-md-4">
+                        <div class="card card-primary card-outline">
+                            <img class="img-fluid" src="{{ asset('assets/img/documents.jpg') }}" alt="Attachment Image">
+                            <div class="card-body">
+                                <h5 class="card-title">Material Document</h5><br>
+                                <div class="btn-group w-100">
+                                    <a href="{{ asset('assets/uploads/doc/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                                    <button type="button" data-attid="{{ $attachment->mat_doc_id }}" class="btn btn-danger btn-block mt-3 btn-destroy-attachment">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             @endforeach
         </div>
     </div>
