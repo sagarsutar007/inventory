@@ -83,7 +83,7 @@ class BOMController extends Controller
             $material = $bom->material;
             if ($material) {
 
-                $actionHtml = '<a href="#" role="button" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
+                $actionHtml = '<a href="#" role="button" data-desc="'.$material->description.'" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
                     '<a href="#" role="button" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / ' .
                     '<form action="' . route("bom.destroy", ["bom" => $bom->bom_id]) . '" method="post" style="display: inline;">' .
                     csrf_field() .
@@ -181,6 +181,15 @@ class BOMController extends Controller
                                 ]);
                             }
                         }
+                    }
+
+                    //fetch all bom records and those not in the request should be deleted.
+                    $deleteBoms = BomRecord::where('bom_id', $bom->bom_id)->whereNotIn(
+                        'material_id',
+                        $rawMaterials
+                    )->get();
+                    foreach ($deleteBoms as $delBom) {
+                        $delBom->delete();
                     }
                 } else {
                     DB::rollBack();

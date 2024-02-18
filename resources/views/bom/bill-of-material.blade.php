@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <x-adminlte-modal id="modalView" title="View Material" icon="fas fa-box" scrollable>
+    <x-adminlte-modal id="modalView" title="View Material" icon="fas fa-box" size="lg" scrollable>
         <div class="row" id="view-material-modal">
             <div class="col-12">
                 <h2 class="text-secondary text-center">Loading...</h2>
@@ -139,13 +139,32 @@
             $('#modalView').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var bomId = button.data('bomid');
-                var modal = $(this)
+                var materialDesc = button.data('desc');
+                var modal = $(this);
+                modal.find('.modal-title').text(materialDesc);
                 $.ajax({
                     url: '/app/bill-of-materials/' + bomId + '/show',
                     method: 'GET',
                     success: function(response) {
                         if (response.status) {
                             $("#view-material-modal").html(response.html);
+                            $("#boms-table").DataTable({
+                                "responsive": true,
+                                "lengthChange": false,
+                                "autoWidth": true,
+                                "paging": false,
+                                "searching": false,
+                                "info": false,
+                                "buttons": [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: [0, 1, 2, 3]
+                                        },
+                                        title: materialDesc,
+                                    }
+                                ],
+                            }).buttons().container().appendTo('#export-section');
                         }
                     },
                     error: function(error) {
