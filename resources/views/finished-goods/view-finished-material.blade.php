@@ -95,8 +95,8 @@
             <table class="table table-bordered table-striped" id="boms-table" style="width:100%;">
                 <thead>
                     <tr>
-                        <th style="width: 10px">#</th>
-                        <th>Material Name</th>
+                        <th>Part Code</th>
+                        <th width="35%">Material Name</th>
                         <th>Type</th>
                         <th>Quantity</th>
                         <th>Unit</th>
@@ -106,8 +106,8 @@
                     @if($boms)
                         @foreach($boms as $index => $bomRecord)
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $bomRecord->material->description }}</td>
+                                <td>{{ $bomRecord->material->part_code }}</td>
+                                <td width="35%">{{ $bomRecord->material->description }}</td>
                                 <td>{{ $bomRecord->material->type }}</td>
                                 <td>{{ $bomRecord->quantity }}</td>
                                 <td>{{ $bomRecord->material->uom->uom_text }}</td>

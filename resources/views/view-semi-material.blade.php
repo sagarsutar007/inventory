@@ -95,8 +95,8 @@
             <table class="table table-bordered table-striped table-condensed" id="boms-table" style="width:100%;">
                 <thead>
                     <tr>
-                        <th style="width: 5px">#</th>
-                        <th>Raw Material</th>
+                        <th>Part Code</th>
+                        <th width="35%">Raw Material</th>
                         <th>Quantity</th>
                         <th>Unit</th>
                     </tr>
@@ -105,8 +105,8 @@
                     @if($bomRecords)
                         @foreach($bomRecords as $index => $bomRecord)
                             <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $bomRecord->material->description }}</td>
+                                <td>{{ $bomRecord->material->part_code }}</td>
+                                <td width="35%">{{ $bomRecord->material->description }}</td>
                                 <td>{{ $bomRecord->quantity }}</td>
                                 <td>{{ $bomRecord->material->uom->uom_text }}</td>
                             </tr>
