@@ -21,3 +21,19 @@
   font-weight: bold;
   cursor: pointer;
 }
+
+.card-header {
+  padding: 0.45rem 1.25rem;
+}
+
+.table tbody td {
+  padding: 0.15rem;
+}
+
+body:not(.layout-fixed) .main-sidebar .sidebar {
+  overflow-y: auto;
+  height: 90vh;
+  position: fixed;
+  top: 60px;
+  left: 0;
+}

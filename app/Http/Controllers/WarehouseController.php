@@ -29,16 +29,16 @@ class WarehouseController extends Controller
         $columnIndex = $order[0]['column'];
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
-        
+
         $query = Warehouse::with(['material']);
 
         if (!empty($search)) {
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('part_code', 'like', '%' . $search . '%')
-                ->orWhere('description', 'like', '%' . $search . '%')
-                ->orWhereHas('uom', function ($u) use ($search) {
-                    $u->where('uom_text', 'like', '%' . $search . '%');
-                });
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('uom', function ($u) use ($search) {
+                        $u->where('uom_text', 'like', '%' . $search . '%');
+                    });
             });
         }
 
@@ -70,12 +70,12 @@ class WarehouseController extends Controller
             $material = $warehouse->material;
             if ($material) {
 
-                $actionHtml = '<a href="#" role="button" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
-                    '<a href="#" role="button" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / ' .
+                $actionHtml = '<a href="#" role="button" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / ' .
+                    '<a href="#" role="button" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
                     '<form action="' . route("wh.destroy", ["warehouse" => $warehouse->warehouse_id]) . '" method="post" style="display: inline;">' .
                     csrf_field() .
                     method_field('DELETE') .
-                    '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash"></i></button>' .
+                    '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>' .
                     '</form>';
 
                 $data[] = [
@@ -116,7 +116,7 @@ class WarehouseController extends Controller
             'material_id' => 'required',
             'quantity' => 'required|numeric|min:0.001',
         ]);
-        
+
         $existingWarehouse = Warehouse::where('material_id', $validatedData['material_id'])->first();
 
         if ($existingWarehouse) {
@@ -150,7 +150,7 @@ class WarehouseController extends Controller
             'material_id' => 'required',
             'quantity' => 'required|numeric|min:0.001',
         ]);
-        
+
         $existingWarehouse = Warehouse::where('material_id', $validatedData['material_id'])->first();
 
         if ($existingWarehouse) {
@@ -160,7 +160,7 @@ class WarehouseController extends Controller
         } else {
             $warehouse = new Warehouse();
             $warehouse->material_id = $validatedData['material_id'];
-            $warehouse->quantity = $validatedData['quantity']; 
+            $warehouse->quantity = $validatedData['quantity'];
             $warehouse->created_by = Auth::id();
             $warehouse->save();
         }

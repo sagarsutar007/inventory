@@ -58,6 +58,34 @@
             </x-slot>
         </form>
     </x-adminlte-modal>
+
+    <x-adminlte-modal id="modalUploadBOM" title="Upload Bill of Material" icon="fas fa-box">
+        <form action="/" id="upload-bom-form" method="post" enctype="multipart/form-data">
+            @csrf
+            <div class="row" id="edit-material-modal">
+                <div class="col-12">
+                    <input type="hidden" name="material_id" value="" id="emid">
+                    <div class="form-group w-100">
+                        <label for="excel-file">Upload Excel</label>
+                        <div class="input-group">
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" name="file" id="excel-file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                                <label class="custom-file-label" for="excel-file">Choose file</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <x-slot name="footerSlot">
+            <a href="{{ asset('assets/formats/bom-format.xlsx') }}" type="button" class="btn btn-outline-success">
+                <i class="fas fa-file-export"></i> Download Format
+            </a>
+            <button type="button" class="btn btn-outline-primary btn-submit-import">
+                <i class="fas fa-check"></i> Submit
+            </button>
+        </x-slot>
+    </x-adminlte-modal>
 @stop
 
 @section('js')
@@ -122,6 +150,8 @@
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
+                "scrollY": "320px",
+                "scrollCollapse": true,
             });
 
             // Show Error Messages
@@ -273,11 +303,7 @@
 
             // Function to remove the closest raw material item
             $(document).on('click', '.remove-raw-quantity-item', function () {
-                if ($('.raw-with-quantity').length > 1) {
-                    $(this).closest('.raw-with-quantity').remove();
-                } else {
-                    alert("At least one Raw Material item should be present.");
-                }
+                $(this).closest('.raw-with-quantity').remove();
             });
 
             $('.btn-save-material').click(function () {
@@ -304,6 +330,82 @@
                 });
 
                 $('#modalEdit').modal('hide');
+            });
+
+            $(document).on('click', '.btn-export-bom', function() {
+                var materialId = $(this).data('matid');
+                toastr.options = {
+                    "closeButton": true,
+                    "debug": false,
+                    "newestOnTop": true,
+                    "progressBar": true,
+                    "positionClass": "toast-top-right",
+                    "preventDuplicates": true,
+                    "onclick": null,
+                    "showDuration": "300",
+                    "hideDuration": "1000",
+                    "timeOut": "5000",
+                    "extendedTimeOut": "1000",
+                    "showEasing": "swing",
+                    "hideEasing": "linear",
+                    "showMethod": "fadeIn",
+                    "hideMethod": "fadeOut"
+                }
+                toastr.success("Your download will begin shortly.");
+                $.ajax({
+                    url: '/app/material/' + materialId + '/export-bom',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')            
+                    },
+                    success: function(response) {
+                        var downloadUrl = response.downloadUrl;
+                        window.location.href = downloadUrl;
+                    },
+                    error: function(xhr, status, error) {
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
+                    }
+                });
+            });
+
+            $(document).on('click', '.btn-import-bom', function() {
+                var materialId = $(this).data('matid');
+                var materialDesc = $(this).data('desc');
+                $("#emid").val(materialId);
+                $("#modalUploadBOM").find('.modal-title').html('Upload ' + materialDesc + ' BOM');
+                $("#modalUploadBOM").modal('show');
+            });
+
+            $(".btn-submit-import").on('click', function(e){
+                $('#upload-bom-form').submit();
+            });
+
+            $('#upload-bom-form').submit(function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                var material = $("#emid").val();
+                $.ajax({
+                    url: 'material/'+material+'/import-bom/',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if(response.status){
+                            toastr.success(response.message);
+                            $("#modalUploadBOM").modal('hide');
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
+                    }
+                });
             });
         });
     </script>

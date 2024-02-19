@@ -58,9 +58,9 @@ class MaterialController extends Controller
 
             // $importedRows = $import->getImportedCount();
 
-            return response()->json(['status' => true, 'success' => 'BOM records imported successfully.']);
+            return response()->json(['status' => true, 'message' => 'BOM records imported successfully.']);
         } else {
-            return response()->json(['status' => false, 'error' => 'No file uploaded.']);
+            return response()->json(['status' => false, 'message' => 'No file uploaded.']);
         }
         // } catch (\Exception $e) {
         //     Log::error('Error importing file: ' . $e->getMessage());

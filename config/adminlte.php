@@ -292,44 +292,50 @@ return [
     'menu' => [
         // Navbar items:
         [
-            'type'         => 'navbar-search',
-            'text'         => 'search',
+            'type' => 'navbar-search',
+            'text' => 'search',
             'topnav_right' => true,
         ],
         [
-            'type'         => 'fullscreen-widget',
+            'type' => 'fullscreen-widget',
             'topnav_right' => true,
         ],
 
         // Sidebar items:
         [
             'text' => 'Dashboard',
-            'url'  => 'app/dashbaord',
+            'url' => 'app/dashbaord',
             'icon' => 'fas fa-fw fa-tachometer-alt',
+            'active' => []
         ],
         [
             'text' => 'Commodities',
-            'url'  => 'app/commodities',
+            'url' => 'app/commodities',
             'icon' => 'fas fa-fw fa-th-large',
+            'active' => []
         ],
         [
             'text' => 'Categories',
-            'url'  => 'app/categories',
+            'url' => 'app/categories',
             'icon' => 'fas fa-fw fa-th',
+            'active' => []
         ],
         [
             'text' => 'Raw Materials',
-            'icon'    => 'fas fa-fw fa-boxes',
+            'icon' => 'fas fa-fw fa-boxes',
             'submenu' => [
                 [
                     'text' => 'Add New',
-                    'url'  => 'app/raw-materials/add',
+                    'url' => 'app/raw-materials/add',
+                    'active' => []
                 ],
                 [
                     'text' => 'View All',
-                    'url'  => 'app/raw-materials',
+                    'url' => 'app/raw-materials',
+                    'active' => []
                 ],
             ],
+            'active' => []
         ],
         [
             'text' => 'Semi Finished Goods',
@@ -337,82 +343,82 @@ return [
             'submenu' => [
                 [
                     'text' => 'Add New',
-                    'url'  => 'app/semi-finished-materials/add',
+                    'url' => 'app/semi-finished-materials/add',
                 ],
                 [
                     'text' => 'View All',
-                    'url'  => 'app/semi-finished-materials',
+                    'url' => 'app/semi-finished-materials',
                 ],
             ],
         ],
         [
             'text' => 'Finished Goods',
-            'icon'    => 'fas fa-fw fa-archive',
+            'icon' => 'fas fa-fw fa-archive',
             'submenu' => [
                 [
                     'text' => 'Add New',
-                    'url'  => 'app/finished-materials/add',
+                    'url' => 'app/finished-materials/add',
                 ],
                 [
                     'text' => 'View All',
-                    'url'  => 'app/finished-materials',
+                    'url' => 'app/finished-materials',
                 ],
             ],
         ],
         [
             'text' => 'Bill Of Materials',
-            'url'  => 'app/bill-of-materials',
+            'url' => 'app/bill-of-materials',
             'icon' => 'fas fa-fw fa-file-invoice',
         ],
         [
             'text' => 'Warehouse',
-            'url'  => 'app/warehouse',
+            'url' => 'app/warehouse',
             'icon' => 'fas fa-fw fa-people-carry',
         ],
         [
             'text' => 'Production Orders',
-            'url'  => 'app/production-orders',
+            'url' => 'app/production-orders',
             'icon' => 'fas fa-fw fa-cart-plus',
         ],
         [
             'text' => 'Reports',
-            'url'  => 'app/reports',
+            'url' => 'app/reports',
             'icon' => 'fas fa-fw fa-clipboard-list',
         ],
         ['header' => 'account_settings'],
         [
             'text' => 'profile',
-            'url'  => 'admin/settings',
+            'url' => 'admin/settings',
             'icon' => 'fas fa-fw fa-user',
         ],
         [
             'text' => 'change_password',
-            'url'  => 'admin/settings',
+            'url' => 'admin/settings',
             'icon' => 'fas fa-fw fa-lock',
         ],
         [
-            'text'    => 'Settings',
-            'icon'    => 'fas fa-fw fa-cog',
+            'text' => 'Settings',
+            'icon' => 'fas fa-fw fa-cog',
             'submenu' => [
                 [
                     'text' => 'App Settings',
-                    'url'  => '#',
+                    'url' => '#',
                 ],
                 [
-                    'text'    => 'User Settings',
-                    'url'     => '#',
+                    'text' => 'User Settings',
+                    'url' => '#',
                     'submenu' => [
                         [
                             'text' => 'User Roles',
-                            'url'  => 'app/roles',
+                            'url' => 'app/roles',
                         ],
                         [
-                            'text'    => 'User Permissions',
-                            'url'     => 'app/permissions',
+                            'text' => 'User Permissions',
+                            'url' => 'app/permissions',
                         ],
                         [
-                            'text'    => 'Users List',
-                            'url'     => '#',
+                            'text' => 'Users List',
+                            'url' => '#',
                         ],
                     ],
                 ],
@@ -543,7 +549,7 @@ return [
                     'asset' => true,
                     'location' => 'vendor/toastr/toastr.min.css',
                 ],
-                
+
             ],
         ],
         'Select2' => [
@@ -618,7 +624,7 @@ return [
         ],
         'CustomPlugin' => [
             'active' => true,
-            'files' =>[
+            'files' => [
                 [
                     'type' => 'js',
                     'asset' => true,

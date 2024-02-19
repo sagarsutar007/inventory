@@ -45,14 +45,14 @@
                                     <a href="#" role="button" data-partcode="{{ $material->part_code }}" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
                                         <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
                                     </a> / 
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / 
+                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / 
                                     <form action="{{ route('finished.destroy', $material->material_id) }}" method="post" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this material?')"><i class="fas fa-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this material?')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
                                     </form> / 
-                                    <button role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel"></i></button> / 
-                                    <button role="button" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-import"></i></button>
+                                    <button role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / 
+                                    <button role="button" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></button>
                                 </td>
                             </tr>
                         @endforeach
@@ -62,17 +62,6 @@
             </div>
         </div>
     </div>
-
-    <!-- <x-adminlte-modal id="modalView" title="View Material" icon="fas fa-box" scrollable>
-        <div class="row" id="view-material-modal">
-            <div class="col-12">
-                <h2 class="text-secondary text-center">Loading...</h2>
-            </div>
-        </div>
-        <x-slot name="footerSlot">
-            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
-        </x-slot>
-    </x-adminlte-modal> -->
 
     <x-adminlte-modal id="modalEdit" title="Edit Material" icon="fas fa-box" size='lg' scrollable>
         <form action="/" id="edit-material-form" method="post" enctype="multipart/form-data">
@@ -155,28 +144,34 @@
                 "autoWidth": true,
                 "paging": true,
                 "info": true,
+                "language": {
+                    "lengthMenu": "_MENU_"
+                },
+                "scrollY": "320px",
+                "scrollCollapse": true,
                 "buttons": [
                     {
                         extend: 'excel',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'print',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
-                    }
+                    },
+                    'colvis',
                 ],
                 "stateSave": true // Add the saveState option here
-            }).buttons().container().appendTo('#rawmaterials_wrapper .col-md-6:eq(0)');
+            }).buttons().container().appendTo('#materials_wrapper .col-md-6:eq(0)');
             
 
             // Show Error Messages
@@ -456,10 +451,17 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        console.log(response);
+                        if(response.status){
+                            toastr.success(response.message);
+                            $("#modalUploadBOM").modal('hide');
+                        } else {
+                            toastr.error(response.message);
+                        }
                     },
                     error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
                     }
                 });
             });

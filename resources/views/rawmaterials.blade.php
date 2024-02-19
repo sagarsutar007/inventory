@@ -25,6 +25,7 @@
                         <thead>
                             <tr>
                                 <!-- <th width="5%">Sno.</th> -->
+                                <th>Image</th>
                                 <th width="10%">Code</th>
                                 <th>Raw Material Name</th>
                                 <th>Unit</th>
@@ -37,19 +38,29 @@
                         @foreach($rawmaterials as $material)
                             <tr>
                                 <!-- <td width="5%">{{ $loop->iteration }}</td> -->
+                                <td class="text-center">
+                                    @php
+                                        $imageAttachment = $material->attachments()->where('type', 'image')->first();
+                                    @endphp
+                                    @if($imageAttachment)
+                                        <img src="{{ asset('assets/uploads/materials/' . $imageAttachment->path) }}" class="mt-2" width="30px" height="30px">
+                                    @else
+                                        <img src="{{ asset('assets/img/default-image.jpg') }}" class="mt-2" width="30px" height="30px">
+                                    @endif
+                                </td>
                                 <td width="10%">{{ $material->part_code }}</td>
                                 <td>{{ $material->description }}</td>
                                 <td>{{ $material->uom->uom_text }}</td>
                                 <td>{{ $material->commodity->commodity_name }}</td>
                                 <td>{{ $material->category->category_name }}</td>
                                 <td width="13%" class="text-center">
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye"></i></a> / 
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> /
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy"></i></a>
+                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
+                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> /
+                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>
                                     /<form action="{{ route('raw.destroy', $material->material_id) }}" method="post" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this record?')"><i class="fas fa-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this record?')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -133,25 +144,31 @@
                 paging: true,
                 info: true,
                 stateSave: true,
+                scrollY: "320px",
+                scrollCollapse: true,
+                language: {
+                    "lengthMenu": "_MENU_"
+                },
                 buttons: [
                     {
                         extend: 'excel',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'print',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
-                    }
+                    },
+                    'colvis'
                 ]
             }).buttons().container().appendTo('#rawmaterials_wrapper .col-md-6:eq(0)');
 

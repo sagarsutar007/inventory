@@ -48,7 +48,7 @@
                                 <td>{{ $category->finished_count }}</td>
                                 <td width="10%">
                                     <a href="#" role="button" data-comid="{{ $category->category_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit">
-                                        <i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit Category"></i>
+                                        <i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i>
                                     </a> /<form action="{{ route('categories.destroy', $category->category_id) }}" method="post" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
@@ -102,23 +102,26 @@
                     {
                         extend: 'excel',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'print',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
-                    }
+                    },
+                    'colvis',
                 ],
-                "stateSave": true
+                "stateSave": true,
+                "scrollY": "320px",
+                "scrollCollapse": true
             }).buttons().container().appendTo('#categories_wrapper .col-md-6:eq(0)');
 
             $('#modalEdit').on('show.bs.modal', function (event) {

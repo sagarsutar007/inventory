@@ -83,7 +83,6 @@
 @section('js')
     <script>
         $(function () {
-            $('[data-toggle="tooltip"]').tooltip();
             $("#commodities").DataTable({
                 "responsive": true,
                 "lengthChange": true,
@@ -97,23 +96,26 @@
                     {
                         extend: 'excel',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'print',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
-                    }
+                    },
+                    'colvis',
                 ],
-                "stateSave": true 
+                "stateSave": true,
+                "scrollY": "320px",
+                "scrollCollapse": true
             }).buttons().container().appendTo('#commodities_wrapper .col-md-6:eq(0)');
 
 

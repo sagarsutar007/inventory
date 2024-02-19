@@ -84,14 +84,14 @@ class BOMController extends Controller
             if ($material) {
 
                 $actionHtml = '<a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
-                    '<a href="#" role="button" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / ' .
+                    '<a href="#" role="button" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
                     '<form action="' . route("bom.destroy", ["bom" => $bom->bom_id]) . '" method="post" style="display: inline;">' .
                     csrf_field() .
                     method_field('DELETE') .
-                    '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash"></i></button>' .
+                    '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>' .
                     '</form> / ' .
-                    '<button role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel"></i></button> / ' .
-                    '<button role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-import"></i></i></button>';
+                    '<button role="button" data-desc="' . $material->description . '" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / ' .
+                    '<button role="button" data-desc="' . $material->description . '" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-import" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
 
 
                 $data[] = [
@@ -147,16 +147,16 @@ class BOMController extends Controller
      */
     public function update(Request $request, Bom $bom)
     {
-        try {
-            $validatedData = $request->validate([
-                'raw' => 'required|array',
-                'raw.*' => 'required|string',
-                'quantity' => 'required|array',
-                'quantity.*' => 'required|numeric',
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json(['status' => false, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
-        }
+        // try {
+        //     $validatedData = $request->validate([
+        //         'raw' => 'required|array',
+        //         'raw.*' => 'required|string',
+        //         'quantity' => 'required|array',
+        //         'quantity.*' => 'required|numeric',
+        //     ]);
+        // } catch (ValidationException $e) {
+        //     return response()->json(['status' => false, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        // }
 
         try {
             DB::beginTransaction();
@@ -198,6 +198,8 @@ class BOMController extends Controller
                     DB::rollBack();
                     return response()->json(['status' => false, 'message' => 'Materials and quantities count mismatch'], 400);
                 }
+            } else {
+                $bom->bomRecords()->delete();
             }
 
             DB::commit();
