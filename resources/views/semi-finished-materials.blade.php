@@ -187,10 +187,25 @@
                                     {
                                         extend: 'excel',
                                         exportOptions: {
-                                            columns: [0, 1, 2, 3]
+                                            columns: ':visible:not(.exclude)'
                                         },
                                         title: materialPartcode + " - " + materialDesc + " - BOM",
-                                    }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    'colvis'
                                 ],
                             }).buttons().container().appendTo('#export-section');
                         }

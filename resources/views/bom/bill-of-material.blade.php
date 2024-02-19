@@ -139,6 +139,7 @@
             $('#modalView').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var bomId = button.data('bomid');
+                var materialPartcode = button.data('partcode');
                 var materialDesc = button.data('desc');
                 var modal = $(this);
                 modal.find('.modal-title').text(materialDesc);
@@ -159,10 +160,25 @@
                                     {
                                         extend: 'excel',
                                         exportOptions: {
-                                            columns: [0, 1, 2, 3]
+                                            columns: ':visible:not(.exclude)'
                                         },
-                                        title: materialDesc,
-                                    }
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    'colvis'
                                 ],
                             }).buttons().container().appendTo('#export-section');
                         }

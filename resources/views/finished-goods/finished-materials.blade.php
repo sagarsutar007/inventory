@@ -42,7 +42,7 @@
                                 <td>{{ $material->commodity->commodity_name }}</td>
                                 <td>{{ $material->category->category_name }}</td>
                                 <td width="10%">
-                                    <a href="#" role="button" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
+                                    <a href="#" role="button" data-partcode="{{ $material->part_code }}" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
                                         <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
                                     </a> / 
                                     <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / 
@@ -164,6 +164,7 @@
             $('#modalView').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');
+                var materialPartcode = button.data('partcode');
                 var materialDesc = button.data('desc');
                 var modal = $(this)
                 modal.find(".nav-link").removeClass('active');
@@ -185,10 +186,25 @@
                                     {
                                         extend: 'excel',
                                         exportOptions: {
-                                            columns: [0, 1, 2, 3, 4]
+                                            columns: ':visible:not(.exclude)'
                                         },
-                                        title: materialDesc + " - BOM",
-                                    }
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                    },
+                                    'colvis'
                                 ],
                                 
                             }).buttons().container().appendTo('#export-section');

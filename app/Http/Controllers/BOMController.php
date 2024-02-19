@@ -26,31 +26,31 @@ class BOMController extends Controller
         $columnIndex = $order[0]['column'];
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
-        
-        
+
+
         $query = Bom::with(['bomRecords.material']);
 
-        
+
         if (!empty($search)) {
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('part_code', 'like', '%' . $search . '%')
-                ->orWhere('description', 'like', '%' . $search . '%')
-                ->orWhereHas('commodity', function ($cm) use ($search) {
-                    $cm->where('commodity_name', 'like', '%' . $search . '%');
-                })
-                ->orWhereHas('category', function ($ct) use ($search) {
-                    $ct->where('category_name', 'like', '%' . $search . '%');
-                })
-                ->orWhereHas('uom', function ($u) use ($search) {
-                    $u->where('uom_text', 'like', '%' . $search . '%');
-                });
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('commodity', function ($cm) use ($search) {
+                        $cm->where('commodity_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('category', function ($ct) use ($search) {
+                        $ct->where('category_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($u) use ($search) {
+                        $u->where('uom_text', 'like', '%' . $search . '%');
+                    });
             });
         }
 
-        
+
         $totalRecords = $query->count();
 
-        
+
         if ($columnName === 'part_code') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
                 ->orderBy('materials.part_code', $columnSortOrder);
@@ -83,7 +83,7 @@ class BOMController extends Controller
             $material = $bom->material;
             if ($material) {
 
-                $actionHtml = '<a href="#" role="button" data-desc="'.$material->description.'" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
+                $actionHtml = '<a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
                     '<a href="#" role="button" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / ' .
                     '<form action="' . route("bom.destroy", ["bom" => $bom->bom_id]) . '" method="post" style="display: inline;">' .
                     csrf_field() .
@@ -124,9 +124,9 @@ class BOMController extends Controller
         $context = [
             'boms' => $bomRecords,
         ];
-        
+
         $returnHTML = view('bom.view-finished-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     public function edit(Bom $bom)
@@ -136,7 +136,7 @@ class BOMController extends Controller
         ];
 
         $returnHTML = view('bom.edit-bom-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     /**
@@ -196,7 +196,7 @@ class BOMController extends Controller
                     return response()->json(['status' => false, 'message' => 'Materials and quantities count mismatch'], 400);
                 }
             }
-            
+
             DB::commit();
             return response()->json(['status' => true, 'message' => 'BOM updated successfully'], 200);
         } catch (\Exception $e) {
