@@ -23,7 +23,7 @@
                     <table id="materials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th width="5%">Sno.</th>
+                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Code</th>
                                 <th>Material Name</th>
                                 <th>Unit</th>
@@ -35,14 +35,14 @@
                         <tbody>
                         @foreach($materials as $material)
                             <tr>
-                                <td width="5%">{{ $loop->iteration }}</td>
+                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
                                 <td width="10%">{{ $material->part_code }}</td>
                                 <td>{{ $material->description }}</td>
                                 <td>{{ $material->uom->uom_text }}</td>
                                 <td>{{ $material->commodity->commodity_name }}</td>
                                 <td>{{ $material->category->category_name }}</td>
                                 <td width="10%">
-                                    <a href="#" role="button" data-matid="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
+                                    <a href="#" role="button" data-partcode="{{ $material->part_code }}" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
                                         <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
                                     </a> / 
                                     <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit"></i></a> / 
@@ -165,6 +165,7 @@
             $('#modalView').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');
+                var materialPartcode = button.data('partcode');
                 var materialDesc = button.data('desc');
                 var modal = $(this)
                 modal.find(".nav-link").removeClass('active');
@@ -180,7 +181,7 @@
                                 "lengthChange": false,
                                 "autoWidth": true,
                                 "paging": false,
-                                "searching": false,
+                                "searching": true,
                                 "info": false,
                                 "buttons": [
                                     {
@@ -188,7 +189,7 @@
                                         exportOptions: {
                                             columns: [0, 1, 2, 3]
                                         },
-                                        title: materialDesc + " - BOM List",
+                                        title: materialPartcode + " - " + materialDesc + " - BOM",
                                     }
                                 ],
                             }).buttons().container().appendTo('#export-section');

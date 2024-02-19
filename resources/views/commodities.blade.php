@@ -24,7 +24,7 @@
                     <table id="commodities" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th width="5%">Sno.</th>
+                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Code</th>
                                 <th>Commodity</th>
                                 <th>RM</th>
@@ -36,7 +36,7 @@
                         <tbody>
                         @foreach($commodities as $commodity)
                             <tr>
-                                <td width="5%">{{ $loop->iteration }}</td>
+                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
                                 <td width="10%">{{ $commodity->commodity_number }}</td>
                                 <td>{{ $commodity->commodity_name }}</td>
                                 <td>{{ $commodity->raw_count }}</td>

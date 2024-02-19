@@ -92,7 +92,7 @@ class BOMController extends Controller
                     '</form>';
 
                 $data[] = [
-                    'sno' => $index + $start + 1,
+                    // 'sno' => $index + $start + 1,
                     'code' => $material->part_code,
                     'material_name' => $material->description,
                     'unit' => $material->uom->uom_text,

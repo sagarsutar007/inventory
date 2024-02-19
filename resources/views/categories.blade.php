@@ -28,7 +28,7 @@
                     <table id="categories" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th width="5%">Sno.</th>
+                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Code</th>
                                 <th>Category</th>
                                 <th>RM</th>
@@ -40,7 +40,7 @@
                         <tbody>
                         @foreach($categories as $category)
                             <tr>
-                                <td width="5%">{{ $loop->iteration }}</td>
+                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
                                 <td width="10%">{{ $category->category_number }}</td>
                                 <td>{{ $category->category_name }}</td>
                                 <td>{{ $category->raw_count }}</td>

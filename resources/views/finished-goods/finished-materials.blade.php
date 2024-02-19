@@ -23,7 +23,7 @@
                     <table id="materials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th width="5%">Sno.</th>
+                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Code</th>
                                 <th>Material Name</th>
                                 <th>Unit</th>
@@ -35,7 +35,7 @@
                         <tbody>
                         @foreach($materials as $material)
                             <tr>
-                                <td width="5%">{{ $loop->iteration }}</td>
+                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
                                 <td width="10%">{{ $material->part_code }}</td>
                                 <td>{{ $material->description }}</td>
                                 <td>{{ $material->uom->uom_text }}</td>
@@ -187,7 +187,7 @@
                                         exportOptions: {
                                             columns: [0, 1, 2, 3, 4]
                                         },
-                                        title: materialDesc + " - BOM List",
+                                        title: materialDesc + " - BOM",
                                     }
                                 ],
                                 

@@ -13,7 +13,7 @@
                     <table id="materials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th width="5%">Sno.</th>
+                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Code</th>
                                 <th>Material Name</th>
                                 <th>Unit</th>
@@ -73,19 +73,19 @@
                     {
                         extend: 'excel',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: [0, 1, 2, 3, 4]
                         }
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: [0, 1, 2, 3, 4]
                         }
                     },
                     {
                         extend: 'print',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: [0, 1, 2, 3, 4]
                         }
                     }
                 ],
@@ -100,7 +100,7 @@
                     }
                 },
                 "columns": [
-                    { "data": "sno", "name": "sno"},
+                    // { "data": "sno", "name": "sno"},
                     { "data": "code", "name": "part_code" },
                     { "data": "material_name", "name": "description" },
                     { "data": "unit", "name": "uom_text" },
@@ -111,10 +111,10 @@
                 "lengthMenu": [10, 25, 50, 75, 100],
                 "searching": true,
                 "ordering": true,
-                "order": [[ 0, "asc" ]],
+                // "order": [[ 0, "asc" ]],
                 "columnDefs": [
                     {
-                        "targets": [6],
+                        "targets": [5],
                         "orderable": false
                     }
                 ],

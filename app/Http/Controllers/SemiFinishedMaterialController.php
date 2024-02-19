@@ -159,7 +159,7 @@ class SemiFinishedMaterialController extends Controller
             'commodity' => $commodity,
             'category' => $category,
             'uom' => $uom,
-            'boms' => $bomRecords,
+            'bomRecords' => $bomRecords,
         ];
         
         // return view('view-semi-material', $context);
@@ -182,12 +182,7 @@ class SemiFinishedMaterialController extends Controller
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
         
-        if ($material->bom) {
-            $boms = $material->bom->with('bomRecords')->get();
-        } else {
-            $boms = null;
-        }
-
+        $bomRecords = $material->bom->bomRecords;
 
         $context = [
             'material' => $material,
@@ -195,7 +190,7 @@ class SemiFinishedMaterialController extends Controller
             'commodity' => $commodity,
             'category' => $category,
             'uom' => $uom,
-            'boms' => $boms,
+            'bomRecords' => $bomRecords,
             'uoms' => $uoms,
             'categories' => $categories,
             'commodities' => $commodities,

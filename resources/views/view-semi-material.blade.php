@@ -92,7 +92,7 @@
     
     <div class="card">
         <div class="card-body">
-            <table class="table table-bordered table-striped" id="boms-table" style="width:100%;">
+            <table class="table table-bordered table-striped table-condensed" id="boms-table" style="width:100%;">
                 <thead>
                     <tr>
                         <th style="width: 5px">#</th>
@@ -102,8 +102,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if($boms)
-                        @foreach($boms as $index => $bomRecord)
+                    @if($bomRecords)
+                        @foreach($bomRecords as $index => $bomRecord)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $bomRecord->material->description }}</td>

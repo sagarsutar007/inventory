@@ -24,7 +24,7 @@
                     <table id="rawmaterials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th width="5%">Sno.</th>
+                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Code</th>
                                 <th>Raw Material Name</th>
                                 <th>Unit</th>
@@ -36,7 +36,7 @@
                         <tbody>
                         @foreach($rawmaterials as $material)
                             <tr>
-                                <td width="5%">{{ $loop->iteration }}</td>
+                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
                                 <td width="10%">{{ $material->part_code }}</td>
                                 <td>{{ $material->description }}</td>
                                 <td>{{ $material->uom->uom_text }}</td>
