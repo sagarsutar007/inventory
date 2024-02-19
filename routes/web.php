@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('app/unit/search', [UomunitController::class, 'search'])->name('uom.search');
     Route::post('app/material-attachment/{attachment}/destroy/', [AttachmentsController::class, 'destroy'])->name('attachment.destroy');
     Route::post('app/material/{material}/export-bom/', [MaterialController::class, 'exportBomRecords'])->name('material.exportBOM');
+    Route::post('app/material/{material}/import-bom/', [MaterialController::class, 'importBomRecords'])->name('material.importBOM');
 
     // Commodity Routes
     Route::prefix('/app/commodities')->group(function () {

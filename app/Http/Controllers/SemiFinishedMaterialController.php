@@ -38,7 +38,7 @@ class SemiFinishedMaterialController extends Controller
         $uom = UomUnit::all();
         $category = Category::all();
         $commodity = Commodity::all();
-        
+
         return view('new-semi-material', compact('uom', 'category', 'commodity'));
     }
 
@@ -61,9 +61,9 @@ class SemiFinishedMaterialController extends Controller
             'quantity.*' => 'nullable|numeric',
         ]);
 
-        
+
         $material = new Material($validatedData);
-        $newPartCode = 'SF'.$this->generatePartCode($validatedData['commodity_id'], $validatedData['category_id']);
+        $newPartCode = 'SF' . $this->generatePartCode($validatedData['commodity_id'], $validatedData['category_id']);
         $material->type = "semi-finished";
         $material->part_code = $newPartCode;
         $material->created_by = Auth::id();
@@ -161,10 +161,10 @@ class SemiFinishedMaterialController extends Controller
             'uom' => $uom,
             'bomRecords' => $bomRecords,
         ];
-        
+
         // return view('view-semi-material', $context);
         $returnHTML = view('view-semi-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     /**
@@ -181,7 +181,7 @@ class SemiFinishedMaterialController extends Controller
         $uom = $material->uom()->first();
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
-        
+
         $bomRecords = $material->bom->bomRecords;
 
         $context = [
@@ -197,7 +197,7 @@ class SemiFinishedMaterialController extends Controller
         ];
 
         $returnHTML = view('edit-semi-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     /**
@@ -221,7 +221,7 @@ class SemiFinishedMaterialController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $material->fill($validatedData);
             $material->updated_by = Auth::id();
             $material->save();
@@ -302,6 +302,18 @@ class SemiFinishedMaterialController extends Controller
 
                 foreach ($rawMaterials as $index => $rawMaterialId) {
                     if (!empty($rawMaterialId)) {
+
+                        if ($material->bom === null) {
+                            // If Bom doesn't exist for the material, create a new one
+                            $bom = new Bom();
+                            $bom->material_id = $material->material_id;
+                            $bom->uom_id = $material->uom->uom_id;
+                            $bom->created_by = Auth::id();
+                            $bom->save();
+                            $material->bom()->associate($bom);
+                            $material->save();
+                        }
+
                         $bomRecord = BomRecord::where('bom_id', $material->bom->bom_id)
                             ->where('material_id', $rawMaterialId)
                             ->first();
@@ -329,7 +341,7 @@ class SemiFinishedMaterialController extends Controller
             } else {
                 $material->bom->bomRecords()->delete();
             }
-            
+
             DB::commit();
             return response()->json(['status' => true, 'message' => 'Semi Finished Material updated successfully'], 200);
         } catch (\Exception $e) {
@@ -344,7 +356,7 @@ class SemiFinishedMaterialController extends Controller
     public function destroy(Material $material)
     {
         try {
-             // Delete related Bom and BomRecord entries
+            // Delete related Bom and BomRecord entries
             $material->bom->each(function ($bom) {
                 $bom->bomRecords->each(function ($bomRecord) {
                     $bomRecord->delete();
@@ -373,24 +385,24 @@ class SemiFinishedMaterialController extends Controller
         $searchTerm = $request->input('q');
 
         $materials = RawMaterial::select('materials.material_id', 'materials.description', 'materials.part_code')
-        ->when(!empty($searchTerm), function ($query) use ($searchTerm) {
-            $query->where(function ($subquery) use ($searchTerm) {
-                $subquery->where('description', 'like', '%' . $searchTerm . '%')
-                    ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
-            });
-        })
-        ->where('type', '=', 'raw')
-        ->whereExists(function ($query) {
-            $query->select(DB::raw(1))
-                ->from('material_purchases')
-                ->whereColumn('material_purchases.material_id', 'materials.material_id');
-        })
-        ->orderBy('description')
-        ->get();
+            ->when(!empty($searchTerm), function ($query) use ($searchTerm) {
+                $query->where(function ($subquery) use ($searchTerm) {
+                    $subquery->where('description', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
+                });
+            })
+            ->where('type', '=', 'raw')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('material_purchases')
+                    ->whereColumn('material_purchases.material_id', 'materials.material_id');
+            })
+            ->orderBy('description')
+            ->get();
         return response()->json($materials);
     }
 
-    private function generatePartCode($commodity_id='', $category_id='')
+    private function generatePartCode($commodity_id = '', $category_id = '')
     {
         if ($commodity_id && $category_id) {
             $commodityCode = str_pad(Commodity::find($commodity_id)->commodity_number, 2, '0', STR_PAD_LEFT);
@@ -401,6 +413,6 @@ class SemiFinishedMaterialController extends Controller
             return $newPartCode;
         }
         return null;
-        
+
     }
 }

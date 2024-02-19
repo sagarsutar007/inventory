@@ -17,7 +17,7 @@
                     <div class="commodity-item-container">
                         <div class="commodity-item d-flex align-items-center">
                             <div class="form-group w-100">
-                                <label for="excel-file">Upload CSV/Excel</label>
+                                <label for="excel-file">Upload Excel</label>
                                 <div class="input-group">
                                     <div class="custom-file">
                                         <input type="file" class="custom-file-input" name="file" id="excel-file" accept=".csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">

@@ -38,7 +38,7 @@ class FinishedMaterialController extends Controller
         $uom = UomUnit::all();
         $category = Category::all();
         $commodity = Commodity::all();
-        
+
         return view('finished-goods.new-finished-material', compact('uom', 'category', 'commodity'));
     }
 
@@ -62,7 +62,7 @@ class FinishedMaterialController extends Controller
             'quantity.*' => 'nullable|numeric',
         ]);
 
-        
+
         $material = new Material($validatedData);
         // $newPartCode = 'FG'.$this->generatePartCode($validatedData['commodity_id'], $validatedData['category_id']);
         $material->type = "finished";
@@ -158,7 +158,7 @@ class FinishedMaterialController extends Controller
 
         if ($existingMaterial) {
             $lastChar = substr($suggestedPartCode, -1);
-            if(is_numeric($lastChar)) {
+            if (is_numeric($lastChar)) {
                 $lastDigit = intval($lastChar);
                 $suggestedPartCode = substr($suggestedPartCode, 0, -1) . ($lastDigit + 1);
             } else {
@@ -194,9 +194,9 @@ class FinishedMaterialController extends Controller
             'uom' => $uom,
             'boms' => $bomRecords,
         ];
-        
+
         $returnHTML = view('finished-goods.view-finished-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     /**
@@ -213,7 +213,11 @@ class FinishedMaterialController extends Controller
         $uom = $material->uom()->first();
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
-        $bomRecords = $material->bom->bomRecords;
+        if ($material->bom) {
+            $bomRecords = $material->bom->bomRecords;
+        } else {
+            $bomRecords = [];
+        }
 
         $context = [
             'material' => $material,
@@ -228,7 +232,7 @@ class FinishedMaterialController extends Controller
         ];
 
         $returnHTML = view('finished-goods.edit-finished-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     /**
@@ -255,7 +259,7 @@ class FinishedMaterialController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $material->fill($validatedData);
             $material->updated_by = Auth::id();
             $material->save();
@@ -333,6 +337,18 @@ class FinishedMaterialController extends Controller
                 if (count($rawMaterials) === count($quantities)) {
                     foreach ($rawMaterials as $index => $rawMaterialId) {
                         if (!empty($rawMaterialId)) {
+
+                            if ($material->bom === null) {
+                                // If Bom doesn't exist for the material, create a new one
+                                $bom = new Bom();
+                                $bom->material_id = $material->material_id;
+                                $bom->uom_id = $material->uom->uom_id;
+                                $bom->created_by = Auth::id();
+                                $bom->save();
+                                $material->bom()->associate($bom);
+                                $material->save();
+                            }
+
                             $bomRecord = BomRecord::where('bom_id', $material->bom->bom_id)
                                 ->where('material_id', $rawMaterialId)
                                 ->first();
@@ -364,7 +380,7 @@ class FinishedMaterialController extends Controller
             } else {
                 $material->bom->bomRecords()->delete();
             }
-            
+
             DB::commit();
             return response()->json(['status' => true, 'message' => 'Finished Material updated successfully'], 200);
         } catch (\Exception $e) {
@@ -401,18 +417,18 @@ class FinishedMaterialController extends Controller
 
         if (empty($searchTerm)) {
             $materials = RawMaterial::select('material_id', 'description', 'part_code')->limit(10)->get();
-        }else {
+        } else {
             $materials = Material::select('material_id', 'description', 'part_code')
-            ->where('description', 'like', '%' . $searchTerm . '%')
-            ->orWhere('part_code', 'like', '%' . $searchTerm . '%')
-            ->whereIn('type', ['raw', 'semi'])
-            ->orderBy('description')
-            ->get();
+                ->where('description', 'like', '%' . $searchTerm . '%')
+                ->orWhere('part_code', 'like', '%' . $searchTerm . '%')
+                ->whereIn('type', ['raw', 'semi'])
+                ->orderBy('description')
+                ->get();
         }
         return response()->json($materials);
     }
 
-    private function generatePartCode($commodity_id='', $category_id='')
+    private function generatePartCode($commodity_id = '', $category_id = '')
     {
         if ($commodity_id && $category_id) {
             $commodityCode = str_pad(Commodity::find($commodity_id)->commodity_number, 2, '0', STR_PAD_LEFT);
