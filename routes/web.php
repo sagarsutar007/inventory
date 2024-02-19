@@ -5,6 +5,7 @@ use App\Http\Controllers\CommodityController;
 use App\Http\Controllers\RawMaterialController;
 use App\Http\Controllers\SemiFinishedMaterialController;
 use App\Http\Controllers\FinishedMaterialController;
+use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\AdminRoleController;
 use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\VendorController;
@@ -42,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('app/unit/store', [UomunitController::class, 'store'])->name('uom.store');
     Route::post('app/unit/search', [UomunitController::class, 'search'])->name('uom.search');
     Route::post('app/material-attachment/{attachment}/destroy/', [AttachmentsController::class, 'destroy'])->name('attachment.destroy');
+    Route::post('app/material/{material}/export-bom/', [MaterialController::class, 'exportBomRecords'])->name('material.exportBOM');
 
     // Commodity Routes
     Route::prefix('/app/commodities')->group(function () {
@@ -129,7 +131,7 @@ Route::middleware(['auth'])->group(function () {
         // Route::post('/{bom}/update', [BOMController::class, 'update'])->name('bom.update');
         Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('wh.destroy');
     });
-    
+
     Route::prefix('/app/roles')->group(function () {
         Route::get('', [AdminRoleController::class, 'index'])->name('roles');
         Route::get('/add', [AdminRoleController::class, 'create'])->name('roles.add');
