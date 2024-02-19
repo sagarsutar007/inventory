@@ -36,12 +36,12 @@
                         @foreach($materials as $material)
                             <tr>
                                 <!-- <td width="5%">{{ $loop->iteration }}</td> -->
-                                <td width="10%">{{ $material->part_code }}</td>
+                                <td width="15%">{{ $material->part_code }}</td>
                                 <td>{{ $material->description }}</td>
                                 <td>{{ $material->uom->uom_text }}</td>
                                 <td>{{ $material->commodity->commodity_name }}</td>
                                 <td>{{ $material->category->category_name }}</td>
-                                <td width="10%">
+                                <td width="15%">
                                     <a href="#" role="button" data-partcode="{{ $material->part_code }}" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
                                         <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
                                     </a> / 
@@ -50,7 +50,9 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this material?')"><i class="fas fa-trash"></i></button>
-                                    </form>
+                                    </form> / 
+                                    <button role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel"></i></button> / 
+                                    <button role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-import"></i></i></button>
                                 </td>
                             </tr>
                         @endforeach
@@ -356,6 +358,44 @@
                         } else {
                             toastr.error(response.message);
                         }
+                    },
+                    error: function(xhr, status, error) {
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
+                    }
+                });
+            });
+
+            $(document).on('click', '.btn-export-bom', function() {
+                var materialId = $(this).data('matid');
+                toastr.options = {
+                    "closeButton": true,
+                    "debug": false,
+                    "newestOnTop": true,
+                    "progressBar": true,
+                    "positionClass": "toast-top-right",
+                    "preventDuplicates": true,
+                    "onclick": null,
+                    "showDuration": "300",
+                    "hideDuration": "1000",
+                    "timeOut": "5000",
+                    "extendedTimeOut": "1000",
+                    "showEasing": "swing",
+                    "hideEasing": "linear",
+                    "showMethod": "fadeIn",
+                    "hideMethod": "fadeOut"
+                }
+                toastr.success("Your download will begin shortly.");
+                $.ajax({
+                    url: '/app/material/' + materialId + '/export-bom',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')            
+                    },
+                    success: function(response) {
+                        var downloadUrl = response.downloadUrl;
+                        window.location.href = downloadUrl;
                     },
                     error: function(xhr, status, error) {
                         var jsonResponse = JSON.parse(xhr.responseText);

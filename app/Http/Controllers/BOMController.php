@@ -89,7 +89,10 @@ class BOMController extends Controller
                     csrf_field() .
                     method_field('DELETE') .
                     '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash"></i></button>' .
-                    '</form>';
+                    '</form> / ' .
+                    '<button role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel"></i></button> / ' .
+                    '<button role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-import"></i></i></button>';
+
 
                 $data[] = [
                     // 'sno' => $index + $start + 1,

@@ -392,12 +392,6 @@
                     success: function(response) {
                         var downloadUrl = response.downloadUrl;
                         window.location.href = downloadUrl;
-                        // var link = document.createElement('a');
-                        // link.href = downloadUrl;
-                        // link.download = 'bom_export.xlsx';
-                        // document.body.appendChild(link);
-                        // link.click();
-                        // document.body.removeChild(link);
                     },
                     error: function(xhr, status, error) {
                         var jsonResponse = JSON.parse(xhr.responseText);
