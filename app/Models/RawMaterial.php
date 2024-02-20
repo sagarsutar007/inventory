@@ -22,6 +22,7 @@ class RawMaterial extends Model
         'type',
         'make',
         'mpn',
+        're_order',
         'opening_balance',
         'additional_notes',
         'commodity_id',

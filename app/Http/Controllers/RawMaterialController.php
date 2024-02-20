@@ -22,11 +22,13 @@ use Excel;
 
 class RawMaterialController extends Controller
 {
-    public function index() {
+    public function index()
+    {
         $rawmaterials = RawMaterial::with('uom', 'commodity', 'category')->where('type', 'raw')->orderBy('created_at', 'desc')->get();
         return view('rawmaterials', compact('rawmaterials'));
     }
-    public function add() {
+    public function add()
+    {
         $uom = UomUnit::all();
         $category = Category::all();
         $commodity = Commodity::all();
@@ -43,14 +45,14 @@ class RawMaterialController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,xls',
         ]);
-        
+
         $file = $request->file('file');
 
-        $import =  new ExcelImportClass('raw-material', Auth::id());
+        $import = new ExcelImportClass('raw-material', Auth::id());
         Excel::import($import, $file);
 
         $importedRows = $import->getImportedCount();
- 
+
         return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
     }
 
@@ -65,6 +67,7 @@ class RawMaterialController extends Controller
             'opening_balance' => 'required',
             'mpn' => 'nullable',
             'make' => 'nullable',
+            're_order' => 'nullable',
             'vendor' => 'nullable|array',
             'vendor.*' => 'nullable|string',
             'price' => 'nullable|array',
@@ -85,7 +88,7 @@ class RawMaterialController extends Controller
 
         // Generate Partcode
         $newPartCode = $this->generatePartCode($validatedData['commodity_id'], $validatedData['category_id']);
-        
+
         $rawMaterial = new RawMaterial($validatedData);
         $rawMaterial->type = "raw";
         $rawMaterial->part_code = $newPartCode;
@@ -135,15 +138,13 @@ class RawMaterialController extends Controller
                     ['vendor_name' => $validatedData['vendor'][$i]],
                     ['vendor_id' => Str::uuid(), 'created_at' => Carbon::now()]
                 );
-                
+
                 MaterialPurchase::create([
                     'material_id' => $rawMaterial->material_id,
                     'vendor_id' => $vendor->vendor_id,
                     'price' => $validatedData['price'][$i],
                 ]);
             }
-            
-            
         }
 
         if ($request->expectsJson()) {
@@ -179,7 +180,7 @@ class RawMaterialController extends Controller
         ];
 
         $returnHTML = view('edit-raw-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     public function show(RawMaterial $material)
@@ -208,7 +209,7 @@ class RawMaterialController extends Controller
         ];
 
         $returnHTML = view('view-raw-material', $context)->render();
-        return response()->json(array('status' => true, 'html'=>$returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
     public function update(Request $request, RawMaterial $material)
@@ -222,6 +223,7 @@ class RawMaterialController extends Controller
             'opening_balance' => 'required',
             'mpn' => 'nullable',
             'make' => 'nullable',
+            're_order' => 'nullable',
             'vendor' => 'nullable|array',
             'vendor.*' => 'nullable|string',
             'price' => 'nullable|array',
@@ -230,7 +232,7 @@ class RawMaterialController extends Controller
 
         try {
             DB::beginTransaction();
-            
+
             $material->fill($validatedData);
             $material->updated_by = Auth::id();
             $material->save();
@@ -302,7 +304,7 @@ class RawMaterialController extends Controller
 
             // Update or insert Vendor records
             $this->updateMaterialVendors($material, $request);
-            
+
             DB::commit();
             return response()->json(['status' => true, 'message' => 'Raw Material updated successfully'], 200);
         } catch (\Exception $e) {
@@ -320,14 +322,14 @@ class RawMaterialController extends Controller
             if (count($vendors) === count($prices)) {
                 try {
                     DB::beginTransaction();
-                    
+
                     $existingMaterialPurchases = MaterialPurchase::where('material_id', $material->material_id)->get();
                     foreach ($existingMaterialPurchases as $existingMaterialPurchase) {
                         if (!in_array($existingMaterialPurchase->vendor_id, $vendors)) {
                             $existingMaterialPurchase->delete();
                         }
                     }
-                    
+
                     foreach ($vendors as $index => $vendor) {
                         if (!empty($vendor)) {
                             $vendorModel = Vendor::firstOrCreate(
@@ -359,7 +361,7 @@ class RawMaterialController extends Controller
 
     }
 
-    private function generatePartCode($commodity_id='', $category_id='')
+    private function generatePartCode($commodity_id = '', $category_id = '')
     {
         if ($commodity_id && $category_id) {
             $commodityCode = str_pad(Commodity::find($commodity_id)->commodity_number, 2, '0', STR_PAD_LEFT);
@@ -374,7 +376,7 @@ class RawMaterialController extends Controller
             return $newPartCode;
         }
         return null;
-        
+
     }
 
     public function destroy(RawMaterial $material)

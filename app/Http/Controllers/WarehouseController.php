@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
+use App\Models\Material;
 use App\Models\Warehouse;
 use App\Models\WarehouseRecord;
 
@@ -71,7 +74,6 @@ class WarehouseController extends Controller
             if ($material) {
 
                 $actionHtml = '<a href="#" role="button" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / ' .
-                    '<a href="#" role="button" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
                     '<form action="' . route("wh.destroy", ["warehouse" => $warehouse->warehouse_id]) . '" method="post" style="display: inline;">' .
                     csrf_field() .
                     method_field('DELETE') .
@@ -79,10 +81,10 @@ class WarehouseController extends Controller
                     '</form>';
 
                 $data[] = [
-                    'sno' => $index + $start + 1,
+                    // 'sno' => $index + $start + 1,
                     'code' => $material->part_code,
                     'material_name' => $material->description,
-                    'quantity' => $material->quantity,
+                    'quantity' => $warehouse->quantity,
                     'unit' => $material->uom->uom_text,
                     'action' => $actionHtml,
                 ];
@@ -108,71 +110,93 @@ class WarehouseController extends Controller
     }
 
     /**
-     * Add issue record in warehouse records
+     * Show the form for issuing the specified resource.
      */
-    public function issue(Request $request)
+    public function transIssue()
     {
-        $validatedData = $request->validate([
-            'material_id' => 'required',
-            'quantity' => 'required|numeric|min:0.001',
-        ]);
-
-        $existingWarehouse = Warehouse::where('material_id', $validatedData['material_id'])->first();
-
-        if ($existingWarehouse) {
-            if ($existingWarehouse->quantity >= $validatedData['quantity']) {
-                $existingWarehouse->quantity -= $validatedData['quantity'];
-                $existingWarehouse->updated_by = Auth::id();
-                $existingWarehouse->save();
-            } else {
-                return response()->json(['status' => false, 'message' => 'Insufficient quantity available']);
-            }
-        } else {
-            return response()->json(['status' => false, 'message' => 'Material record is not available']);
-        }
-
-        $warehouseRecord = new WarehouseRecord();
-        $warehouseRecord->warehouse_id = $existingWarehouse->warehouse_id;
-        $warehouseRecord->warehouse_type = 'issued';
-        $warehouseRecord->quantity = $validatedData['quantity'];
-        $warehouseRecord->save();
-
-        return response()->json(['status' => true, 'message' => 'Material issued successfully']);
+        return view('warehouse.issue');
     }
 
-
     /**
-     * Add receive record in warehouse records
+     * Show the form for issuing the specified resource.
      */
-    public function receive(Request $request)
+    public function transReceive()
+    {
+        return view('warehouse.receive');
+    }
+
+    public function receiveMultiple(Request $request)
     {
         $validatedData = $request->validate([
-            'material_id' => 'required',
-            'quantity' => 'required|numeric|min:0.001',
+            'material_id' => 'required|array',
+            'material_id.*' => 'required|exists:materials,material_id',
+            'quantity' => 'required|array',
+            'quantity.*' => 'required|numeric|min:0.001',
         ]);
 
-        $existingWarehouse = Warehouse::where('material_id', $validatedData['material_id'])->first();
+        $trans_code = $this->generateTransactionId();
 
-        if ($existingWarehouse) {
-            $existingWarehouse->quantity += $validatedData['quantity'];
-            $existingWarehouse->updated_by = Auth::id();
-            $existingWarehouse->save();
-        } else {
-            $warehouse = new Warehouse();
-            $warehouse->material_id = $validatedData['material_id'];
-            $warehouse->quantity = $validatedData['quantity'];
+        foreach ($validatedData['material_id'] as $key => $materialId) {
+            $warehouse = Warehouse::firstOrNew(['material_id' => $materialId]);
+            $warehouse->quantity += $validatedData['quantity'][$key];
+            $warehouse->transaction_id = $trans_code;
             $warehouse->created_by = Auth::id();
+            $warehouse->created_at = Carbon::now();
             $warehouse->save();
+
+            $warehouseRecord = new WarehouseRecord();
+            $warehouseRecord->warehouse_id = $warehouse->warehouse_id;
+            $warehouseRecord->warehouse_type = 'received';
+            $warehouseRecord->quantity = $validatedData['quantity'][$key];
+            $warehouseRecord->created_by = Auth::id();
+            $warehouseRecord->save();
         }
 
-        // Create a new record in the warehouse_records table
-        $warehouseRecord = new WarehouseRecord();
-        $warehouseRecord->warehouse_id = $existingWarehouse ? $existingWarehouse->warehouse_id : $warehouse->warehouse_id;
-        $warehouseRecord->warehouse_type = 'received';
-        $warehouseRecord->quantity = $validatedData['quantity'];
-        $warehouseRecord->save();
+        return redirect()->route('wh')->with('success', 'Material received successfully.');
+    }
 
-        return response()->json(['status' => true, 'message' => 'Material received successfully']);
+    public function issueMultiple(Request $request)
+    {
+        $validatedData = $request->validate([
+            'material_id' => 'required|array',
+            'material_id.*' => 'required|exists:materials,material_id',
+            'quantity' => 'required|array',
+            'quantity.*' => 'required|numeric|min:0.001',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($validatedData['material_id'] as $key => $materialId) {
+                $existingWarehouse = Warehouse::where('material_id', $materialId)->first();
+
+                if ($existingWarehouse) {
+                    if ($existingWarehouse->quantity >= $validatedData['quantity'][$key]) {
+                        $existingWarehouse->quantity -= $validatedData['quantity'][$key];
+                        $existingWarehouse->save();
+                    } else {
+                        $material = Material::find($materialId);
+                        throw new \Exception('Insufficient quantity available for material with partcode ' . $material->part_code);
+                    }
+                } else {
+                    throw new \Exception('Material record with ID ' . $materialId . ' is not available');
+                }
+
+                $warehouseRecord = new WarehouseRecord();
+                $warehouseRecord->warehouse_id = $existingWarehouse->warehouse_id;
+                $warehouseRecord->warehouse_type = 'issued';
+                $warehouseRecord->quantity = $validatedData['quantity'][$key];
+                $warehouseRecord->created_by = Auth::id();
+                $warehouseRecord->save();
+            }
+
+            DB::commit();
+
+            return response()->json(['status' => true, 'message' => "Material Issued Successfully!"], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -197,5 +221,45 @@ class WarehouseController extends Controller
     public function destroy(Warehouse $warehouse)
     {
         //
+    }
+
+    public function generateTransactionId()
+    {
+        $lastTransactionId = Warehouse::max('transaction_id');
+        $newTransactionId = $lastTransactionId + 1;
+        if ($newTransactionId == 0) {
+            $newTransactionId = 1;
+        } elseif ($newTransactionId < 1000000000) {
+            $newTransactionId = str_pad($newTransactionId, 10, '0', STR_PAD_LEFT);
+        }
+        return $newTransactionId;
+    }
+
+    public function getMaterials(Request $request)
+    {
+        $searchTerm = $request->input('q');
+
+        if (empty($searchTerm)) {
+            $materials = Warehouse::with('material')->orderBy('created_at', 'desc')->limit(10)->get();
+        } else {
+            $materials = Warehouse::with('material')
+                ->whereHas('material', function ($query) use ($searchTerm) {
+                    $query->where('description', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
+                })
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        }
+
+        $mappedMaterials = $materials->map(function ($item) {
+            return [
+                'material_id' => $item->material_id,
+                'description' => $item->material->description,
+                'part_code' => $item->material->part_code,
+            ];
+        });
+
+        return response()->json($mappedMaterials);
     }
 }

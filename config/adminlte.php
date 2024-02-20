@@ -372,8 +372,21 @@ return [
         ],
         [
             'text' => 'Warehouse',
-            'url' => 'app/warehouse',
             'icon' => 'fas fa-fw fa-people-carry',
+            'submenu' => [
+                [
+                    'text' => 'Issue',
+                    'url' => 'app/warehouse/issue',
+                ],
+                [
+                    'text' => 'Receive',
+                    'url' => 'app/warehouse/receive',
+                ],
+                [
+                    'text' => 'View Stock',
+                    'url' => 'app/warehouse',
+                ],
+            ],
         ],
         [
             'text' => 'Production Orders',

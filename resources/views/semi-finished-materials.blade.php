@@ -425,7 +425,13 @@
                     },
                     success: function(response) {
                         var downloadUrl = response.downloadUrl;
-                        window.location.href = downloadUrl;
+                        var anchor = document.createElement('a');
+                        anchor.href = downloadUrl;
+                        anchor.style.display = 'none';
+                        anchor.setAttribute('download', '');
+                        document.body.appendChild(anchor);
+                        anchor.click();
+                        document.body.removeChild(anchor);
                     },
                     error: function(xhr, status, error) {
                         var jsonResponse = JSON.parse(xhr.responseText);

@@ -17,7 +17,7 @@
                 <div class="card-body">
                     <div class="raw-material-item-container">
                         <div class="row">
-                            <div class="col-12 col-md-10">
+                            <div class="col-12 col-md-8">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
                                         <input type="text" class="form-control" name="description" placeholder="Enter material name">
@@ -28,6 +28,13 @@
                                 <div class="form-group">
                                     <div class="input-group mb-3">
                                         <input type="number" class="form-control" name="opening_balance" placeholder="Opening Bal.">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <input type="number" class="form-control" name="re_order" placeholder="Re-Order" value="{{ old('re_order') }}">
                                     </div>
                                 </div>
                             </div>

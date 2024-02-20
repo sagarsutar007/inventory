@@ -14,8 +14,8 @@
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div class="dropdown-menu dropdown-menu-right" role="menu">
-                                <a class="dropdown-item" data-toggle="modal" data-target="#modalIssue"><i class="fa fa-minus text-danger"></i> Issue</a>
-                                <a class="dropdown-item" data-toggle="modal" data-target="#modalReceived"><i class="fa fa-plus text-primary"></i> Receive</a>
+                                <a class="dropdown-item" href="{{ route('wh.issue') }}"><i class="fa fa-minus text-danger"></i> Issue</a>
+                                <a class="dropdown-item" href="{{ route('wh.receive') }}"><i class="fa fa-plus text-primary"></i> Receive</a>
                             </div>
                         </div>
                     </div>
@@ -24,7 +24,7 @@
                     <table id="materials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <th width="5%">Sno.</th>
+                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Part Code</th>
                                 <th>Description</th>
                                 <th>Quantity</th>
@@ -39,54 +39,6 @@
             </div>
         </div>
     </div>
-
-    <x-adminlte-modal id="modalIssue" title="Issue material" icon="fas fa-box">
-        <form action="/" id="issue-material-form" method="post" enctype="multipart/form-data">
-            @csrf
-            <div class="row" id="issue-material-modal">
-                <div class="col-12">
-                    <div class="form-group">
-                        <label for="issue-material">Choose Material</label>
-                        <select name="material_id" class="form-control select2" id="issue-material" style="width: 100%;">
-
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="txt-material">Quantity</label>
-                        <input name="quantity" type="number" class="form-control" placeholder="Enter Quantity" step="0.001">
-                    </div>
-                </div>
-            </div>
-            <x-slot name="footerSlot">
-                <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
-                <x-adminlte-button class="btn-sm btn-issue-material" theme="outline-primary" label="Issue"/>
-            </x-slot>
-        </form>
-    </x-adminlte-modal>
-
-    <x-adminlte-modal id="modalReceived" title="Recieve Material" icon="fas fa-box">
-        <form action="/" id="recieve-material-form" method="post" enctype="multipart/form-data">
-            @csrf
-            <div class="row" id="receive-material-modal">
-                <div class="col-12">
-                    <div class="form-group">
-                        <label for="receive-material">Choose Material</label>
-                        <select name="material_id" class="form-control select2" id="receive-material" style="width: 100%;">
-
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="txt-material">Quantity</label>
-                        <input name="quantity" type="number" class="form-control" placeholder="Enter Quantity" step="0.001">
-                    </div>
-                </div>
-            </div>
-            <x-slot name="footerSlot">
-                <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
-                <x-adminlte-button class="btn-sm btn-receive-material" theme="primary" label="Receive"/>
-            </x-slot>
-        </form>
-    </x-adminlte-modal>
 @stop
 
 @section('js')
@@ -102,25 +54,28 @@
                     {
                         extend: 'excel',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
                     },
                     {
                         extend: 'print',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: ':visible:not(.exclude)'
                         }
-                    }
+                    },
+                    'colvis',
                 ],
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
+                "scrollY": "320px",
+                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('wh.getWarehouseRecords') }}",
                     "type": "POST",
@@ -129,7 +84,7 @@
                     }
                 },
                 "columns": [
-                    { "data": "sno", "name": "sno"},
+                    // { "data": "sno", "name": "sno"},
                     { "data": "code", "name": "part_code" },
                     { "data": "material_name", "name": "description" },
                     { "data": "quantity", "name": "quantity" },
@@ -139,10 +94,9 @@
                 "lengthMenu": [10, 25, 50, 75, 100],
                 "searching": true,
                 "ordering": true,
-                "order": [[ 0, "asc" ]],
                 "columnDefs": [
                     {
-                        "targets": [5],
+                        "targets": [4],
                         "orderable": false
                     }
                 ],

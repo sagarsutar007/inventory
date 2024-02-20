@@ -20,21 +20,28 @@
                             <div class="col-12 col-md-3">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
-                                        <input type="text" class="form-control" id="partcode" name="part_code" placeholder="Enter Part Code">
+                                        <input type="text" class="form-control" id="partcode" name="part_code" placeholder="Enter Part Code" value="{{ old('part_code') }}">
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-7">
+                            <div class="col-12 col-md-5">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
-                                        <input type="text" class="form-control" name="description" placeholder="Enter material name">
+                                        <input type="text" class="form-control" name="description" placeholder="Enter material name" value="{{ old('description') }}">
                                     </div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-2">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
-                                        <input type="number" class="form-control" name="opening_balance" placeholder="Opening Bal.">
+                                        <input type="number" class="form-control" name="opening_balance" placeholder="Opening Bal." value="{{ old('opening_balance') }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-2">
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <input type="number" class="form-control" name="re_order" placeholder="Re-Order" value="{{ old('re_order') }}">
                                     </div>
                                 </div>
                             </div>
@@ -58,7 +65,7 @@
                                         <select class="form-control select2" id="uom" name="uom_id">
                                             <option value=""></option>
                                             @foreach($uom as $unit)
-                                            <option value="{{$unit->uom_id}}">{{$unit->uom_text}}</option>
+                                            <option value="{{$unit->uom_id}}" {{ old('uom_id') == $unit->uom_id ? 'selected' : '' }}>{{$unit->uom_text}}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -70,7 +77,7 @@
                                         <select class="form-control" id="commodity" name="commodity_id">
                                             <option value=""></option>
                                             @foreach($commodity as $cmdty)
-                                            <option value="{{$cmdty->commodity_id}}">{{$cmdty->commodity_name}}</option>
+                                            <option value="{{$cmdty->commodity_id}}" {{ old('commodity_id') == $cmdty->commodity_id ? 'selected' : '' }}>{{$cmdty->commodity_name}}</option>
                                             @endforeach 
                                         </select>
                                     </div>
@@ -82,7 +89,7 @@
                                         <select class="form-control" id="category" name="category_id">
                                             <option value=""></option>
                                             @foreach($category as $ctg)
-                                            <option value="{{$ctg->category_id}}">{{$ctg->category_name}}</option>
+                                            <option value="{{$ctg->category_id}}" {{ old('category_id') == $ctg->category_id ? 'selected' : '' }}>{{$ctg->category_name}}</option>
                                             @endforeach  
                                         </select>
                                     </div>
@@ -123,7 +130,7 @@
                         </div>
                         <div class="form-group">
                             <div class="input-group mb-3">
-                                <textarea class="form-control" name="additional_notes" placeholder="Additional notes"></textarea>
+                                <textarea class="form-control" name="additional_notes" placeholder="Additional notes">{{ old('additional_notes') }}</textarea>
                             </div>
                         </div>
                         <h6>Bill of Material</h6>

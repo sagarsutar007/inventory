@@ -15,14 +15,15 @@ class Warehouse extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'warehouse_id',
-        'part_code',
+        'material_id',
+        'transaction_id',
         'quantity',
         'created_by',
-        'updated_by',
         'created_at',
-        'updated_at'
     ];
 
     public function material()

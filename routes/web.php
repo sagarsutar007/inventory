@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('app/material-attachment/{attachment}/destroy/', [AttachmentsController::class, 'destroy'])->name('attachment.destroy');
     Route::post('app/material/{material}/export-bom/', [MaterialController::class, 'exportBomRecords'])->name('material.exportBOM');
     Route::post('app/material/{material}/import-bom/', [MaterialController::class, 'importBomRecords'])->name('material.importBOM');
+    Route::post('app/material/get-all-materials', [MaterialController::class, 'getMaterials'])->name('materials.get');
 
     // Commodity Routes
     Route::prefix('/app/commodities')->group(function () {
@@ -127,10 +128,13 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('/app/warehouse')->group(function () {
         Route::get('', [WarehouseController::class, 'index'])->name('wh');
         Route::post('/get-records', [WarehouseController::class, 'fetchRecords'])->name('wh.getWarehouseRecords');
-        Route::post('/issue', [WarehouseController::class, 'issue'])->name('wh.issue');
-        Route::post('/receive', [WarehouseController::class, 'receive'])->name('wh.receive');
+        Route::get('/issue', [WarehouseController::class, 'transIssue'])->name('wh.transIssue');
+        Route::get('/receive', [WarehouseController::class, 'transReceive'])->name('wh.receiveMultiple');
+        Route::post('/issue', [WarehouseController::class, 'issueMultiple'])->name('wh.issue');
+        Route::post('/receive', [WarehouseController::class, 'receiveMultiple'])->name('wh.receive');
         // Route::post('/{bom}/update', [BOMController::class, 'update'])->name('bom.update');
         Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('wh.destroy');
+        Route::post('/get-all-materials', [WarehouseController::class, 'getMaterials'])->name('wh.getMaterials');
     });
 
     Route::prefix('/app/roles')->group(function () {

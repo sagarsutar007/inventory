@@ -31,17 +31,30 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-6">
-                                <div class="form-group">
-                                    <div class="input-group mb-3">
-                                        <input type="text" class="form-control" name="make" placeholder="Make" value="{{ old('make') }}">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <div class="input-group mb-3">
+                                                <input type="text" class="form-control" name="make" placeholder="Make" value="{{ old('make') }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-group">
+                                            <div class="input-group mb-3">
+                                                <input type="text" class="form-control" name="mpn" placeholder="MPN" value="{{ old('mpn') }}">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-6">
+                            <div class="col-12 col-md-3">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
-                                        <input type="text" class="form-control" name="mpn" placeholder="MPN" value="{{ old('mpn') }}">
+                                        <input type="number" class="form-control" name="re_order" placeholder="Re-Order" value="{{ old('re_order') }}">
                                     </div>
                                 </div>
                             </div>

@@ -20,7 +20,7 @@ class MaterialController extends Controller
         $description = str_replace(['/', '\\'], ['_', '_'], $material->description);
         $fileName = $partCode . '_' . $description . '_BOM.xlsx';
 
-        $export = new BomRecordExport($materialId);
+        $export = new BomRecordExport($materialId, $material->description, $material->uom->uom_text);
 
         try {
             $tempFilePath = 'exports/' . $fileName;
@@ -66,6 +66,22 @@ class MaterialController extends Controller
         //     Log::error('Error importing file: ' . $e->getMessage());
         //     return response()->json(['status' => false, 'error' => 'Failed to import BOM records.']);
         // }
+    }
+
+    public function getMaterials(Request $request)
+    {
+        $searchTerm = $request->input('q');
+
+        if (empty($searchTerm)) {
+            $materials = Material::select('material_id', 'description', 'part_code')->orderBy('created_at', 'desc')->limit(10)->get();
+        } else {
+            $materials = Material::select('material_id', 'description', 'part_code')
+                ->where('description', 'like', '%' . $searchTerm . '%')
+                ->orWhere('part_code', 'like', '%' . $searchTerm . '%')
+                ->orderBy('description')
+                ->get();
+        }
+        return response()->json($materials);
     }
 
 }
