@@ -19,6 +19,7 @@ class WarehouseRecord extends Model
     protected $fillable = [
         'warehouse_record_id',
         'warehouse_id',
+        'material_id',
         'warehouse_type',
         'quantity',
         'created_at'
@@ -27,5 +28,10 @@ class WarehouseRecord extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id', 'warehouse_id');
+    }
+
+    public function material()
+    {
+        return $this->belongsTo(Material::class, 'material_id', 'material_id');
     }
 }

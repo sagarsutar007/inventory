@@ -73,15 +73,38 @@ class MaterialController extends Controller
         $searchTerm = $request->input('q');
 
         if (empty($searchTerm)) {
-            $materials = Material::select('material_id', 'description', 'part_code')->orderBy('created_at', 'desc')->limit(10)->get();
+            $materials = Material::with('uom')
+                ->select('material_id', 'description', 'part_code')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
         } else {
-            $materials = Material::select('material_id', 'description', 'part_code')
+            $materials = Material::with('uom')
+                ->select('material_id', 'description', 'part_code')
                 ->where('description', 'like', '%' . $searchTerm . '%')
                 ->orWhere('part_code', 'like', '%' . $searchTerm . '%')
                 ->orderBy('description')
                 ->get();
         }
         return response()->json($materials);
+    }
+
+    public function getMaterialDetails(Request $request)
+    {
+        $searchTerm = $request->input('part_code');
+
+        $material = Material::with('uom')
+            ->where('part_code', '=', $searchTerm)
+            ->first();
+
+        if ($material) {
+            // Material found, return success response with material details
+            return response()->json(['success' => true, 'data' => $material]);
+        } else {
+            // Material not found, return error response
+            \Log::error('Material not found for part code: ' . $searchTerm);
+            return response()->json(['success' => false, 'error' => 'Material not found'], 404);
+        }
     }
 
 }

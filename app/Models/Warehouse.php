@@ -46,6 +46,11 @@ class Warehouse extends Model
         return $this->belongsTo(User::class, 'updated_by', 'id');
     }
 
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class, 'vendor_id', 'vendor_id');
+    }
+
     public function records()
     {
         return $this->hasMany(WarehouseRecord::class, 'warehouse_id', 'warehouse_id');

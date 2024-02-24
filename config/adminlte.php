@@ -386,6 +386,10 @@ return [
                     'text' => 'View Stock',
                     'url' => 'app/warehouse',
                 ],
+                [
+                    'text' => 'View Transactions',
+                    'url' => 'app/warehouse/transactions',
+                ],
             ],
         ],
         [

@@ -11,7 +11,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('materials', function (Blueprint $table) {
-            $table->decimal('re_order', 10, 3)->after('opening_balance')->nullable();
+            //If exists skip    
+            if (!Schema::hasColumn('materials', 're_order')) {
+                $table->decimal('re_order', 10, 3)->after('opening_balance')->nullable();
+            }
         });
     }
 

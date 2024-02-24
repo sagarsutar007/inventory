@@ -153,7 +153,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                                 'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number),
                                 'description' => $data[4],
                                 'uom_id' => $uom->uom_id ?? '',
-                                'opening_balance' => 0,
+                                // 'opening_balance' => 0,
                                 'additional_notes' => '',
                                 'type' => 'raw',
                                 'mpn' => $data[5],

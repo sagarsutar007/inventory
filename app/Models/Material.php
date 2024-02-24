@@ -22,7 +22,7 @@ class Material extends Model
         'type',
         'make',
         'mpn',
-        'opening_balance',
+        // 'opening_balance',
         're_order',
         'additional_notes',
         'commodity_id',

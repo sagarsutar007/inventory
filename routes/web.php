@@ -46,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('app/material/{material}/export-bom/', [MaterialController::class, 'exportBomRecords'])->name('material.exportBOM');
     Route::post('app/material/{material}/import-bom/', [MaterialController::class, 'importBomRecords'])->name('material.importBOM');
     Route::post('app/material/get-all-materials', [MaterialController::class, 'getMaterials'])->name('materials.get');
+    Route::post('app/material/get-details', [MaterialController::class, 'getMaterialDetails'])->name('material.getDetails');
 
     // Commodity Routes
     Route::prefix('/app/commodities')->group(function () {
@@ -127,12 +128,16 @@ Route::middleware(['auth'])->group(function () {
     // Warehouse Routes
     Route::prefix('/app/warehouse')->group(function () {
         Route::get('', [WarehouseController::class, 'index'])->name('wh');
+        Route::get('/transactions', [WarehouseController::class, 'transactions'])->name('wh.transactions');
         Route::post('/get-records', [WarehouseController::class, 'fetchRecords'])->name('wh.getWarehouseRecords');
+        Route::post('/get-transactions', [WarehouseController::class, 'fetchTransactions'])->name('wh.getWarehouseTransactions');
         Route::get('/issue', [WarehouseController::class, 'transIssue'])->name('wh.transIssue');
-        Route::get('/receive', [WarehouseController::class, 'transReceive'])->name('wh.receiveMultiple');
+        Route::get('/receive', [WarehouseController::class, 'transReceive'])->name('wh.transReceive');
         Route::post('/issue', [WarehouseController::class, 'issueMultiple'])->name('wh.issue');
         Route::post('/receive', [WarehouseController::class, 'receiveMultiple'])->name('wh.receive');
-        // Route::post('/{bom}/update', [BOMController::class, 'update'])->name('bom.update');
+        Route::get('/{warehouse}/editReceipt', [WarehouseController::class, 'editReceipt'])->name('wh.editReceipt');
+        Route::get('/{warehouse}/editIssue', [WarehouseController::class, 'editIssue'])->name('wh.editIssue');
+        Route::post('/{warehouse}/update', [WarehouseController::class, 'update'])->name('wh.update');
         Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('wh.destroy');
         Route::post('/get-all-materials', [WarehouseController::class, 'getMaterials'])->name('wh.getMaterials');
     });

@@ -9,6 +9,8 @@ use App\Models\MaterialAttachments;
 use App\Models\MaterialPurchase;
 use App\Models\UomUnit;
 use App\Models\Vendor;
+use App\Models\Stock;
+
 use App\Imports\ExcelImportClass;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -146,6 +148,16 @@ class RawMaterialController extends Controller
                 ]);
             }
         }
+
+        //Insert data in stocks table
+        $stock = new Stock;
+        $stock->material_id = $rawMaterial->material_id;
+        $stock->opening_balance = $validatedData['opening_balance'];
+        $stock->receipt_qty = 0;
+        $stock->issue_qty = 0;
+        $stock->created_by = Auth::id();
+        $stock->created_at = Carbon::now();
+        $stock->save();
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Raw material added successfully.'], 200);
@@ -304,6 +316,27 @@ class RawMaterialController extends Controller
 
             // Update or insert Vendor records
             $this->updateMaterialVendors($material, $request);
+
+            //Update or Insert Stock records
+            $stock = Stock::where('material_id', $material->material_id)->first();
+
+            if ($stock) {
+                // Stock record exists, update it
+                $stock->opening_balance = $validatedData['opening_balance'];
+                $stock->updated_by = Auth::id();
+                $stock->updated_at = Carbon::now();
+                $stock->save();
+            } else {
+                // Stock record does not exist, insert a new one
+                $stock = new Stock;
+                $stock->material_id = $material->material_id;
+                $stock->opening_balance = $validatedData['opening_balance'];
+                $stock->receipt_qty = 0;
+                $stock->issue_qty = 0;
+                $stock->created_by = Auth::id();
+                $stock->created_at = Carbon::now();
+                $stock->save();
+            }
 
             DB::commit();
             return response()->json(['status' => true, 'message' => 'Raw Material updated successfully'], 200);

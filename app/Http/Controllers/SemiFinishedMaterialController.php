@@ -18,6 +18,7 @@ use App\Models\MaterialPurchase;
 use App\Models\UomUnit;
 use App\Models\Bom;
 use App\Models\BomRecord;
+use App\Models\Stock;
 
 class SemiFinishedMaterialController extends Controller
 {
@@ -134,6 +135,15 @@ class SemiFinishedMaterialController extends Controller
                 }
             }
         }
+
+        $stock = new Stock;
+        $stock->material_id = $material->material_id;
+        $stock->opening_balance = $validatedData['opening_balance'];
+        $stock->receipt_qty = 0;
+        $stock->issue_qty = 0;
+        $stock->created_by = Auth::id();
+        $stock->created_at = Carbon::now();
+        $stock->save();
 
         return redirect()->route('semi')->with('success', 'Material added successfully.');
     }
@@ -342,6 +352,27 @@ class SemiFinishedMaterialController extends Controller
                 }
             } else {
                 $material->bom->bomRecords()->delete();
+            }
+
+            //Update or Insert Stock records
+            $stock = Stock::where('material_id', $material->material_id)->first();
+
+            if ($stock) {
+                // Stock record exists, update it
+                $stock->opening_balance = $validatedData['opening_balance'];
+                $stock->updated_by = Auth::id();
+                $stock->updated_at = Carbon::now();
+                $stock->save();
+            } else {
+                // Stock record does not exist, insert a new one
+                $stock = new Stock;
+                $stock->material_id = $material->material_id;
+                $stock->opening_balance = $validatedData['opening_balance'];
+                $stock->receipt_qty = 0;
+                $stock->issue_qty = 0;
+                $stock->created_by = Auth::id();
+                $stock->created_at = Carbon::now();
+                $stock->save();
             }
 
             DB::commit();

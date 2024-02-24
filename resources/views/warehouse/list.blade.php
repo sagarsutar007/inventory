@@ -27,9 +27,11 @@
                                 <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Part Code</th>
                                 <th>Description</th>
-                                <th>Quantity</th>
                                 <th>Unit</th>
-                                <th>Action</th>
+                                <th>Opening</th>
+                                <th>Receipt</th>
+                                <th>Issue</th>
+                                <th>Closing</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,9 +89,12 @@
                     // { "data": "sno", "name": "sno"},
                     { "data": "code", "name": "part_code" },
                     { "data": "material_name", "name": "description" },
-                    { "data": "quantity", "name": "quantity" },
                     { "data": "unit", "name": "uom_text" },
-                    { "data": "action" },
+                    { "data": "opening_balance", "name": "opening_balance" },
+                    { "data": "receipt_qty", "name": "receipt_qty" },
+                    { "data": "issue_qty", "name": "issue_qty" },
+                    { "data": "closing_balance", "name": "closing_balance" },
+                    // { "data": "action" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
                 "searching": true,
