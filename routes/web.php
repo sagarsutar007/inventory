@@ -137,6 +137,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/receive', [WarehouseController::class, 'receiveMultiple'])->name('wh.receive');
         Route::get('/{warehouse}/editReceipt', [WarehouseController::class, 'editReceipt'])->name('wh.editReceipt');
         Route::get('/{warehouse}/editIssue', [WarehouseController::class, 'editIssue'])->name('wh.editIssue');
+        Route::get('/{warehouse}/viewTransaction', [WarehouseController::class, 'viewTransaction'])->name('wh.viewTransaction');
         Route::post('/{warehouse}/update', [WarehouseController::class, 'update'])->name('wh.update');
         Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('wh.destroy');
         Route::post('/get-all-materials', [WarehouseController::class, 'getMaterials'])->name('wh.getMaterials');

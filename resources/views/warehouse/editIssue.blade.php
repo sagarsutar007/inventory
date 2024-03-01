@@ -1,5 +1,6 @@
 <form action="{{ route('wh.update', ['warehouse' => $warehouse->warehouse_id]) }}" id="update-form" method="post">
     @csrf
+    <input type="hidden" id="form-type" value="issue">
     <div class="row">
         <div class="col-md-5">
             <div class="form-group">
@@ -33,20 +34,20 @@
                     <div class="row">
                         <div class="col-md-2">
                             <div class="form-group">
-                                <input type="text" name="part_code[]" class="form-control suggest-partcode" value="{{ $record->material->part_code }}" placeholder="Partcode">
+                                <input type="text" name="part_code[]" class="form-control suggest-partcode" value="{{ $record->material->part_code }}" placeholder="Partcode" readonly>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <div class="form-group">
                                 <input type="text" class="form-control material-name" value="{{ $record->material->description }}" placeholder="Material name" disabled>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <input type="text" class="form-control material-unit" value="{{ $record->material->uom->uom_text }}" placeholder="Unit" disabled>
+                                <input type="text" class="form-control material-unit" value="{{ $record->material->uom->uom_shortcode }}" placeholder="Unit" disabled>
                             </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <div class="input-group">
                                 <input name="quantity[]" required type="number" class="form-control" placeholder="Qty." step="0.001" value="{{ $record->quantity }}">
                                 <div class="input-group-append">

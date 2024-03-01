@@ -37,3 +37,8 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
   top: 60px;
   left: 0;
 }
+
+.validation-error {
+  font-size: 12px;
+  margin-bottom: 5px;
+}

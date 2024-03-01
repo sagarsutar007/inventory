@@ -12,10 +12,9 @@ return new class extends Migration {
     {
         Schema::create('stocks', function (Blueprint $table) {
             $table->uuid('stock_id')->primary()->unique();
-            $table->decimal('opening_balance', 7, 2);
-            $table->decimal('receipt_qty', 7, 2);
-            $table->decimal('issue_qty', 7, 2);
-            $table->decimal('closing_balance', 7, 2);
+            $table->decimal('opening_balance', 10, 3);
+            $table->decimal('receipt_qty', 10, 3);
+            $table->decimal('issue_qty', 10, 3);
             $table->uuid('material_id');
             $table->uuid('created_by');
             $table->uuid('updated_by')->nullable();
@@ -24,6 +23,8 @@ return new class extends Migration {
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null')->onUpdate('cascade');
             $table->timestamps();
         });
+
+        DB::statement('ALTER TABLE stocks ADD COLUMN closing_balance DEC(10,2) GENERATED ALWAYS AS (opening_balance+receipt_qty-issue_qty) STORED');
     }
 
     /**

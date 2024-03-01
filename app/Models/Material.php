@@ -60,4 +60,9 @@ class Material extends Model
     {
         return $this->belongsTo(Bom::class, 'material_id', 'material_id');
     }
+
+    public function stock()
+    {
+        return $this->belongsTo(Stock::class, 'material_id', 'material_id');
+    }
 }

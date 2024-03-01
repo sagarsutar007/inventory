@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('warehouse', function (Blueprint $table) {
             $table->uuid('warehouse_id')->primary()->unique();
             $table->string('transaction_id', 20)->unique();
-            $table->string('popn', 20)->unique();
+            $table->string('popn', 20)->nullable();
             $table->enum('type', ['issue', 'receive', 'none'])->default('none')->nullable();
             // $table->uuid('stock_id')->nullable();
             $table->uuid('vendor_id')->nullable();

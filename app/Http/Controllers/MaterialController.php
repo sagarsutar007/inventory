@@ -93,7 +93,7 @@ class MaterialController extends Controller
     {
         $searchTerm = $request->input('part_code');
 
-        $material = Material::with('uom')
+        $material = Material::with('uom', 'stock')
             ->where('part_code', '=', $searchTerm)
             ->first();
 

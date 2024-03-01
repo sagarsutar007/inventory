@@ -77,13 +77,6 @@ class WarehouseController extends Controller
         foreach ($warehouses as $index => $warehouse) {
             $material = $warehouse->material;
             if ($material) {
-                $actionHtml = '<a href="#" data-warehouseid="' . $warehouse->stock_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / ' .
-                    '<a href="#" data-warehouseid="' . $warehouse->stock_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
-                    '<form action="' . route("wh.destroy", ["warehouse" => $warehouse->stock_id]) . '" method="post" style="display: inline;">' .
-                    csrf_field() .
-                    method_field('DELETE') .
-                    '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>' .
-                    '</form>';
 
                 $data[] = [
                     // 'sno' => $index + $start + 1,
@@ -94,7 +87,6 @@ class WarehouseController extends Controller
                     'receipt_qty' => $warehouse->receipt_qty,
                     'issue_qty' => $warehouse->issue_qty,
                     'closing_balance' => $warehouse->closing_balance,
-                    // 'action' => $actionHtml,
                 ];
             }
         }
@@ -155,13 +147,8 @@ class WarehouseController extends Controller
         $warehouses = $whQuery->items();
         $data = [];
         foreach ($warehouses as $index => $warehouse) {
-            $actionHtml = '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / ' .
-                '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
-                '<form action="' . route("wh.destroy", ["warehouse" => $warehouse->warehouse_id]) . '" method="post" style="display: inline;">' .
-                csrf_field() .
-                method_field('DELETE') .
-                '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>' .
-                '</form>';
+            $actionHtml = '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" data-transactionid="' . $warehouse->transaction_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / ' .
+                '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
 
             $data[] = [
                 // 'sno' => $index + $start + 1,
@@ -169,6 +156,7 @@ class WarehouseController extends Controller
                 'vendor' => $warehouse->vendor->vendor_name ?? 'Not Available',
                 'popn' => $warehouse->popn,
                 'type' => ucfirst($warehouse->type),
+                'date' => date('d-m-Y', strtotime($warehouse->date)),
                 'action' => $actionHtml,
             ];
         }
@@ -204,9 +192,9 @@ class WarehouseController extends Controller
     public function receiveMultiple(Request $request)
     {
         $validatedData = $request->validate([
-            'vendor' => 'required|exists:vendors,vendor_id',
+            'vendor' => 'nullable|exists:vendors,vendor_id',
             'date' => 'required',
-            'popn' => 'required',
+            'popn' => 'nullable',
             'part_code' => 'required|array',
             'part_code.*' => 'required|exists:materials,part_code',
             'quantity' => 'required|array',
@@ -265,15 +253,14 @@ class WarehouseController extends Controller
     public function issueMultiple(Request $request)
     {
         $validatedData = $request->validate([
-            'vendor' => 'required|exists:vendors,vendor_id',
+            'vendor' => 'nullable|exists:vendors,vendor_id',
             'date' => 'required',
-            'popn' => 'required',
+            'popn' => 'nullable',
             'part_code' => 'required|array',
             'part_code.*' => 'required|exists:materials,part_code',
             'quantity' => 'required|array',
             'quantity.*' => 'required|numeric|min:0.001',
         ]);
-
 
         try {
             DB::beginTransaction();
@@ -350,6 +337,19 @@ class WarehouseController extends Controller
         return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
+    public function viewTransaction(Warehouse $warehouse)
+    {
+        // Get all records of this warehouse issue
+        $records = WarehouseRecord::where('warehouse_id', '=', $warehouse->warehouse_id)->get();
+        $context = [
+            'title' => ($warehouse->type == "issue") ? 'Material Issue Voucher(Manual)' : 'Material Reciept Voucher',
+            'warehouse' => $warehouse,
+            'records' => $records
+        ];
+        $returnHTML = view('warehouse.viewModalForm', $context)->render();
+        return response()->json(array('status' => true, 'html' => $returnHTML));
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -358,7 +358,7 @@ class WarehouseController extends Controller
         $validatedData = $request->validate([
             'vendor' => 'required|exists:vendors,vendor_id',
             'date' => 'required',
-            'popn' => 'required',
+            'popn' => ($warehouse->type == 'issue') ? 'nullable' : 'required',
             'part_code' => 'required|array',
             'part_code.*' => 'required|exists:materials,part_code',
             'quantity' => 'required|array',
@@ -376,27 +376,51 @@ class WarehouseController extends Controller
             $warehouse->updated_at = Carbon::now();
             $warehouse->save();
 
+            $existingRecords = WarehouseRecord::where('warehouse_id', $warehouse->warehouse_id)->get();
+            $existingPartCodes = $existingRecords->map(function ($record) {
+                return $record->material->part_code;
+            })->toArray();
+
+            $partCodesToRemove = array_diff($existingPartCodes, $validatedData['part_code']);
+
+            foreach ($partCodesToRemove as $partCodeToRemove) {
+                $recordToDelete = WarehouseRecord::where('warehouse_id', $warehouse->warehouse_id)
+                    ->whereHas('material', function ($query) use ($partCodeToRemove) {
+                        $query->where('part_code', $partCodeToRemove);
+                    })
+                    ->first();
+
+                if ($recordToDelete) {
+                    $stock = Stock::where('material_id', $recordToDelete->material_id)->first();
+                    if ($stock) {
+                        if ($warehouse->type == 'issue') {
+                            $stock->issue_qty -= $recordToDelete->quantity;
+                        } else {
+                            $stock->receipt_qty -= $recordToDelete->quantity;
+                        }
+                        $stock->save();
+                    }
+                    $recordToDelete->delete();
+                }
+            }
+
+            if ($warehouse->type == 'issue') {
+                $warehouse_type = 'issued';
+            } else {
+                $warehouse_type = 'received';
+            }
+
             foreach ($validatedData['part_code'] as $key => $materialId) {
                 $material = Material::where('part_code', $materialId)->first();
-                // Check if a warehouse record already exists for the given warehouse and material
+
                 $warehouseRecord = WarehouseRecord::where('warehouse_id', $warehouse->warehouse_id)
                     ->where('material_id', $material->material_id)
                     ->first();
-
                 if ($warehouseRecord) {
-                    if ($warehouse->type == 'issue') {
-                        $warehouse_type = 'issued';
-                    } else {
-                        $warehouse_type = 'received';
-                    }
-
                     $prevQty = $warehouseRecord->quantity;
-
                     $warehouseRecord->quantity = $validatedData['quantity'][$key];
                     $warehouseRecord->updated_by = Auth::id();
                     $warehouseRecord->save();
-
-
                 } else {
                     // Create a new warehouse record
                     $prevQty = 0;
@@ -435,7 +459,18 @@ class WarehouseController extends Controller
                     $stock->updated_by = Auth::id();
                     $stock->save();
                 } else {
-                    //add new record
+                    $stock = new Stock();
+                    $stock->material_id = $material->material_id;
+                    $stock->issue_qty = 0;
+                    $stock->receipt_qty = 0;
+                    $stock->opening_balance = 0;
+                    if ($warehouse->type == 'issue') {
+                        $stock->issue_qty = $validatedData['quantity'][$key];
+                    } else {
+                        $stock->receipt_qty = $validatedData['quantity'][$key];
+                    }
+                    $stock->created_by = Auth::id();
+                    $stock->save();
                 }
             }
 
@@ -471,9 +506,31 @@ class WarehouseController extends Controller
     public function getMaterials(Request $request)
     {
         $term = $request->input('term');
-        $materials = Material::where('part_code', 'like', '%' . $term . '%')
-            ->orderBy('created_at', 'asc')
-            ->pluck('part_code');
-        return response()->json($materials);
+        $existingPartCodes = $request->input('existingPartCodes', []);
+
+        $existingPartCodes = array_filter($existingPartCodes, function ($value) {
+            return $value !== null;
+        });
+
+        $materials = Material::with('uom', 'stock')
+            ->whereNotIn('part_code', $existingPartCodes)
+            ->where(function ($query) use ($term) {
+                $query->where('part_code', 'like', '%' . $term . '%')
+                    ->orWhere('description', 'like', '%' . $term . '%');
+            })
+            ->limit(20)
+            ->orderBy('part_code', 'asc')
+            ->get();
+
+        $formattedMaterials = $materials->map(function ($material) {
+            return [
+                'value' => $material->part_code,
+                'unit' => $material->uom->uom_shortcode,
+                'closing_balance' => $material->stock?->closing_balance ?? 0,
+                'desc' => $material->description,
+            ];
+        });
+
+        return response()->json($formattedMaterials);
     }
 }

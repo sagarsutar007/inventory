@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="row">
-        <div class="col-md-8 mx-auto">
+        <div class="col-md-9 mx-auto">
             <form id="issueForm" action="{{ route('wh.issue') }}" method="post" autocomplete="off" enctype="multipart/form-data">
             @csrf
             <div class="card mt-3">
@@ -19,24 +19,25 @@
                         <div class="col-md-5">
                             <div class="form-group">
                                 <label for="vendor">Vendor</label>
-                                <select name="vendor" id="vendor" class="form-control select2" style="width: 100%;">
+                                <select name="vendor" id="vendor" class="form-control select2" style="width: 100%;" required>
                                     <option value=""></option>
                                     @foreach ($vendors as $vendor)
                                         <option value="{{ $vendor->vendor_id  }}"> {{ $vendor->vendor_name }} </option>
                                     @endforeach
                                 </select>
+                                <div id="err-vendor"></div>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="date">PO number:</label><br />
-                                <input type="text" name="popn" class="form-control" placeholder="Enter PO Number" value="">
+                                <label for="ponum">PO number:</label><br />
+                                <input type="text" id="ponum" name="popn" class="form-control" placeholder="Enter PO Number" value="">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="date">Issue Date: *</label><br />
-                                <input type="text" name="date" class="form-control" placeholder="Enter Date" value="{{ date('d-m-Y') }}" readonly required>
+                                <input type="text" id="date" name="date" class="form-control" placeholder="Enter Date" value="{{ date('d-m-Y') }}" readonly required>
                             </div>
                         </div>
                     </div>
@@ -46,10 +47,10 @@
                             <div class="row">
                                 <div class="col-md-2">
                                     <div class="form-group">
-                                        <input type="text" name="part_code[]" class="form-control suggest-partcode" placeholder="Partcode">
+                                        <input type="text" name="part_code[]" class="form-control suggest-partcode" placeholder="Partcode" required>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-5">
                                     <div class="form-group">
                                         <input type="text" class="form-control material-name" placeholder="Material name" disabled>
                                     </div>
@@ -59,9 +60,9 @@
                                         <input type="text" class="form-control material-unit" placeholder="Unit" disabled>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <div class="input-group">
-                                        <input name="quantity[]" required type="number" class="form-control" placeholder="Qty." step="0.001">
+                                        <input name="quantity[]" type="number" class="form-control quantity" placeholder="Qty." step="0.001"> 
                                         <div class="input-group-append">
                                             <span class="input-group-text"><i class="fas fa-times remove-material-quantity-item"></i></span>
                                         </div>
@@ -72,9 +73,9 @@
                     </div>
                 </div>
                 <div class="card-footer text-right">
-                    <button type="button" class="btn btn-outline-secondary add-material-quantity-item"><i class="fas fa-fw fa-plus"></i> New</button>
-                    <a href="{{ route('wh') }}" class="btn btn-outline-danger"><i class="fas fa-fw fa-times"></i> Cancel</a>
-                    <button id="submitForm" type="button" class="btn btn-outline-primary"><i class="fas fa-fw fa-check"></i> Submit</button>
+                    <button type="button" class="btn btn-secondary add-material-quantity-item"><i class="fas fa-fw fa-plus"></i> Add Item </button>
+                    <a href="{{ route('wh.issue') }}" class="btn btn-danger btn-spinner"><i class="fas fa-fw fa-times"></i> Cancel</a>
+                    <button id="submitForm" type="button" class="btn btn-primary"><i class="fas fa-fw fa-check"></i> Submit</button>
                 </div>
             </div>
             </form>
@@ -91,8 +92,12 @@
                 placeholder: 'Select Vendor',
                 theme: 'bootstrap4',
             });
-            // Function to add a new category item
+            
             $(".add-material-quantity-item").click(function () {
+                addMaterialQuantityItem();
+            });
+            
+            function addMaterialQuantityItem() {
                 var newItem = `
                     <div class="material-with-quantity">
                         <div class="row">
@@ -101,7 +106,7 @@
                                     <input type="text" name="part_code[]" class="form-control suggest-partcode" placeholder="Partcode">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <div class="form-group">
                                     <input type="text" class="form-control material-name" placeholder="Material name" disabled>
                                 </div>
@@ -111,9 +116,9 @@
                                     <input type="text" class="form-control material-unit" placeholder="Unit" disabled>
                                 </div>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <div class="input-group">
-                                    <input name="quantity[]" required type="number" class="form-control" placeholder="Qty." step="0.001">
+                                    <input name="quantity[]" type="number" class="form-control quantity" placeholder="Qty." step="0.001">
                                     <div class="input-group-append">
                                         <span class="input-group-text"><i class="fas fa-times remove-material-quantity-item"></i></span>
                                     </div>
@@ -127,34 +132,87 @@
 
                 // Initialize autocomplete for the newly added item
                 initializeAutocomplete($newItem.find(".suggest-partcode"));
-            });
+            }
+            
+            function handleShortcutKey(event) {
+                if (event.shiftKey && event.key === 'N') {
+                    event.preventDefault();
+                    addMaterialQuantityItem();
+                }
+            }
+
+            $(document).on('keydown', handleShortcutKey);
 
             function initializeAutocomplete(element) {
                 element.autocomplete({
                     source: function (request, response) {
+                        var existingPartCodes = $('.suggest-partcode').map(function() {
+                            return request.term != this.value ? this.value : null;
+                        }).get();
+
                         $.ajax({
-                            url: "/app/warehouse/get-all-materials",
+                            url: "{{ route('wh.getMaterials') }}",
                             method: "POST",
                             dataType: "json",
                             data: {
                                 term: request.term,
+                                existingPartCodes: existingPartCodes
                             },
                             headers: {
-                                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"), // Pass CSRF token
+                                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
                             },
                             success: function (data) {
-                                response(data);
+                                response(data.map(function (item) {
+                                    return {
+                                        label: item.value,
+                                        value: item.value,
+                                        unit: item.unit,
+                                        desc: item.desc,
+                                        closing_bal: item.closing_balance,
+                                    };
+                                }));
                             },
                         });
                     },
                     minLength: 2,
-                });
+                    focus: function (event, ui) {
+                        if (ui.item.closing_bal > 0) {
+                            element.val(ui.item.label);
+                        }
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        if (ui.item.closing_bal > 0) {
+                            element.val(ui.item.label);
+                            element.closest('.material-with-quantity').find('.material-name').val(ui.item.desc);
+                            element.closest('.material-with-quantity').find('.material-unit').val(ui.item.unit);
+                            element.closest(".material-with-quantity").find(".quantity").attr('max', ui.item.closing_bal);
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "ERROR",
+                                text: "This item can't be issued due to no closing balance",
+                            });
+                        }
+                        return false;
+                    },
+                }).autocomplete("instance")._renderItem = function (ul, item) {
+                    // <=0 show text-danger
+                    if (item.closing_bal <= 0) {
+                        return $("<li>")
+                        .append("<div class=\"bg-danger\">" + item.label + " - " + item.desc + "</div>")
+                        .appendTo(ul);
+                    } else {
+                        return $("<li>")
+                        .append("<div>" + item.label + " - " + item.desc + "</div>")
+                        .appendTo(ul);
+                    }
+                    
+                };
             }
 
-            // Initialize autocomplete for existing elements
             initializeAutocomplete($(".suggest-partcode"));
 
-            // Function to remove the closest category item
             $(".material-quantity-container").on('click', '.remove-material-quantity-item', function () {
                 if ($('.material-with-quantity').length > 1) {
                     $(this).closest('.material-with-quantity').remove();
@@ -163,7 +221,45 @@
                 }
             });
 
+            $('#vendor').change(function() {
+                $('#err-vendor').empty();
+            });
+
             $('#submitForm').click(function() {
+                var _obj = $(this)
+                $('.validation-error').remove();
+                var isValid = true;
+
+                // var selectedVendor = $('#vendor').val();
+                // if (!selectedVendor) {
+                //     $('#err-vendor').append('<span class="text-danger validation-error">Vendor is required.</span>');
+                //     isValid = false;
+                // }
+
+                $('.suggest-partcode').each(function() {
+                    if ($(this).val() === '') {
+                        $(this).after('<span class="text-danger validation-error">Partcode is required.</span>');
+                        isValid = false;
+                    }
+                });
+
+                $('.quantity').each(function() {
+                    if ($(this).val() === '') {
+                        $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity is required.</span>');
+                        isValid = false;
+                    }
+
+                    let val = parseFloat($(this).val());
+                    let max = parseFloat($(this).attr('max'));
+
+                    if (val > max) {
+                        $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity can\'t exceed more than '+$(this).attr('max')+'. </span>');
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) return;
+
                 var formData = $('#issueForm').serialize();
                 $.ajax({
                     type: 'POST',
@@ -171,7 +267,9 @@
                     data: formData,
                     success: function(response) {
                         if (response.status === true) {
+                            _obj.addClass('btn-spinner');
                             toastr.success(response.message);
+                            setTimeout(function() { location.reload(); }, 1500);
                         } else {
                             toastr.error(response.message);
                         }
@@ -184,34 +282,101 @@
                 });
             });
 
+            $(document).on('input', ".suggest-partcode", function() {
+                let _obj = $(this);
+                _obj.closest(".row").find(".material-name").val('');
+                _obj.closest(".row").find(".material-unit").val('');
+            });
+            
+            function checkDuplicate(partCode) {
+                let partCodes = [];
+                $(document).find(".suggest-partcode").each(function() {
+                    let currentPartCode = $(this).val();
+                    if (partCodes.includes(currentPartCode)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Duplicate Entry',
+                            text: 'This part code has already been entered.',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        $(this).val('');
+                        $(this).closest(".row").find(".material-name").val('');
+                        $(this).closest(".row").find(".material-unit").val('');
+                    } else {
+                        if (currentPartCode.length != 0) {
+                            partCodes.push(currentPartCode);
+                        }
+                    }
+                });
+            }
+
+            $(document).on('blur', ".quantity", function() {
+                let _obj = $(this);
+                let val = parseFloat(_obj.val());
+                let max = parseFloat(_obj.attr('max'));
+
+                if (val != '') { _obj.closest('.col-md-3').find('.validation-error').empty(); }
+                
+                if (!isNaN(val) && !isNaN(max)) {
+                    if (val > max) {
+                        _obj.val('');
+                        _obj.closest('.input-group').after(`<span class="text-danger validation-error">Quantity can't exceed more than ${max}.</span>`);
+                    } else {
+                        _obj.closest('.col-md-3').find('.validation-error').empty();
+                    }
+                } else {
+                    _obj.closest('.col-md-3').find('.validation-error').empty();
+                }
+            });
+
             $(document).on('blur', ".suggest-partcode", function() {
                 let _obj = $(this);
                 let part_code = _obj.val();
-                
-                $.ajax({
-                    url: "/app/material/get-details",
-                    method: "POST",
-                    data: {
-                        part_code: part_code,
-                        _token: '{{ csrf_token() }}',
-                    },
-                    dataType: "json",
-                    success: function(response) {
-                        if (response.success) {
-                            let material = response.data;
-                            _obj.closest(".row").find(".material-name").val(material.description);
-                            _obj.closest(".row").find(".material-unit").val(material.uom.uom_text);
-                        } else {
-                            _obj.closest(".row").find(".material-name").val('');
-                            _obj.closest(".row").find(".material-unit").val('');
+                let materialNameInput = _obj.closest(".row").find(".material-name");
+                checkDuplicate(part_code);
+                if (materialNameInput.val() === '' && part_code.length == 10) {
+                    $.ajax({
+                        url: "{{ route('wh.getMaterials') }}",
+                        method: "POST",
+                        data: {
+                            term: part_code,
+                            existingPartCodes: [],
+                            _token: '{{ csrf_token() }}',
+                        },
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.length) {
+                                let material = response[0];
+                                if (material.closing_balance ?? 0 > 0) {
+                                    _obj.closest(".row").find(".material-name").val(material.desc);
+                                    _obj.closest(".row").find(".material-unit").val(material.unit);
+                                    _obj.closest(".row").find(".quantity").attr('max', material.closing_balance);
+                                } else {
+                                    _obj.closest(".row").find(".material-name").val('');
+                                    _obj.closest(".row").find(".material-unit").val('');
+                                    _obj.closest(".row").find(".quantity").removeAttr('max');
+                                    _obj.val('');
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "ERROR",
+                                        text: "This item can't be issued due to no closing balance",
+                                    });
+                                }
+                            } else {
+                                _obj.closest(".row").find(".material-name").val('');
+                                _obj.closest(".row").find(".material-unit").val('');
+                                _obj.closest(".row").find(".quantity").removeAttr('max');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(xhr.responseText);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
+                    });
+                }
 
+            });
+            
             // Show Error Messages
             @if ($errors->any())
                 @foreach ($errors->all() as $error)
@@ -224,5 +389,9 @@
                 toastr.success('{{ session('success') }}');
             @endif
         });
+
+        // $(document).on('focus', ".suggest-partcode", function () {
+        //     initializeAutocomplete($(this));
+        // });
     </script>
 @stop
