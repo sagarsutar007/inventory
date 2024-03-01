@@ -394,8 +394,21 @@ return [
         ],
         [
             'text' => 'Production Orders',
-            'url' => 'app/production-orders',
             'icon' => 'fas fa-fw fa-cart-plus',
+            'submenu' => [
+                [
+                    'text' => 'Add New',
+                    'url' => 'app/production-orders/new',
+                ],
+                [
+                    'text' => 'View All',
+                    'url' => 'app/production-orders/list',
+                ],
+                [
+                    'text' => 'On Going',
+                    'url' => 'app/production-orders',
+                ],
+            ],
         ],
         [
             'text' => 'Reports',
