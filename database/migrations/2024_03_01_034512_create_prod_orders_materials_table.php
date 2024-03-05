@@ -15,10 +15,14 @@ return new class extends Migration {
             $table->uuid('po_id');
             $table->uuid('material_id');
             $table->decimal('quantity', 10, 3);
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
             $table->timestamps();
 
             $table->foreign('po_id')->references('po_id')->on('production_orders');
             $table->foreign('material_id')->references('material_id')->on('materials');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 

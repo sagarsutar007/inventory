@@ -32,10 +32,15 @@
 
 body:not(.layout-fixed) .main-sidebar .sidebar {
   overflow-y: auto;
+  overflow-x: hidden;
   height: 90vh;
-  position: fixed;
+  position: absolute;
   top: 60px;
   left: 0;
+}
+
+.sidebar:hover {
+  scrollbar-width: none !important;
 }
 
 .validation-error {

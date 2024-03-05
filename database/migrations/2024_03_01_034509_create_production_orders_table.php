@@ -16,9 +16,13 @@ return new class extends Migration {
             $table->uuid('material_id')->nullable();
             $table->decimal('quantity', 10, 3);
             $table->enum('status', ['Issued', 'Pending', 'Shortage', 'Draft', 'Approved']);
+            $table->uuid('created_by')->nullable();
+            $table->uuid('updated_by')->nullable();
             $table->timestamps();
 
             $table->foreign('material_id')->references('material_id')->on('materials')->onDelete('set null');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
         });
     }
 

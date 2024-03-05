@@ -13,6 +13,7 @@ use App\Http\Controllers\UomunitController;
 use App\Http\Controllers\BOMController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\AttachmentsController;
+use App\Http\Controllers\ProductionOrderController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -47,6 +48,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('app/material/{material}/import-bom/', [MaterialController::class, 'importBomRecords'])->name('material.importBOM');
     Route::post('app/material/get-all-materials', [MaterialController::class, 'getMaterials'])->name('materials.get');
     Route::post('app/material/get-details', [MaterialController::class, 'getMaterialDetails'])->name('material.getDetails');
+    Route::post('app/material/get-finished-goods', [ProductionOrderController::class, 'getFinishedGoods'])->name('material.getFinishedGoods');
 
     // Commodity Routes
     Route::prefix('/app/commodities')->group(function () {
@@ -141,6 +143,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{warehouse}/update', [WarehouseController::class, 'update'])->name('wh.update');
         Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('wh.destroy');
         Route::post('/get-all-materials', [WarehouseController::class, 'getMaterials'])->name('wh.getMaterials');
+    });
+
+    // Production Orders Routes
+    Route::prefix('/app/production-orders')->group(function () {
+        Route::get('', [ProductionOrderController::class, 'index'])->name('po');
+        Route::get('/create', [ProductionOrderController::class, 'create'])->name('po.create');
+        Route::post('/get-bom', [ProductionOrderController::class, 'getBomRecords'])->name('po.getBom');
     });
 
     Route::prefix('/app/roles')->group(function () {
