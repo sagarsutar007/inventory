@@ -45,7 +45,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12 text-right">
-                                <button type="button" class="btn btn-secondary" id="add-finished-goods">Add Item</button>
+                                <!-- <button type="button" class="btn btn-secondary" id="add-finished-goods">Add Item</button> -->
                                 <button type="button" class="btn btn-primary" id="fetch-bom">Get BOM</button>
                             </div>
                         </div>
@@ -53,7 +53,7 @@
                 </div>
             </div>
 
-            <div id="bom" style="display:block;">
+            <div id="bom" style="display: none;">
                 <div class="bom-section mt-3 d-flex align-items-center justify-content-between">
                     <h5 class="text-secondary">Required Materials</h5>
                     <div class="btn-group">
@@ -71,7 +71,7 @@
                     </div>
                     <div class="card-footer text-right">
                         <a href="{{ route('po.create') }}" class="btn btn-outline-danger">Cancel</a>
-                        <button type="button" class="btn btn-primary">Create Order</button>
+                        <button type="button" id="create-prod-order" class="btn btn-primary">Create Order</button>
                     </div>
                 </div>
             </div>
@@ -185,6 +185,7 @@
                     data: formData,
                     success: function(response){
                         if (response.status) {
+                            $("#bom").show();
                             $("#table-section").html(response.html);
                             initializeBomTable();
                         } else {
@@ -308,6 +309,69 @@
             $(document).on('click', '.btn-combined', function(){
                 $('.btn-individual').removeClass('btn-primary').addClass('btn-default');
                 $(this).removeClass('btn-default').addClass('btn-primary');
+            });
+
+            $(document).on('click', "#create-prod-order", function () {
+
+                $(this)
+                .html('<div class="spinner-grow text-light spinner-grow-sm" role="status"><span class="sr-only">Loading...</span></div> Loading...')
+                .attr('disabled', true);
+
+
+                $('.validation-error').remove();
+                var isValid = true;
+                $('.suggest-goods').each(function() {
+                    if ($(this).val() === '') {
+                        $(this).after('<span class="text-danger validation-error">Partcode is required.</span>');
+                        isValid = false;
+                    }
+                });
+
+                $('.quantity').each(function() {
+                    if ($(this).val() === '') {
+                        $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity is required.</span>');
+                        isValid = false;
+                    }
+
+                    let val = parseFloat($(this).val());
+                    let max = parseFloat($(this).attr('max'));
+
+                    if (val > max) {
+                        $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity can\'t exceed more than '+$(this).attr('max')+'. </span>');
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) return;
+
+                var formData = $("#get-bom-form").serialize();
+
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('po.createOrder') }}", 
+                    data: formData,
+                    success: function(response){
+                        if (response.status) {
+                            toastr.success(response.message);
+                            //reload after 2 seconds
+                            setTimeout(() => { window.location.reload() }, 1500);
+                        } else {
+                            toastr.error(response.message);
+                            $("#create-prod-order")
+                            .html("Create Order")
+                            .removeAttr('disabled');
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        toastr.error(jsonResponse.message);
+                        console.error(jsonResponse.error);
+                        $("#create-prod-order")
+                        .html("Create Order")
+                        .removeAttr('disabled');
+                    }
+                });
+
             });
         })
     </script>
