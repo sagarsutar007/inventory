@@ -70,6 +70,7 @@ class FinishedMaterialController extends Controller
         $material->type = "finished";
         $material->created_by = Auth::id();
         $material->updated_by = Auth::id();
+        $material->opening_balance = 0;
         $material->save();
 
         if ($request->hasFile('photo')) {
@@ -454,7 +455,7 @@ class FinishedMaterialController extends Controller
             $materials = Material::select('material_id', 'description', 'part_code')
                 ->where('description', 'like', '%' . $searchTerm . '%')
                 ->orWhere('part_code', 'like', '%' . $searchTerm . '%')
-                ->whereIn('type', ['raw', 'semi'])
+                ->whereIn('type', ['raw', 'semi-finished'])
                 ->orderBy('description')
                 ->get();
         }

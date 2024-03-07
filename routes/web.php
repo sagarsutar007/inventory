@@ -152,6 +152,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/get-bom', [ProductionOrderController::class, 'getBomRecords'])->name('po.getBom');
 
         Route::post('/create', [ProductionOrderController::class, 'createOrder'])->name('po.createOrder');
+        Route::post('/get-records', [ProductionOrderController::class, 'getProdOrderRecords'])->name('po.getProdOrderRecords');
     });
 
     Route::prefix('/app/roles')->group(function () {

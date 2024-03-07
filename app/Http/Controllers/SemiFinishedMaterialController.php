@@ -390,7 +390,7 @@ class SemiFinishedMaterialController extends Controller
     {
         try {
             // Delete related Bom and BomRecord entries
-            $material->bom->each(function ($bom) {
+            $material->bom?->each(function ($bom) {
                 $bom->bomRecords->each(function ($bomRecord) {
                     $bomRecord->delete();
                 });
