@@ -196,10 +196,30 @@ class WarehouseController extends Controller
             'date' => 'required',
             'popn' => 'nullable',
             'part_code' => 'required|array',
-            'part_code.*' => 'required|exists:materials,part_code',
+            'part_code.*' => [
+                'nullable',
+                'exists:materials,part_code',
+                function ($attribute, $value, $fail) {
+                    // Check if the part code is required for index 0
+                    if (key(request()->input('part_code', [])) === 0 && empty ($value)) {
+                        $fail('The part code is required.');
+                    }
+                },
+            ],
             'quantity' => 'required|array',
-            'quantity.*' => 'required|numeric|min:0.001',
+            'quantity.*' => [
+                'nullable',
+                'numeric',
+                function ($attribute, $value, $fail) {
+                    // Check if the quantity is less than or equal to 0 for indexes greater than 0
+                    if (key(request()->input('quantity', [])) > 0 && ($value <= 0 || $value === '')) {
+                        $fail('The quantity must be greater than 0 for indexes greater than 0.');
+                    }
+                },
+                'min:0.001',
+            ],
         ]);
+
 
 
         try {
@@ -216,29 +236,31 @@ class WarehouseController extends Controller
             $warehouse->save();
 
             foreach ($validatedData['part_code'] as $key => $materialId) {
-                $material = Material::where('part_code', $materialId)->first();
-                $stock = Stock::where('material_id', $material->material_id)->first();
-                if ($stock) {
-                    $stock->receipt_qty += $validatedData['quantity'][$key];
-                    $stock->created_by = Auth::id();
-                    $stock->save();
-                } else {
-                    $newStock = new Stock();
-                    $newStock->material_id = $material->material_id;
-                    $newStock->receipt_qty = $validatedData['quantity'][$key];
-                    $newStock->issue_qty = 0;
-                    $newStock->opening_balance = 0;
-                    $newStock->created_by = Auth::id();
-                    $newStock->save();
-                }
+                if (!empty($materialId)) {
+                    $material = Material::where('part_code', $materialId)->first();
+                    $stock = Stock::where('material_id', $material->material_id)->first();
+                    if ($stock) {
+                        $stock->receipt_qty += $validatedData['quantity'][$key];
+                        $stock->created_by = Auth::id();
+                        $stock->save();
+                    } else {
+                        $newStock = new Stock();
+                        $newStock->material_id = $material->material_id;
+                        $newStock->receipt_qty = $validatedData['quantity'][$key];
+                        $newStock->issue_qty = 0;
+                        $newStock->opening_balance = 0;
+                        $newStock->created_by = Auth::id();
+                        $newStock->save();
+                    }
 
-                $warehouseRecord = new WarehouseRecord();
-                $warehouseRecord->warehouse_id = $warehouse->warehouse_id;
-                $warehouseRecord->material_id = $material->material_id;
-                $warehouseRecord->warehouse_type = 'received';
-                $warehouseRecord->quantity = $validatedData['quantity'][$key];
-                $warehouseRecord->created_by = Auth::id();
-                $warehouseRecord->save();
+                    $warehouseRecord = new WarehouseRecord();
+                    $warehouseRecord->warehouse_id = $warehouse->warehouse_id;
+                    $warehouseRecord->material_id = $material->material_id;
+                    $warehouseRecord->warehouse_type = 'received';
+                    $warehouseRecord->quantity = $validatedData['quantity'][$key];
+                    $warehouseRecord->created_by = Auth::id();
+                    $warehouseRecord->save();
+                }
             }
 
             DB::commit();

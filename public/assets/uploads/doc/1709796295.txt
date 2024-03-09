@@ -1,0 +1,2 @@
+Create text log for exam candidates loading the question screen
+Processing on the exam start button

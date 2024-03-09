@@ -38,7 +38,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label for="date">Issue Date: *</label><br />
+                                <label for="date">Reciept Date: *</label><br />
                                 <input type="text" name="date" class="form-control" placeholder="Enter Date" value="{{ date('d-m-Y') }}" readonly required>
                             </div>
                         </div>
@@ -230,15 +230,24 @@
                     isValid = false;
                 }
 
-                $('.suggest-partcode').each(function() {
-                    if ($(this).val() === '') {
+                $('.suggest-partcode').each(function(index) {
+                    var _this = $(this);
+                    var suggestPartcodeVal = $.trim(_this.val());
+                    var suggestPartcodeQty = _this.closest('.material-with-quantity').find('.quantity').val();
+
+                    if (index === 0 && suggestPartcodeVal === '') {
+                        $(this).after('<span class="text-danger validation-error">Partcode is required.</span>');
+                        isValid = false;
+                    }
+
+                    if (index !== 0 && suggestPartcodeVal != '' && suggestPartcodeQty == '') {
                         $(this).after('<span class="text-danger validation-error">Partcode is required.</span>');
                         isValid = false;
                     }
                 });
 
-                $('.quantity').each(function() {
-                    if ($(this).val() === '') {
+                $('.quantity').each(function(index) {
+                    if(index === 0 && $(this).val() === ''){
                         $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity is required.</span>');
                         isValid = false;
                     }
