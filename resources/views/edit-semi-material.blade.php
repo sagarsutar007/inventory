@@ -111,7 +111,10 @@
                 <textarea class="form-control" name="additional_notes" placeholder="Additional notes">{{ $material->additional_notes }}</textarea>
             </div>
         </div>
-        <h5>Bill of Material</h5>
+        <div class="row">
+            <div class="col-md-8"><h6>Bill of Material</h6></div>
+            <div class="col-md-4">Quantity</div>
+        </div>
         <div class="raw-materials-container">
             @if(!empty($bomRecords))
                 @foreach($bomRecords as $index => $bomRecord)

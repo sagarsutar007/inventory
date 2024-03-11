@@ -280,7 +280,8 @@
             $(document).on('blur', ".suggest-partcode", function() {
                 let _obj = $(this);
                 let part_code = _obj.val();
-                if (part_code.length != 0) {
+                let part_name = $(this).closest('.row').find('.material-name').val();
+                if (part_code.length != 0 && part_name.length == 0) {
                     $.ajax({
                         url: "/app/material/get-details",
                         method: "POST",
@@ -293,7 +294,7 @@
                             if (response.success) {
                                 let material = response.data;
                                 _obj.closest(".row").find(".material-name").val(material.description);
-                                _obj.closest(".row").find(".material-unit").val(material.uom.uom_text);
+                                _obj.closest(".row").find(".material-unit").val(material.uom.uom_shortcode);
                             } else {
                                 _obj.closest(".row").find(".material-name").val('');
                                 _obj.closest(".row").find(".material-unit").val('');

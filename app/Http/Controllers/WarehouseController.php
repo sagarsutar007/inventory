@@ -78,6 +78,14 @@ class WarehouseController extends Controller
             $material = $warehouse->material;
             if ($material) {
 
+                if ($warehouse->closing_balance <= $material->re_order && $material->re_order != null) {
+                    $stockQty = "<span class='text-danger fw-bold'>" . $warehouse->closing_balance . "</span><div data-toggle='tooltip' data-placement='top' class='record-badge-reorder' title='Re Order'></div>";
+                    $re_order_status = "<span class='text-danger fw-bold'>Yes</span>";
+                } else {
+                    $stockQty = $warehouse->closing_balance;
+                    $re_order_status = "No";
+                }
+
                 $data[] = [
                     // 'sno' => $index + $start + 1,
                     'code' => $material->part_code,
@@ -86,7 +94,9 @@ class WarehouseController extends Controller
                     'opening_balance' => $warehouse->opening_balance,
                     'receipt_qty' => $warehouse->receipt_qty,
                     'issue_qty' => $warehouse->issue_qty,
-                    'closing_balance' => $warehouse->closing_balance,
+                    'closing_balance' => $stockQty,
+                    're_order' => $material->re_order,
+                    're_order_status' => $re_order_status,
                 ];
             }
         }
@@ -100,6 +110,7 @@ class WarehouseController extends Controller
 
         return response()->json($response);
     }
+    
     public function fetchTransactions(Request $request)
     {
         $draw = $request->input('draw');
@@ -515,15 +526,22 @@ class WarehouseController extends Controller
 
     public function generateTransactionId()
     {
-        $lastTransactionId = Warehouse::max('transaction_id');
-        $newTransactionId = $lastTransactionId + 1;
-        if ($newTransactionId == 0) {
-            $newTransactionId = 1;
-        } elseif ($newTransactionId < 1000000000) {
-            $newTransactionId = str_pad($newTransactionId, 10, '0', STR_PAD_LEFT);
+        $year = date('y');
+        $weekNumber = date('W');
+        $date = date('d');
+        $transactionId = sprintf('%02d%02d%02d', $year, $weekNumber, $date);
+        $lastTransactionId = Warehouse::where('transaction_id', 'like', $year . '%')->max('transaction_id');
+        if ($lastTransactionId) {
+            $lastNumericPart = intval(substr($lastTransactionId, 6)); 
+            $newNumericPart = str_pad($lastNumericPart + 1, 5, '0', STR_PAD_LEFT);
+            $transactionId .= $newNumericPart;
+        } else {
+            $transactionId .= '00001';
         }
-        return $newTransactionId;
+
+        return $transactionId;
     }
+
 
     public function getMaterials(Request $request)
     {

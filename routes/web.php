@@ -148,11 +148,12 @@ Route::middleware(['auth'])->group(function () {
     // Production Orders Routes
     Route::prefix('/app/production-orders')->group(function () {
         Route::get('', [ProductionOrderController::class, 'index'])->name('po');
+        Route::post('/fetch-records', [ProductionOrderController::class, 'fetchProductionOrders'])->name('po.get');
+        Route::get('/new', [ProductionOrderController::class, 'new'])->name('po.new');
         Route::get('/create', [ProductionOrderController::class, 'create'])->name('po.create');
         Route::post('/get-bom', [ProductionOrderController::class, 'getBomRecords'])->name('po.getBom');
-
         Route::post('/create', [ProductionOrderController::class, 'createOrder'])->name('po.createOrder');
-        Route::post('/get-records', [ProductionOrderController::class, 'getProdOrderRecords'])->name('po.getProdOrderRecords');
+        Route::post('/new-order', [ProductionOrderController::class, 'initOrder'])->name('po.initOrder');
     });
 
     Route::prefix('/app/roles')->group(function () {

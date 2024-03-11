@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 
 use App\Models\Material;
@@ -24,6 +25,11 @@ class ProductionOrderController extends Controller
     public function create()
     {
         return view('production-order.create');
+    }
+
+    public function new()
+    {
+        return view('production-order.new');
     }
 
     public function getBomRecords(Request $request)
@@ -56,6 +62,7 @@ class ProductionOrderController extends Controller
         $returnHTML = view('production-order.viewBomTable', $context)->render();
         return response()->json(array('status' => true, 'html' => $returnHTML));
     }
+
     public function fetchBomRecords($partCodes = [], $quantities = [])
     {
         $bomRecords = [];
@@ -112,6 +119,132 @@ class ProductionOrderController extends Controller
 
         return $bomRecords;
     }
+
+    public function fetchProductionOrders(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $query = ProductionOrder::with('material.uom');
+
+        if (!empty($search)) {
+            $query->whereHas('material', function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        if ($columnName === 'description') {
+            $query->orderBy('description', $columnSortOrder);
+        } elseif ($columnName === 'quantity') {
+            $query->orderBy('quantity', $columnSortOrder);
+        } else {
+            
+        }
+
+        // Paginate the query
+        $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        $productionOrders = $poQuery->items();
+        $data = [];
+        foreach ($productionOrders as $index => $order) {
+            $material = $order->material;
+            if ($material) {
+                $data[] = [
+                    'po_number' => $order->po_number,
+                    'description' => $material->description,
+                    'unit' => $material->uom->uom_shortcode,
+                    'quantity' => $order->quantity,
+                    'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+                    'created_by' => $order->user->name,
+                    'status' => $order->status,
+                ];
+            }
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $poQuery->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
+    }
+
+    public function initOrder(Request $request)
+    {
+
+        $messages = [
+            'part_code.*.required' => 'The part code field is required.',
+            'quantity.*.required' => 'The quantity field is required.',
+        ];
+
+        // Validate input data
+        $validator = Validator::make($request->all(), [
+            'part_code' => 'required|array',
+            'quantity' => 'required|array',
+            'part_code.*' => 'required|string',
+            'quantity.*' => 'required|numeric',
+        ], $messages);
+
+        // If validation fails, redirect back with error message
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $poNumber = $this->generatePoNumber();
+            
+            for ($i = 0; $i < count($request->part_code); $i++) {
+                $material = Material::where('part_code', $request->part_code[$i])->first();
+                ProductionOrder::create([
+                    'po_number' => $poNumber,
+                    'material_id' => $material->material_id,
+                    'quantity' => $request->quantity[$i],
+                    'status' => 'Pending',
+                    'created_by' => Auth::id(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Production order created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'Failed to create production order: ' . $e->getMessage());
+        }
+    }
+
+    public function generatePoNumber()
+    {
+        $year = Carbon::now()->format('y');
+
+        $weekNumber = Carbon::now()->weekOfYear;
+        $day = Carbon::now()->format('d');
+        $poPrefix = 'PO' . $year . $weekNumber . $day;
+        $lastPoNumber = ProductionOrder::where('po_number', 'like', '%' . $year . '%')->max('po_number');
+        $increment = 1;
+        if ($lastPoNumber) {
+            $lastNumericPart = (int)substr($lastPoNumber, -5);
+            $increment = $lastNumericPart + 1;
+        }
+        $incrementFormatted = str_pad($increment, 5, '0', STR_PAD_LEFT);
+        $poNumber = $poPrefix . $incrementFormatted;
+        return $poNumber;
+    }
+
+
     public function createOrder(Request $request)
     {
         // Validate input data
@@ -133,15 +266,14 @@ class ProductionOrderController extends Controller
         DB::beginTransaction();
 
         try {
-            $lastPoNumber = ProductionOrder::max('po_number');
-            $nextPoNumber = $lastPoNumber ? $lastPoNumber + 1 : 100000;
+            $poNumber = $this->generatePoNumber();
 
             for ($i = 0; $i < count($request->part_code); $i++) {
 
                 $material = Material::where('part_code', $request->part_code[$i])->first();
 
                 $productionOrder = ProductionOrder::create([
-                    'po_number' => $nextPoNumber,
+                    'po_number' => $poNumber,
                     'material_id' => $material->material_id,
                     'quantity' => $request->quantity[$i],
                     'status' => 'Pending',
@@ -186,13 +318,14 @@ class ProductionOrderController extends Controller
         $existingPartCodes = array_filter($existingPartCodes, function ($value) {
             return $value !== null;
         });
+
         $materials = Material::with('uom')
             ->whereNotIn('part_code', $existingPartCodes)
             ->where(function ($query) use ($term) {
                 $query->where('part_code', 'like', '%' . $term . '%')
                     ->orWhere('description', 'like', '%' . $term . '%');
             })
-            ->whereIn('type', ['finished'])
+            ->whereIn('type', ['semi-finished', 'finished'])
             ->orderBy('description')
             ->limit(20)
             ->get();
@@ -206,74 +339,5 @@ class ProductionOrderController extends Controller
         });
 
         return response()->json($formattedMaterials);
-    }
-
-    public function getProdOrderRecords(Request $request)
-    {
-        $draw = $request->input('draw');
-        $start = $request->input('start');
-        $length = $request->input('length');
-        $search = $request->input('search')['value'];
-
-        $order = $request->input('order');
-        $columnIndex = $order[0]['column'];
-        $columnName = $request->input('columns')[$columnIndex]['name'];
-        $columnSortOrder = $order[0]['dir'];
-
-        $query = ProductionOrder::with('material', 'user');
-
-        if (!empty($search)) {
-            $query->where('po_number', 'like', '%' . $search . '%')
-                ->orWhereHas('material', function ($q) use ($search) {
-                    $q->where('part_code', 'like', '%' . $search . '%')
-                        ->orWhere('description', 'like', '%' . $search . '%');
-                });
-        }
-
-        // Count total records
-        $totalRecords = $query->count();
-
-        // Apply ordering
-        if ($columnName === 'material_name') {
-            $query->join('materials', 'materials.material_id', '=', 'production_orders.material_id')
-                ->orderBy('materials.description', $columnSortOrder);
-        } else {
-            $query->orderBy($columnName, $columnSortOrder);
-        }
-
-        // Paginate the query
-        $prodOrders = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $data = [];
-
-        foreach ($prodOrders as $index => $prodOrder) {
-            $material = $prodOrder->material;
-            if ($material) {
-
-                $action = '<button class="btn btn-sm btn-link"><i class="fas fa-eye text-primary"></i></button>' . '<button class="btn btn-sm btn-link"><i class="fas fa-edit text-warning"></i></button>' . '<button class="btn btn-sm btn-link"><i class="fas fa-trash text-danger"></i></button>';
-
-                $createdByUser = $prodOrder->user()->first(); // Retrieve the user associated with the created_by field
-
-                $createdByName = $createdByUser ? $createdByUser->name : 'Unknown';
-
-                $data[] = [
-                    'po_number' => $prodOrder->po_number,
-                    'material_name' => $material->description,
-                    'quantity' => $prodOrder->quantity,
-                    'status' => $prodOrder->status,
-                    'created_by' => $createdByName,
-                    'created_at' => $prodOrder->created_at->format('d-m-Y H:i:s'),
-                    'action' => $action,
-                ];
-            }
-        }
-
-        $response = [
-            "draw" => intval($draw),
-            "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $prodOrders->total(),
-            "data" => $data,
-        ];
-
-        return response()->json($response);
     }
 }

@@ -31,7 +31,9 @@
                                 <th>Opening</th>
                                 <th>Receipt</th>
                                 <th>Issue</th>
-                                <th>Closing</th>
+                                <th>Stock Qty.</th>
+                                <th>Re Order</th>
+                                <th>RO Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,7 +88,6 @@
                     }
                 },
                 "columns": [
-                    // { "data": "sno", "name": "sno"},
                     { "data": "code", "name": "part_code" },
                     { "data": "material_name", "name": "description" },
                     { "data": "unit", "name": "uom_text" },
@@ -94,21 +95,25 @@
                     { "data": "receipt_qty", "name": "receipt_qty" },
                     { "data": "issue_qty", "name": "issue_qty" },
                     { "data": "closing_balance", "name": "closing_balance" },
-                    // { "data": "action" },
+                    { "data": "re_order", "name": "re_order" },
+                    { "data": "re_order_status", "name": "re_order_status" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
                 "searching": true,
                 "ordering": true,
                 "columnDefs": [
                     {
-                        "targets": [4],
-                        "orderable": false
+                        "targets": [7, 8],
+                        "visible": false,
                     }
                 ],
                 "dom": 'lBfrtip',
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
+                "initComplete": function(settings, json) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
             });
 
             // Show Error Messages
@@ -198,6 +203,8 @@
                     }
                 });
             }
+
+            
         });
     </script>
 @stop

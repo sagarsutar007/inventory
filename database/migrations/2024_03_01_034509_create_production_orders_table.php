@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('production_orders', function (Blueprint $table) {
             $table->uuid('po_id')->primary();
-            $table->bigInteger('po_number')->unique();
+            $table->string('po_number', 20)->unique();
             $table->uuid('material_id')->nullable();
             $table->decimal('quantity', 10, 3);
             $table->enum('status', ['Issued', 'Pending', 'Shortage', 'Draft', 'Approved']);

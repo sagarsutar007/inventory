@@ -8,6 +8,11 @@
   float: right;
 }
 
+div.dataTables_wrapper div.dataTables_filter {
+  float: right;
+  display: inline-block;
+}
+
 .dropdown-icon-disabled.dropdown-toggle::after {
   display: none !important;
 }
@@ -46,4 +51,17 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
 .validation-error {
   font-size: 12px;
   margin-bottom: 5px;
+}
+
+.fw-bold {
+  font-weight: bold;
+}
+
+.record-badge-reorder {
+  height: 10px;
+  width: 10px;
+  background-color: rgb(255, 0, 0);
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 10px ;
 }

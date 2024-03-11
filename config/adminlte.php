@@ -402,13 +402,14 @@ return [
                 ],
                 [
                     'text' => 'View All',
-                    'url' => 'app/production-orders/list',
-                ],
-                [
-                    'text' => 'On Going',
                     'url' => 'app/production-orders',
                 ],
             ],
+        ],
+        [
+            'text' => 'PO Kitting',
+            'icon' => 'fas fa-fw fa-cart-plus',
+            'url' => 'app/po-kitting',
         ],
         [
             'text' => 'Reports',

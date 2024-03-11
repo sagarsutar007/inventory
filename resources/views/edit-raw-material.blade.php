@@ -131,7 +131,10 @@
                 <textarea class="form-control" name="additional_notes" placeholder="Additional notes">{{ $material->additional_notes }}</textarea>
             </div>
         </div>
-        <h6>Vendors</h6>
+        <div class="row">
+            <div class="col-md-8"><h6>Vendors</h6></div>
+            <div class="col-md-4">Price</div>
+        </div>
         <div class="vendor-price-container">
             @if(count($purchases))
                 @foreach($purchases as $purchase)
