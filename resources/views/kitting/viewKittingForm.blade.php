@@ -13,7 +13,7 @@
                 <th>Issued</th>
                 <th>Balance</th>
                 <th>Stock</th>
-                <th>Issue</th>
+                <th style="width: 15%;">Issue</th>
             </tr>
         </thead>
         <tbody>
@@ -25,10 +25,10 @@
                     <td>{{ $record['uom_shortcode'] }}</td>
                     <td>{{ $record['bom_qty'] }}</td>
                     <td>{{ $record['quantity'] }}</td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ $record['issued'] }}</td>
+                    <td>{{ $record['balance'] }}</td>
                     <td>{{ $record['closing_balance'] }}</td>
-                    <td>
+                    <td style="width: 15%;">
                         <input type="number" name="issue[]" max="{{ $record['closing_balance'] }}" class="form-control" placeholder="Issue Quantity">
                     </td>
                 </tr>

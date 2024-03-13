@@ -190,7 +190,9 @@
                         toastr.success('Material Issued Successfully.');
                     },
                     error: function(xhr, status, error) {
-                        toastr.error('An error occurred while saving issue.');
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
                     }
                 });
             });

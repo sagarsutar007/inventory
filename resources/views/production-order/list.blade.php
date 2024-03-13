@@ -153,7 +153,9 @@
                         $("#orderDetailsModal").modal('show');
                     },
                     error: function(xhr, status, error) {
-                        toastr.error('An error occurred while fetching order details.');
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
                     }
                 });
             });
