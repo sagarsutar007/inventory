@@ -1,13 +1,13 @@
 @extends('adminlte::page')
 
-@section('title', 'Production Orders')
+@section('title', 'Kitting')
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Production Orders</h3>
+                    <h3 class="card-title">Kitting</h3>
                     <div class="card-tools">
                         <div class="btn-group">
                             <a href="{{ route('po.new') }}" class="btn btn-default btn-sm">Create</a>
@@ -36,13 +36,14 @@
         </div>
     </div>
 
-    <x-adminlte-modal id="orderDetailsModal" title="Order Details" icon="fas fa-info-circle" size='lg'>
+    <x-adminlte-modal id="orderDetailsModal" title="Order Details" icon="fas fa-info-circle" size='xl' scrollable>
         <div class="row">
             <div class="col-md-12" id="order-details-section">
             </div>
         </div>
         <x-slot name="footerSlot">
             <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+            <x-adminlte-button class="btn-sm btn-issue-order" theme="primary" label="Save"/>
         </x-slot>
     </x-adminlte-modal>
 @stop
@@ -100,7 +101,7 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link view-btn btn-sm" data-id="' + row.po_id + '"><i class="fas fa-eye text-primary"></i></button>' + '/<button class="btn btn-link delete-btn btn-sm" data-id="' + row.po_id + '"><i class="fas fa-trash text-danger"></i></button>';
+                            return '<button class="btn btn-link kitting-btn btn-sm" data-pon="' + row.po_number + '" data-id="' + row.po_id + '"><i class="fas fa-eye text-primary"></i></button>';
                         }
                     }
                 ],
@@ -120,40 +121,76 @@
                 },
             });
 
-            $(document).on('click', '.delete-btn', function() {
+            $(document).on('click', '.kitting-btn', function() {
                 let po_id = $(this).data('id');
-                $.ajax({
-                    type: "DELETE",
-                    url: "{{ route('po.removeOrder') }}",
-                    data: {
-                        'po_id': po_id,
-                        '_token': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        toastr.success(response.message);
-                        $('#prod-orders').DataTable().ajax.reload();
-                    },
-                    error: function(xhr, status, error) {
-                        let errorMessage = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'An error occurred';
-                        toastr.error(errorMessage);
-                    }
-                });
-            });
-
-            $(document).on('click', '.view-btn', function() {
-                let po_id = $(this).data('id');
+                let po_num = $(this).data('pon');
                 $.ajax({
                     type: "GET",
-                    url: "{{ route('po.viewOrder') }}",
+                    url: "{{ route('kitting.viewKittingForm') }}",
                     data: {
                         'po_id': po_id,
                     },
                     success: function(response) {
                         $('#order-details-section').html(response.html);
+                        $("#orderDetailsModal").find('.modal-title').text('Production Order: #' + po_num);
                         $("#orderDetailsModal").modal('show');
+
+                        $('#bom-table').DataTable({
+                            "paging": false,
+                            "ordering": true,
+                            "info": false,
+                            "dom": 'Bfrtip',
+                            "columnDefs": [
+                                {
+                                    "targets": [8],
+                                    "orderable": false
+                                }
+                            ],
+                            "buttons": [
+                                {
+                                    extend: 'excel',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num,
+                                },
+                                {
+                                    extend: 'pdf',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num,
+                                },
+                                {
+                                    extend: 'print',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num,
+                                },
+                                'colvis',
+                            ],
+                            stateSave: true,
+                        });
                     },
                     error: function(xhr, status, error) {
                         toastr.error('An error occurred while fetching order details.');
+                    }
+                });
+            });
+
+            $(document).on('click', '.btn-issue-order', function() {
+                var formData = $('#issue-form').serialize();
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('kitting.issue') }}",
+                    data: formData,
+                    success: function(response) {
+                        $("#orderDetailsModal").modal('hide');
+                        toastr.success('Material Issued Successfully.');
+                    },
+                    error: function(xhr, status, error) {
+                        toastr.error('An error occurred while saving issue.');
                     }
                 });
             });

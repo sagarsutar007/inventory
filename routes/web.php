@@ -14,6 +14,7 @@ use App\Http\Controllers\BOMController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\AttachmentsController;
 use App\Http\Controllers\ProductionOrderController;
+use App\Http\Controllers\KittingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -154,6 +155,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/get-bom', [ProductionOrderController::class, 'getBomRecords'])->name('po.getBom');
         Route::post('/create', [ProductionOrderController::class, 'createOrder'])->name('po.createOrder');
         Route::post('/new-order', [ProductionOrderController::class, 'initOrder'])->name('po.initOrder');
+        Route::delete('/remove-order', [ProductionOrderController::class, 'removeOrder'])->name('po.removeOrder');
+        Route::get('/view-order', [ProductionOrderController::class, 'viewOrder'])->name('po.viewOrder');
+    });
+
+    // Production Orders Routes
+    Route::prefix('/app/po-kitting')->group(function () {
+        Route::get('', [KittingController::class, 'index'])->name('kitting');
+        Route::get('/view-kitting-form', [KittingController::class, 'viewKittingForm'])->name('kitting.viewKittingForm');
+        Route::post('/issue-kitting', [KittingController::class, 'issueOrder'])->name('kitting.issue');
     });
 
     Route::prefix('/app/roles')->group(function () {

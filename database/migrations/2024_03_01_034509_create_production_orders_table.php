@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('po_number', 20)->unique();
             $table->uuid('material_id')->nullable();
             $table->decimal('quantity', 10, 3);
-            $table->enum('status', ['Issued', 'Pending', 'Shortage', 'Draft', 'Approved']);
+            $table->enum('status', ['Pending', 'Completed', 'Partially Issued']);
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
             $table->timestamps();

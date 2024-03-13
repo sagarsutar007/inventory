@@ -6,7 +6,7 @@
                 <th>Material Description</th>
                 <th>UOM</th>
                 <th>Quantity</th>
-                <th>Closing Balance</th>
+                <th>Stock Qty.</th>
                 <th>Status</th>
             </tr>
         </thead>

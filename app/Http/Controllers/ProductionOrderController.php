@@ -32,6 +32,34 @@ class ProductionOrderController extends Controller
         return view('production-order.new');
     }
 
+    public function viewOrder(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'po_id' => 'required|exists:production_orders,po_id',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ]);
+        }
+    
+        $po_id = $request->input('po_id');
+        $productionOrder = ProductionOrder::findOrFail($po_id);
+        $partCodes = [$productionOrder->material->part_code];
+        $quantities = [$productionOrder->quantity];
+
+        $bomRecords = $this->fetchBomRecords($partCodes, $quantities);
+
+        $context = [
+            'bomRecords' => $bomRecords,
+        ];
+
+        $returnHTML = view('production-order.viewBomTable', $context)->render();
+        return response()->json(array('status' => true, 'html' => $returnHTML));
+    }
+
     public function getBomRecords(Request $request)
     {
         // Validate input data
@@ -158,6 +186,7 @@ class ProductionOrderController extends Controller
             $material = $order->material;
             if ($material) {
                 $data[] = [
+                    'po_id' => $order->po_id,
                     'po_number' => $order->po_number,
                     'description' => $material->description,
                     'unit' => $material->uom->uom_shortcode,
@@ -243,7 +272,6 @@ class ProductionOrderController extends Controller
         $poNumber = $poPrefix . $incrementFormatted;
         return $poNumber;
     }
-
 
     public function createOrder(Request $request)
     {
@@ -339,5 +367,31 @@ class ProductionOrderController extends Controller
         });
 
         return response()->json($formattedMaterials);
+    }
+
+    public function removeOrder(Request $request)
+    {
+        try {
+            $request->validate([
+                'po_id' => 'required|exists:production_orders,po_id',
+            ]);
+            $po_id = $request->input('po_id');
+            $orderMaterialsCount = ProdOrdersMaterial::where('po_id', $po_id)->count();
+            if ($orderMaterialsCount === 0) {
+                $productionOrder = ProductionOrder::find($po_id);
+                if ($productionOrder) {
+                    $productionOrder->delete();
+                    return response()->json(['success' => true, 'message' => 'Production order deleted successfully']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Production order not found'], 404);
+                }
+            } else {
+                return response()->json(['success' => false, 'message' => 'Cannot delete production order. Records found in kitting.'], 400);
+            }
+        } catch (ValidationException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'An error occurred while processing your request.'], 500);
+        }
     }
 }

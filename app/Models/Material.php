@@ -65,4 +65,9 @@ class Material extends Model
     {
         return $this->belongsTo(Stock::class, 'material_id', 'material_id');
     }
+
+    public function bomRecord()
+    {
+        return $this->belongsTo(BomRecord::class, 'material_id', 'material_id');
+    }
 }

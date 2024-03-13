@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->uuid('pom_id')->primary();
             $table->uuid('po_id');
             $table->uuid('material_id');
-            $table->decimal('quantity', 10, 3);
+            $table->decimal('quantity', 10, 3)->nullable();
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
             $table->timestamps();
