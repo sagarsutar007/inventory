@@ -9,7 +9,7 @@
             @csrf
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-fw fa-minus"></i> Issue Material</h3>
+                    <h3 class="card-title"><i class="fas fa-fw fa-minus"></i> Issue Material (Manual)</h3>
                     <div class="card-tools">
                         <a href="{{ route('wh') }}" class="btn btn-link btn-sm p-0"><i class="fas fa-fw fa-th-large"></i> View Stock</a>
                     </div>

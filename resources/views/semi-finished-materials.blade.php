@@ -185,7 +185,6 @@
                 "stateSave": true
             }).buttons().container().appendTo('#materials_wrapper .col-md-6:eq(0)');
 
-
             // Show Error Messages
             @if ($errors->any())
                 @foreach ($errors->all() as $error)
@@ -225,7 +224,7 @@
                                         exportOptions: {
                                             columns: ':visible:not(.exclude)'
                                         },
-                                        title: materialPartcode + " - " + materialDesc + " - BOM",
+                                        title: materialPartcode,
                                     },
                                     {
                                         extend: 'pdf',
@@ -243,7 +242,7 @@
                                     },
                                     'colvis'
                                 ],
-                            }).buttons().container().appendTo('#export-section');
+                            }).buttons().container().appendTo('#boms-table_wrapper .col-md-6:eq(0)');
                         }
                     },
                     error: function(error) {
@@ -362,14 +361,17 @@
                     success: function (response) {
                         if (response.status) {
                             toastr.success(response.message);
+                            $('#modalEdit').modal('hide');
                         }
                     },
                     error: function (xhr, status, error) {
+                        decodedText = JSON.parse(xhr.responseText);
                         console.error(xhr.responseText);
+                        toastr.error(decodedText.message);
                     }
                 });
 
-                $('#modalEdit').modal('hide');
+                
             });
 
             $(document).on('click', '.btn-destroy-attachment', function() {

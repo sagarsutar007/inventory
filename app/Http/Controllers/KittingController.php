@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 
@@ -105,25 +106,28 @@ class KittingController extends Controller
                 'message' => $validator->errors()->first(),
             ]);
         }
+
         DB::beginTransaction();
+
         try {
-            $prodOrder = ProductionOrder::where('po_id', $request->production_id);
+            $prodOrder = ProductionOrder::where('po_id', $request->production_id)->first();
 
             $warehouseIssue = new Warehouse();
-            $warehouseIssue->warehouse_id = uuid();
-            $warehouseIssue->material_id = $prodOrder->material_id;
+            $warehouseIssue->warehouse_id = Str::uuid();
             $warehouseIssue->transaction_id = $this->generateTransactionId();
-            $warehouseIssue->quantity = array_sum($request->issue);
+            $warehouseIssue->type = 'issue';
             $warehouseIssue->created_by = Auth::id();
             $warehouseIssue->created_at = Carbon::now();
+            $warehouseIssue->date = Carbon::now()->toDateString();
             $warehouseIssue->save();
 
             foreach ($request->material as $index => $materialId) {
                 $stock = Stock::where('material_id', $materialId)->first();
-                $newQuantity = $request->issue[$index];
+                $reqQty = $request->issue[$index];
+                $newQuantity = $reqQty;
 
                 $warehouseRecord = new WarehouseRecord();
-                $warehouseRecord->warehouse_record_id = uuid();
+                $warehouseRecord->warehouse_record_id = Str::uuid();
                 $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
                 $warehouseRecord->material_id = $materialId;
                 $warehouseRecord->warehouse_type = 'issued';
@@ -147,7 +151,7 @@ class KittingController extends Controller
                         ]);
                     }
 
-                    $stock->issue_qty += $newQuantity;
+                    $stock->issue_qty += $reqQty;
                     $stock->save();
                 }
             }

@@ -86,7 +86,6 @@
 </div>
 <div class="tab-pane fade" id="boms" role="tabpanel" aria-labelledby="boms-tab">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h6>Bill of materials</h6>
         <div id="export-section"></div>
     </div>
     

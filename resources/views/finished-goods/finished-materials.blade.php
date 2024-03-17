@@ -232,7 +232,7 @@
                                     'colvis'
                                 ],
                                 
-                            }).buttons().container().appendTo('#export-section');
+                            }).buttons().container().appendTo('#boms-table_wrapper .col-md-6:eq(0)');
                         }
                     },
                     error: function(error) {
@@ -351,6 +351,7 @@
                     success: function (response) {
                         if (response.status) {
                             toastr.success(response.message);
+                            $('#modalEdit').modal('hide');
                         } else {
                             toastr.error(response.message);
                         }
@@ -362,7 +363,7 @@
                     }
                 });
 
-                $('#modalEdit').modal('hide');
+                
             });
 
             $(document).on('click', '.btn-destroy-attachment', function() {

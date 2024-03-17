@@ -49,8 +49,9 @@ class BomRecordExport implements FromCollection, WithHeadings
 
     public function headings(): array
     {
+        $material = Material::find($this->materialId);
         return [
-            ["BOM of {$this->parentItemDescription} - {$this->uom}"],
+            [$material->part_code, "BOM of {$this->parentItemDescription} - {$this->uom}"],
             ['Part Code', 'Material Description', 'Quantity', 'Unit', 'Type'],
         ];
     }

@@ -15,10 +15,10 @@ return new class extends Migration {
             $table->decimal('opening_balance', 10, 3);
             $table->decimal('receipt_qty', 10, 3);
             $table->decimal('issue_qty', 10, 3);
-            $table->uuid('material_id');
+            $table->uuid('material_id')->nullable();
             $table->uuid('created_by');
             $table->uuid('updated_by')->nullable();
-            $table->foreign('material_id')->references('material_id')->on('materials');
+            $table->foreign('material_id')->references('material_id')->on('materials')->onDelete('set null');
             $table->foreign('created_by')->references('id')->on('users');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null')->onUpdate('cascade');
             $table->timestamps();

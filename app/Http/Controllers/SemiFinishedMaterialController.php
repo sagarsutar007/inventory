@@ -193,7 +193,7 @@ class SemiFinishedMaterialController extends Controller
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
 
-        $bomRecords = $material->bom->bomRecords;
+        $bomRecords = $material->bom?->bomRecords;
 
         $context = [
             'material' => $material,
@@ -390,12 +390,10 @@ class SemiFinishedMaterialController extends Controller
     {
         try {
             // Delete related Bom and BomRecord entries
-            $material->bom?->each(function ($bom) {
-                $bom->bomRecords->each(function ($bomRecord) {
-                    $bomRecord->delete();
-                });
-                $bom->delete();
+            $material->bom?->bomRecords?->each(function ($bomRecord) {
+                $bomRecord->delete();
             });
+            $material->bom?->delete();
 
             $material->purchases()->delete();
             $material->attachments()->delete();

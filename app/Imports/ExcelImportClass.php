@@ -2,11 +2,13 @@
 
 namespace App\Imports;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Events\AfterImport;
+
 use App\Models\Commodity;
 use App\Models\Category;
 use App\Models\RawMaterial;
@@ -54,22 +56,32 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                 $this->addRawMaterial($row, $this->user);
             }
         } elseif ($this->type === "bom") {
-            $imported_part_code = [];
+            
+            $valueInA1 = $rows[0][0];
+            $material_id = $this->data["material_id"];
+            
+            $material = Material::findOrFail($material_id);
 
-            foreach ($rows->slice(2) as $row) {
-                $this->importBom($row, $this->user, $this->data);
-                $part_code = $row[0];
-                if (!in_array($row[0], $imported_part_code)) {
-                    $imported_part_code[] = $part_code;
+            if ($valueInA1 == $material->part_code) {
+                $imported_part_code = [];
+
+                foreach ($rows->slice(2) as $row) {
+                    $this->importBom($row, $this->user, $this->data);
+                    $part_code = $row[0];
+                    if (!in_array($row[0], $imported_part_code)) {
+                        $imported_part_code[] = $part_code;
+                    }
                 }
+
+                $materialIdsToDelete = Material::whereIn('part_code', $imported_part_code)
+                    ->pluck('material_id');
+
+                BomRecord::whereNotIn('material_id', $materialIdsToDelete)
+                    ->delete();
+            } else {
+                throw new \Exception("Bom mismatch for the material");
             }
-
-            $materialIdsToDelete = Material::whereIn('part_code', $imported_part_code)
-                ->pluck('material_id');
-
-            // Delete BomRecords associated with the material IDs
-            BomRecord::whereNotIn('material_id', $materialIdsToDelete)
-                ->delete();
+            
         }
 
     }
