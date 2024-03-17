@@ -15,7 +15,7 @@
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="date">Purchase number:</label><br />
+                <label for="date">Purchase Order Number:</label><br />
                 <input type="text" name="popn" class="form-control" placeholder="Enter Purchase Number" value="{{ $warehouse->popn }}">
             </div>
         </div>
