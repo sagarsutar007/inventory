@@ -103,51 +103,24 @@ class ProductionOrderController extends Controller
                 
 
                 foreach ($records as $record) {
-                    // if ($record->material->type == "semi-finished") {
-                    //     $semiFinishedRecords = BomRecord::where('bom_id', $record->material->bom->bom_id)->get();
-                    //     foreach ($semiFinishedRecords as $semiFinishedRecord) {
-                    //         $requiredMaterial = Material::find($semiFinishedRecord->material_id);
-                    //         $requiredMaterialStock = Stock::where('material_id', $material->material_id)->value('closing_balance');
-                    //         if ($requiredMaterial) {
-                    //             $quantity = $semiFinishedRecord->quantity * $record->quantity * $quantities[$key];
-                    //             if (isset($bomRecords[$requiredMaterial->description])) {
-                    //                 $bomRecords[$requiredMaterial->description]['quantity'] += $quantity;
-                    //             } else {
-                    //                 $bomRecords[$requiredMaterial->description] = [
-                    //                     'material_id' => $requiredMaterial->material_id,
-                    //                     'part_code' => $requiredMaterial->part_code,
-                    //                     'material_description' => $requiredMaterial->description,
-                    //                     'quantity' => $quantity,
-                    //                     'uom_shortcode' => $requiredMaterial->uom->uom_shortcode,
-                    //                     'closing_balance' => $requiredMaterialStock,
-                    //                 ];
-                    //             }
-                    //         }
-                    //     }
-                    // } else {
-                        $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
-                        $quantity = $record->quantity * $quantities[$key];
-                        if (isset($bomRecords[$record->material->description])) {
-                            $bomRecords[$record->material->description]['quantity'] += $quantity;
-                        } else {
-                            $bomRecords[$record->material->description] = [
-                                'material_id' => $record->material->material_id,
-                                'part_code' => $record->material->part_code,
-                                'material_description' => $record->material->description,
-                                'quantity' => $quantity,
-                                'uom_shortcode' => $record->material->uom->uom_shortcode,
-                                'closing_balance' => $closingBalance,
-                            ];
-                        }
-                    // }
+                    $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
+                    $quantity = $record->quantity * $quantities[$key];
+                    if (isset($bomRecords[$record->material->description])) {
+                        $bomRecords[$record->material->description]['quantity'] += $quantity;
+                    } else {
+                        $bomRecords[$record->material->description] = [
+                            'material_id' => $record->material->material_id,
+                            'part_code' => $record->material->part_code,
+                            'material_description' => $record->material->description,
+                            'quantity' => $quantity,
+                            'uom_shortcode' => $record->material->uom->uom_shortcode,
+                            'closing_balance' => $closingBalance,
+                        ];
+                    }
                 }
             }
-
-            
         }
-
         $bomRecords = array_values($bomRecords);
-
         return $bomRecords;
     }
 

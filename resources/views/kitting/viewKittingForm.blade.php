@@ -11,7 +11,7 @@
                 <th>QPA</th>
                 <th>PO QTY</th>
                 <th>Issued</th>
-                <th>Balance</th>
+                <th>Bal. to Issue</th>
                 <th>Stock</th>
                 <th style="width: 15%;">Issue</th>
             </tr>
@@ -29,7 +29,11 @@
                     <td>{{ $record['balance'] }}</td>
                     <td>{{ $record['closing_balance'] }}</td>
                     <td style="width: 15%;">
+                        @if ( $record['balance'] != 0)
                         <input type="number" name="issue[]" max="{{ $record['closing_balance'] }}" class="form-control" placeholder="Issue Quantity">
+                        @else
+                        <input type="number" name="issue[]" class="form-control" readonly placeholder="Issue Completed">
+                        @endif
                     </td>
                 </tr>
             @endforeach

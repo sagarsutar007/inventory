@@ -125,7 +125,7 @@ class KittingController extends Controller
                 $stock = Stock::where('material_id', $materialId)->first();
                 $reqQty = $request->issue[$index];
                 $newQuantity = $reqQty;
-
+                
                 $warehouseRecord = new WarehouseRecord();
                 $warehouseRecord->warehouse_record_id = Str::uuid();
                 $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
@@ -135,26 +135,44 @@ class KittingController extends Controller
                 $warehouseRecord->created_at = now();
                 $warehouseRecord->save();
 
-                if ($stock && $newQuantity <= $stock->closing_balance) {
+                if ($stock && $newQuantity <= $stock->closing_balance && $newQuantity != 0) {
+                    
                     $existingRecord = ProdOrdersMaterial::where('po_id', $request->production_id)
                         ->where('material_id', $materialId)
                         ->first();
 
+                    $status = $this->getStatus($request->production_id, $materialId, $newQuantity);
+
                     if ($existingRecord) {
                         $newQuantity += $existingRecord->quantity;
-                        $existingRecord->update(['quantity' => $newQuantity]);
+                        $existingRecord->update(['quantity' => $newQuantity, 'status' => $status]);
                     } else {
                         ProdOrdersMaterial::create([
                             'po_id' => $request->production_id,
                             'material_id' => $materialId,
-                            'quantity' => $newQuantity
+                            'quantity' => $newQuantity,
+                            'created_by' => Auth::id(),
+                            'status' => $status,
                         ]);
                     }
 
                     $stock->issue_qty += $reqQty;
                     $stock->save();
-                }
+                } 
+                
+                // else{
+                //     DB::rollBack();
+
+                //     $material = Material::findOrFail($materialId);
+                //     return response()->json([
+                //         'status' => false,
+                //         'message' => 'Invalid quantity for material ' . $material->description,
+                //     ], 422);
+                // }
             }
+
+            $this->updateProdOrderStatus($request->production_id);
+
             DB::commit();
             return response()->json(['success' => true, 'message' => 'Order Issued Successfully!']);
         } catch (\Exception $e) {
@@ -182,5 +200,54 @@ class KittingController extends Controller
         }
 
         return $transactionId;
+    }
+
+    private function getStatus($prodId="", $materialId="", $quantity=0){
+        $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
+        $prodMaterial = Material::findOrFail($prodOrder->material_id);
+        $required_quantity = $prodOrder->quantity;
+        $bomRecords = $prodMaterial->bom?->bomRecords;
+        if ($bomRecords) {
+            foreach ($bomRecords as $bomRecord) {
+                if ($bomRecord->material_id == $materialId) {
+                    $required_qty = $bomRecord->quantity * $required_quantity;
+                    $existingRecord = ProdOrdersMaterial::where('po_id', $prodId)
+                        ->where('material_id', $materialId)
+                        ->first();
+
+                    if ($existingRecord) {
+                        if ($existingRecord->quantity + $quantity == $required_qty) {
+                            return 'Completed';
+                        } else if ($existingRecord->quantity + $quantity < $required_qty) {
+                            return 'Partial';
+                        }
+                    } else {
+                        if ($quantity == $required_qty) {
+                            return 'Completed';
+                        } else if ($quantity < $required_qty) {
+                            return 'Partial';
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function updateProdOrderStatus($prodId=""){
+        $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
+        $prodOrderMaterials = ProdOrdersMaterial::where('po_id', $prodId)->get();
+        $overallStatus = 'Completed';
+
+        foreach ($prodOrderMaterials as $material) {
+            if ($material->status === 'Partial') {
+                $overallStatus = 'Partially Issued';
+                break;
+            }
+        }
+
+        $prodOrder->status = $overallStatus;
+        $prodOrder->save();
+
+        return $overallStatus;
     }
 }

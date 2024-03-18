@@ -19,6 +19,7 @@ class ProdOrdersMaterial extends Model
         'po_id',
         'material_id',
         'quantity',
+        'status',
         'created_by',
         'updated_by',
     ];
