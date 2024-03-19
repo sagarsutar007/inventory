@@ -412,6 +412,11 @@ return [
             'url' => 'app/po-kitting',
         ],
         [
+            'text' => 'Vendors',
+            'icon' => 'fas fa-fw fa-user-tag',
+            'url' => 'app/vendors',
+        ],
+        [
             'text' => 'Reports',
             'url' => 'app/reports',
             'icon' => 'fas fa-fw fa-clipboard-list',
@@ -449,7 +454,7 @@ return [
                         ],
                         [
                             'text' => 'Users List',
-                            'url' => '#',
+                            'url' => 'app/users',
                         ],
                     ],
                 ],
@@ -588,13 +593,13 @@ return [
             'files' => [
                 [
                     'type' => 'js',
-                    'asset' => false,
-                    'location' => '//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js',
+                    'asset' => true,
+                    'location' => 'vendor/select2/js/select2.min.js',
                 ],
                 [
                     'type' => 'css',
-                    'asset' => false,
-                    'location' => '//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css',
+                    'asset' => true,
+                    'location' => 'vendor/select2/css/select2.min.css',
                 ],
                 [
                     'type' => 'css',

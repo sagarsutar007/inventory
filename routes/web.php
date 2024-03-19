@@ -15,6 +15,7 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\AttachmentsController;
 use App\Http\Controllers\ProductionOrderController;
 use App\Http\Controllers\KittingController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -166,6 +167,15 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/issue-kitting', [KittingController::class, 'issueOrder'])->name('kitting.issue');
     });
 
+    Route::prefix('/app/vendors')->group(function () {
+        Route::get('', [VendorController::class, 'index'])->name('vendor');
+        Route::post('/get', [VendorController::class, 'get'])->name('vendor.get');
+        Route::get('/{vendor}/edit', [VendorController::class, 'edit'])->name('vendor.edit');
+        Route::post('/show', [VendorController::class, 'show'])->name('vendor.show');
+        Route::post('/save', [VendorController::class, 'save'])->name('vendor.save');
+        Route::post('/delete', [VendorController::class, 'delete'])->name('vendor.delete');
+    });
+
     Route::prefix('/app/roles')->group(function () {
         Route::get('', [AdminRoleController::class, 'index'])->name('roles');
         Route::get('/add', [AdminRoleController::class, 'create'])->name('roles.add');
@@ -185,4 +195,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{permission}/update', [AdminPermissionController::class, 'update'])->name('permissions.update');
         Route::delete('/{permission}', [AdminPermissionController::class, 'destroy'])->name('permissions.destroy');
     });
+
+    Route::prefix('/app/users')->group(function () {
+        Route::get('', [UserController::class, 'index'])->name('users');
+        Route::get('/add', [UserController::class, 'create'])->name('users.add');
+        Route::post('/store', [UserController::class, 'store'])->name('users.store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::post('/{user}/update', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+    });
+
 });

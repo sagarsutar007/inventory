@@ -36,13 +36,13 @@
                                 <td width="5%">{{ $loop->iteration }}</td>
                                 <td>{{ $permission->name }}</td>
                                 <td width="10%">
-                                    <a href="#" permission="button" data-comid="{{ $permission->id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit">
+                                    {{-- <a href="#" permission="button" data-comid="{{ $permission->id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit">
                                         <i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit Permission"></i>
-                                    </a> /<form action="{{ route('permissions.destroy', $permission->id) }}" method="post" style="display: inline;">
+                                    </a> --}} <form action="{{ route('permissions.destroy', $permission->id) }}" method="post" style="display: inline;"> 
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-link p-0" onclick="return confirm('Are you sure you want to delete this permission?')">
-                                            <i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete Permission"></i>
+                                        <button type="submit" class="btn btn-sm btn-link" onclick="return confirm('Are you sure you want to delete this permission?')">
+                                            <i class="fas fa-trash text-danger" data-toggle="tooltip" data-placement="top" title="Delete Permission"></i>
                                         </button>
                                     </form>
                                 </td>

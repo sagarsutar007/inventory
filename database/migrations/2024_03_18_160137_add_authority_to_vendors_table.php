@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('type')->after('phone')->default('user');
+        Schema::table('vendors', function (Blueprint $table) {
+            $table->foreignUuid('updated_by')->after('vendor_city')->nullable();
+            $table->foreignUuid('created_by')->after('vendor_city')->nullable();
         });
     }
 
@@ -21,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('type');
+        Schema::table('vendors', function (Blueprint $table) {
+            //
         });
     }
 };

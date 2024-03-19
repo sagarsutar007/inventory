@@ -10,6 +10,11 @@ class Permission extends Model
 {
     use HasFactory, HasUuids;
 
+    protected $table = 'permissions';
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'name',
     ];

@@ -19,7 +19,9 @@ class Vendor extends Model
         'vendor_name',
         'vendor_address',
         'vendor_city',
-        'created_at'
+        'created_at',
+        'created_by',
+        'updated_by',
     ];
 
     public function materialPurchase()

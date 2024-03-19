@@ -11,7 +11,7 @@ class AdminRoleController extends Controller
 {
     public function index()
     {
-        $roles = Role::all();
+        $roles = Role::with('permissions')->get();
         return view('admin.roles.index', compact('roles'));
     }
 
@@ -33,14 +33,45 @@ class AdminRoleController extends Controller
 
         $role->permissions()->attach($request->input('permissions', []));
 
-        return redirect()->route('admin.roles.index')
+        return redirect()->route('roles')
             ->with('success', 'Role created successfully');
     }
 
-    public function destroy(Roles $role)
+    public function destroy(Role $role)
     {
         $role->delete();
 
         return redirect()->route('roles')->with('success', 'Role deleted successfully');
+    }
+
+    public function edit($roleId)
+    {
+        $role = Role::with('permissions')->find($roleId);
+
+        if (!$role) {
+            return response()->json(['role' => null]);
+        }
+
+        $permissions = Permission::all();
+
+        return response()->json(['role' => $role, 'permissions' => $permissions]);
+    }
+
+    public function update(Request $request, $roleId)
+    {
+        $request->validate([
+            'role_name' => 'required|unique:roles,name,'.$roleId,
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
+        ]);
+
+        $role = Role::findOrFail($roleId);
+
+        $role->name = $request->input('role_name');
+        $role->save();
+
+        $role->permissions()->sync($request->input('permissions', []));
+
+        return response()->json(['message' => 'Role updated successfully']);
     }
 }
