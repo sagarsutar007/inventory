@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Events\AfterImport;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Commodity;
 use App\Models\Category;
@@ -34,56 +35,67 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
 
     public function collection(Collection $rows)
     {
-        $this->importedCount += count($rows->slice(1));
-        if ($this->type === "commodity") {
-            $code = $this->getNextCommodityCode();
-            foreach ($rows->slice(1) as $row) {
-                $this->addCommodity($row[0], $code, $this->user);
-                $code++;
-            }
-
-            return true;
-        } elseif ($this->type === "category") {
-            $code = $this->getNextCategoryCode();
-            foreach ($rows->slice(1) as $row) {
-                $this->addCategory($row[0], $code, $this->user);
-                $code++;
-            }
-
-            return true;
-        } elseif ($this->type === "raw-material") {
-            foreach ($rows->slice(1) as $row) {
-                $this->addRawMaterial($row, $this->user);
-            }
-        } elseif ($this->type === "bom") {
-            
-            $valueInA1 = $rows[0][0];
-            $material_id = $this->data["material_id"];
-            
-            $material = Material::findOrFail($material_id);
-
-            if ($valueInA1 == $material->part_code) {
-                $imported_part_code = [];
-
-                foreach ($rows->slice(2) as $row) {
-                    $this->importBom($row, $this->user, $this->data);
-                    $part_code = $row[0];
-                    if (!in_array($row[0], $imported_part_code)) {
-                        $imported_part_code[] = $part_code;
-                    }
+        try {
+            DB::beginTransaction();
+            $this->importedCount += count($rows->slice(1));
+            if ($this->type === "commodity") {
+                $code = $this->getNextCommodityCode();
+                foreach ($rows->slice(1) as $row) {
+                    $this->addCommodity($row[0], $code, $this->user);
+                    $code++;
                 }
 
-                $materialIdsToDelete = Material::whereIn('part_code', $imported_part_code)
-                    ->pluck('material_id');
+                return true;
+            } elseif ($this->type === "category") {
+                $code = $this->getNextCategoryCode();
+                foreach ($rows->slice(1) as $row) {
+                    $this->addCategory($row[0], $code, $this->user);
+                    $code++;
+                }
 
-                BomRecord::whereNotIn('material_id', $materialIdsToDelete)
-                    ->delete();
-            } else {
-                throw new \Exception("Bom mismatch for the material");
+                return true;
+            } elseif ($this->type === "raw-material") {
+                foreach ($rows->slice(1) as $row) {
+                    $this->addRawMaterial($row, $this->user);
+                }
+            } elseif ($this->type === "bom") {
+                
+                $valueInA1 = $rows[0][0];
+                $material_id = $this->data["material_id"];
+
+                $parentMaterial = [
+                    'a1cell' =>$valueInA1,
+                    'material_id' => $material_id,
+                    'records' => $rows->slice(2),
+                ];
+
+                $errors = $this->validateImport($parentMaterial);
+                if (empty($errors)) {
+                    $material = Material::findOrFail($material_id);
+                    $imported_part_code = [];
+
+                    foreach ($rows->slice(2) as $row) {
+                        $this->importBom($row, $this->user, $this->data);
+                        $part_code = $row[0];
+                        if (!in_array($row[0], $imported_part_code)) {
+                            $imported_part_code[] = $part_code;
+                        }
+                    }
+
+                    $materialIdsToDelete = Material::whereIn('part_code', $imported_part_code)
+                        ->pluck('material_id');
+
+                    BomRecord::whereNotIn('material_id', $materialIdsToDelete)
+                        ->delete();
+                }else {
+                    throw new \Exception(implode("\n", $errors));
+                }
             }
-            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
-
     }
 
     protected function getNextCommodityCode()
@@ -193,6 +205,10 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
 
                 $material = Material::where('part_code', $part_code)->first();
 
+                if (!$material) {
+                    throw new \Exception("Material with part code {$part_code} not found.");
+                }
+
                 $bom = Bom::where('material_id', $material_id)->first();
 
                 if ($bom) {
@@ -283,6 +299,46 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         }
 
         return null;
+    }
+
+    protected function validateImport($data=[])
+    {
+        $errors = [];
+
+        if (empty($data['material_id'])) { $errors[] = "Material Id is Required!"; }
+
+        $material_id = $data['material_id'];
+        $material = Material::find($material_id);
+
+        if (!$material) { 
+            $errors[] = "Material not found!"; 
+        } else {
+            if ($data['a1cell'] != $material->part_code) {
+                $errors[] = "Parent Item Part Code " . $material->part_code . " and XLS Import Parent Item Part code " . $data['a1cell'] . " are not matching."; 
+            }
+            $counter = 3;
+            foreach ($data['records'] as $row) {
+                if (empty($row[0])) {
+                    $errors[] = "Row: " . $counter . " - Partcode not found!";
+                }
+
+                if (empty($row[0])) {
+                    $errors[] = "Row: " . $counter . " - Quantity not found!";
+                }
+
+                $bomMaterial = Material::with('uom')->find($material_id);
+                
+                $material = Material::where('part_code', $row[0])->first();
+
+                if (!$material) {
+                    $errors[] = "Row: " . $counter . " Material with part code {$row[0]} not found.";
+                }
+
+                $counter++;
+            }
+        }
+
+        return $errors;
     }
 
 }

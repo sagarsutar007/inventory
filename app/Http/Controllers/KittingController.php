@@ -41,13 +41,9 @@ class KittingController extends Controller
 
         $po_id = $request->input('po_id');
         $productionOrder = ProductionOrder::findOrFail($po_id);
-
-
         $partCodes = [$productionOrder->material->part_code];
         $quantities = [$productionOrder->quantity];
-
         $bomRecords = $this->fetchBomRecords($partCodes, $quantities, $po_id);
-
         $context = [
             'bomRecords' => $bomRecords,
             'prodId' => $po_id,
@@ -109,6 +105,8 @@ class KittingController extends Controller
 
         DB::beginTransaction();
 
+        $error = [];
+
         try {
             $prodOrder = ProductionOrder::where('po_id', $request->production_id)->first();
 
@@ -135,7 +133,7 @@ class KittingController extends Controller
                 $warehouseRecord->created_at = now();
                 $warehouseRecord->save();
 
-                if ($stock && $newQuantity <= $stock->closing_balance && $newQuantity != 0) {
+                if ($stock && $stock?->closing_balance != 0 && $newQuantity <= $stock?->closing_balance && $newQuantity != 0) {
                     
                     $existingRecord = ProdOrdersMaterial::where('po_id', $request->production_id)
                         ->where('material_id', $materialId)
@@ -158,23 +156,56 @@ class KittingController extends Controller
 
                     $stock->issue_qty += $reqQty;
                     $stock->save();
-                } 
-                
-                // else{
-                //     DB::rollBack();
+                } else {
 
-                //     $material = Material::findOrFail($materialId);
-                //     return response()->json([
-                //         'status' => false,
-                //         'message' => 'Invalid quantity for material ' . $material->description,
-                //     ], 422);
-                // }
+                    $material = Material::findOrFail($materialId);
+                    if (!$material) {
+                        $error[] = [
+                            'part_code' => null,
+                            'description' => null,
+                            'message' => "Material not found!"
+                        ];
+                    }
+
+                    if (!$stock || $stock?->closing_balance == 0) {
+                        $error[] = [
+                            'part_code' => $material->part_code,
+                            'description' => $material->description,
+                            'message' => "Insufficient stock for material partcode " . $material->part_code
+                        ];
+                    }
+
+                    if ($newQuantity > $stock?->closing_balance) {
+                        $error[] = [
+                            'part_code' => $material->part_code,
+                            'description' => $material->description,
+                            'message' => "Requested quantity for material partcode " . $material->part_code . " is higher than stock quanitity"
+                        ];
+                    } else if ($newQuantity == 0) {
+                        $error[] = [
+                            'part_code' => $material->part_code,
+                            'description' => $material->description,
+                            'message' => "Quantity for material partcode " . $material->part_code . " is 0"
+                        ];
+                    }
+                    
+                    
+                }
             }
 
             $this->updateProdOrderStatus($request->production_id);
-
-            DB::commit();
-            return response()->json(['success' => true, 'message' => 'Order Issued Successfully!']);
+            if (empty($error)) {
+                DB::commit();
+                return response()->json(['success' => true, 'message' => 'Order Issued Successfully!']);
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    'status' => false,
+                    // 'message' => 'Invalid quantity for material ' . $error['description'],
+                    'error' => $error
+                ], 422);
+            }
+            
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([

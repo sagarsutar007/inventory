@@ -466,17 +466,25 @@
                     processData: false,
                     contentType: false,
                     success: function(response) {
-                        if(response.status){
+                        if (response.status) {
                             toastr.success(response.message);
                             $("#modalUploadBOM").modal('hide');
                         } else {
-                            toastr.error(response.message);
+                            response.message.forEach(function(errorMsg) {
+                                toastr.error(errorMsg);
+                            });
                         }
                     },
                     error: function(xhr, status, error) {
                         var jsonResponse = JSON.parse(xhr.responseText);
                         console.error(jsonResponse.message);
-                        toastr.error(jsonResponse.message);
+                        if (jsonResponse.errors) {
+                            jsonResponse.errors.forEach(function(errorMsg) {
+                                toastr.error(errorMsg);
+                            });
+                        } else {
+                            toastr.error(jsonResponse.message);
+                        }
                     }
                 });
             });

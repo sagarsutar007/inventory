@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Imports\ExcelImportClass;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class MaterialController extends Controller
@@ -40,32 +41,36 @@ class MaterialController extends Controller
 
     public function importBomRecords(Request $request, Material $material)
     {
-        // try {
-        if ($request->hasFile('file')) {
+        try {
+            if ($request->hasFile('file')) {
 
-            $request->validate([
-                'file' => 'required|mimes:xlsx,xls',
-                'material_id' => 'required|string'
-            ]);
+                $request->validate([
+                    'file' => 'required|mimes:xlsx,xls',
+                    'material_id' => 'required|string'
+                ]);
 
-            $file = $request->file('file');
-            $exData = [
-                'material_id' => $request->input('material_id')
-            ];
+                $file = $request->file('file');
+                $exData = [
+                    'material_id' => $request->input('material_id')
+                ];
+                DB::beginTransaction();
+                $import = new ExcelImportClass('bom', Auth::id(), $exData);
+                Excel::import($import, $file);
+                DB::commit();
 
-            $import = new ExcelImportClass('bom', Auth::id(), $exData);
-            Excel::import($import, $file);
+                // $importedRows = $import->getImportedCount();
 
-            // $importedRows = $import->getImportedCount();
+                return response()->json(['status' => true, 'message' => 'BOM records imported successfully.']);
+            } else {
+                return response()->json(['status' => false, 'message' => ['No file uploaded.']]);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $errorMessages = explode("\n", $e->getMessage());
 
-            return response()->json(['status' => true, 'message' => 'BOM records imported successfully.']);
-        } else {
-            return response()->json(['status' => false, 'message' => 'No file uploaded.']);
+            // Log::error('Error importing file: ' . $e->getMessage());
+            return response()->json(['status' => false, 'message' => $errorMessages]);
         }
-        // } catch (\Exception $e) {
-        //     Log::error('Error importing file: ' . $e->getMessage());
-        //     return response()->json(['status' => false, 'error' => 'Failed to import BOM records.']);
-        // }
     }
 
     public function getMaterials(Request $request)
@@ -98,10 +103,8 @@ class MaterialController extends Controller
             ->first();
 
         if ($material) {
-            // Material found, return success response with material details
             return response()->json(['success' => true, 'data' => $material]);
         } else {
-            // Material not found, return error response
             \Log::error('Material not found for part code: ' . $searchTerm);
             return response()->json(['success' => false, 'error' => 'Material not found'], 404);
         }

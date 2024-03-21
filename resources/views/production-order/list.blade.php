@@ -276,6 +276,32 @@
                 }
             });
 
+            function checkDuplicate(partCode) {
+                let partCodes = [];
+                let status = true;
+                $(document).find(".suggest-goods").each(function() {
+                    let currentPartCode = $(this).val();
+                    if (partCodes.includes(currentPartCode)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Duplicate Entry',
+                            text: 'This part code has already been entered.',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        $(this).val('');
+                        $(this).closest(".row").find(".material-description").val('');
+                        $(this).closest(".row").find(".material-unit").val('');
+                        status = false;
+                    } else {
+                        if (currentPartCode.length != 0) {
+                            partCodes.push(currentPartCode);
+                        }
+                    }
+                });
+                return status;
+            }
+
             $(document).on('click', ".btn-create-order", function () {
 
                 $(this)

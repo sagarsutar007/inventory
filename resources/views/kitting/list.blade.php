@@ -186,13 +186,25 @@
                     url: "{{ route('kitting.issue') }}",
                     data: formData,
                     success: function(response) {
-                        $("#orderDetailsModal").modal('hide');
-                        toastr.success('Material Issued Successfully.');
+                        if (response.status) {
+                            $("#orderDetailsModal").modal('hide');
+                            toastr.success('Material Issued Successfully.');
+                            $('#prod-orders').DataTable().ajax.reload();
+                        } else {
+
+                        }
                     },
                     error: function(xhr, status, error) {
                         var jsonResponse = JSON.parse(xhr.responseText);
                         console.error(jsonResponse.message);
-                        toastr.error(jsonResponse.message);
+                        if (jsonResponse.message != undefined) {
+                            toastr.error(jsonResponse.message);
+                        } else if (jsonResponse.error) {
+                            $.each(jsonResponse.error, function (indexInArray, valueOfElement) { 
+                                toastr.error( valueOfElement.message );
+                            });
+                        }
+                        
                     }
                 });
             });

@@ -284,16 +284,16 @@ class ProductionOrderController extends Controller
                     'created_by' => Auth::id(),
                 ]);
 
-                $bomRecords = $this->fetchBomRecords([$request->part_code[$i]], [$request->quantity[$i]]);
+                // $bomRecords = $this->fetchBomRecords([$request->part_code[$i]], [$request->quantity[$i]]);
 
-                foreach ($bomRecords as $bomRecord) {
-                    ProdOrdersMaterial::create([
-                        'po_id' => $productionOrder->po_id,
-                        'material_id' => $bomRecord['material_id'],
-                        'quantity' => $bomRecord['quantity'],
-                        'created_by' => Auth::id(),
-                    ]);
-                }
+                // foreach ($bomRecords as $bomRecord) {
+                //     ProdOrdersMaterial::create([
+                //         'po_id' => $productionOrder->po_id,
+                //         'material_id' => $bomRecord['material_id'],
+                //         'quantity' => $bomRecord['quantity'],
+                //         'created_by' => Auth::id(),
+                //     ]);
+                // }
             }
 
             DB::commit();
