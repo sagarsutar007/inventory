@@ -9,7 +9,7 @@
                         <div class="col-md-8">
                             <select class="form-control raw-materials" name="raw[]" style="width:100%;">
                                 <option value=""></option>  
-                                <option value="{{ $bomRecord->material_id }}" selected>{{ $bomRecord->material->description ."-". $bomRecord->material->part_code }}</option>
+                                <option value="{{ $bomRecord->material_id }}" selected>{{ $bomRecord->material->description . "-" . $bomRecord->material->part_code . "(" . $bomRecord->material->uom->uom_shortcode . ")" }}</option>
                             </select>
                         </div>
                         <div class="col-md-4">

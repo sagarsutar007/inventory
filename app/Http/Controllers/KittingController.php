@@ -66,7 +66,7 @@ class KittingController extends Controller
                     $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
                     $quantity = $record->quantity * $quantities[$key];
-                    if (isset($bomRecords[$record->material->description])) {
+                    if (isset ($bomRecords[$record->material->description])) {
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
                     } else {
                         $bomRecords[$record->material->description] = [
@@ -114,6 +114,8 @@ class KittingController extends Controller
             $warehouseIssue->warehouse_id = Str::uuid();
             $warehouseIssue->transaction_id = $this->generateTransactionId();
             $warehouseIssue->type = 'issue';
+            $warehouseIssue->popn = $request->production_id;
+            //po_kitting will be true
             $warehouseIssue->created_by = Auth::id();
             $warehouseIssue->created_at = Carbon::now();
             $warehouseIssue->date = Carbon::now()->toDateString();
@@ -123,7 +125,7 @@ class KittingController extends Controller
                 $stock = Stock::where('material_id', $materialId)->first();
                 $reqQty = $request->issue[$index];
                 $newQuantity = $reqQty;
-                
+
                 $warehouseRecord = new WarehouseRecord();
                 $warehouseRecord->warehouse_record_id = Str::uuid();
                 $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
@@ -134,7 +136,7 @@ class KittingController extends Controller
                 $warehouseRecord->save();
 
                 if ($stock && $stock?->closing_balance != 0 && $newQuantity <= $stock?->closing_balance && $newQuantity != 0) {
-                    
+
                     $existingRecord = ProdOrdersMaterial::where('po_id', $request->production_id)
                         ->where('material_id', $materialId)
                         ->first();
@@ -188,13 +190,13 @@ class KittingController extends Controller
                             'message' => "Quantity for material partcode " . $material->part_code . " is 0"
                         ];
                     }
-                    
-                    
+
+
                 }
             }
 
             $this->updateProdOrderStatus($request->production_id);
-            if (empty($error)) {
+            if (empty ($error)) {
                 DB::commit();
                 return response()->json(['success' => true, 'message' => 'Order Issued Successfully!']);
             } else {
@@ -205,7 +207,7 @@ class KittingController extends Controller
                     'error' => $error
                 ], 422);
             }
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -233,7 +235,8 @@ class KittingController extends Controller
         return $transactionId;
     }
 
-    private function getStatus($prodId="", $materialId="", $quantity=0){
+    private function getStatus($prodId = "", $materialId = "", $quantity = 0)
+    {
         $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
         $prodMaterial = Material::findOrFail($prodOrder->material_id);
         $required_quantity = $prodOrder->quantity;
@@ -264,7 +267,8 @@ class KittingController extends Controller
         }
     }
 
-    private function updateProdOrderStatus($prodId=""){
+    private function updateProdOrderStatus($prodId = "")
+    {
         $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
         $prodOrderMaterials = ProdOrdersMaterial::where('po_id', $prodId)->get();
         $overallStatus = 'Completed';

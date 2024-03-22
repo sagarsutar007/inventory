@@ -5,7 +5,8 @@
                 <th>Part Code</th>
                 <th>Material Description</th>
                 <th>UOM</th>
-                <th>Quantity</th>
+                <th>QPA</th>
+                <th>PO Qty</th>
                 <th>Stock Qty.</th>
                 <th>Status</th>
             </tr>
@@ -16,11 +17,12 @@
                     <td>{{ $record['part_code'] }}</td>
                     <td>{{ $record['material_description'] }}</td>
                     <td>{{ $record['uom_shortcode'] }}</td>
+                    <td>{{ $record['bom_qty'] }}</td>
                     <td>{{ $record['quantity'] }}</td>
                     <td>{{ $record['closing_balance'] }}</td>
                     <td>
                         @if ($record['quantity'] > $record['closing_balance'])
-                            Shortage
+                            <span class="text-danger">Shortage</span>
                         @else
                             Available
                         @endif

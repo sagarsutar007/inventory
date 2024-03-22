@@ -37,14 +37,14 @@ class ProductionOrderController extends Controller
         $validator = Validator::make($request->all(), [
             'po_id' => 'required|exists:production_orders,po_id',
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
                 'message' => $validator->errors()->first(),
             ]);
         }
-    
+
         $po_id = $request->input('po_id');
         $productionOrder = ProductionOrder::findOrFail($po_id);
         $partCodes = [$productionOrder->material->part_code];
@@ -97,15 +97,12 @@ class ProductionOrderController extends Controller
 
         foreach ($partCodes as $key => $partCode) {
             $material = Material::where('part_code', $partCode)->first();
-
             if ($material && $material->bom) {
                 $records = BomRecord::where('bom_id', $material->bom->bom_id)->get();
-                
-
                 foreach ($records as $record) {
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
                     $quantity = $record->quantity * $quantities[$key];
-                    if (isset($bomRecords[$record->material->description])) {
+                    if (isset ($bomRecords[$record->material->description])) {
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
                     } else {
                         $bomRecords[$record->material->description] = [
@@ -113,6 +110,7 @@ class ProductionOrderController extends Controller
                             'part_code' => $record->material->part_code,
                             'material_description' => $record->material->description,
                             'quantity' => $quantity,
+                            'bom_qty' => $record->quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
                             'closing_balance' => $closingBalance,
                         ];
@@ -138,7 +136,7 @@ class ProductionOrderController extends Controller
 
         $query = ProductionOrder::with('material.uom');
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('description', 'like', '%' . $search . '%');
             });
@@ -151,7 +149,7 @@ class ProductionOrderController extends Controller
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
         } else {
-            
+
         }
 
         // Paginate the query
@@ -209,7 +207,7 @@ class ProductionOrderController extends Controller
 
         try {
             $poNumber = $this->generatePoNumber();
-            
+
             for ($i = 0; $i < count($request->part_code); $i++) {
                 $material = Material::where('part_code', $request->part_code[$i])->first();
                 ProductionOrder::create([
@@ -241,7 +239,7 @@ class ProductionOrderController extends Controller
         $lastPoNumber = ProductionOrder::where('po_number', 'like', '%' . $year . '%')->max('po_number');
         $increment = 1;
         if ($lastPoNumber) {
-            $lastNumericPart = (int)substr($lastPoNumber, -5);
+            $lastNumericPart = (int) substr($lastPoNumber, -5);
             $increment = $lastNumericPart + 1;
         }
         $incrementFormatted = str_pad($increment, 5, '0', STR_PAD_LEFT);

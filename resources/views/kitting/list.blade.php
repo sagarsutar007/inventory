@@ -101,7 +101,7 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link kitting-btn btn-sm" data-pon="' + row.po_number + '" data-id="' + row.po_id + '"><i class="fas fa-eye text-primary"></i></button>';
+                            return '<button class="btn btn-link kitting-btn btn-sm" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-eye text-primary"></i></button>';
                         }
                     }
                 ],
@@ -124,6 +124,9 @@
             $(document).on('click', '.kitting-btn', function() {
                 let po_id = $(this).data('id');
                 let po_num = $(this).data('pon');
+                let po_desc = $(this).data('desc');
+                let po_qty = $(this).data('qty');
+                let po_unit = $(this).data('unit');
                 $.ajax({
                     type: "GET",
                     url: "{{ route('kitting.viewKittingForm') }}",
@@ -132,7 +135,9 @@
                     },
                     success: function(response) {
                         $('#order-details-section').html(response.html);
-                        $("#orderDetailsModal").find('.modal-title').text('Production Order: #' + po_num);
+                        $("#orderDetailsModal").find('.modal-title').html(
+                            `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
+                        ); //
                         $("#orderDetailsModal").modal('show');
 
                         $('#bom-table').DataTable({
