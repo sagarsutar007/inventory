@@ -222,7 +222,11 @@
             $('#modalEdit').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var bomId = button.data('bomid');
+                var partcode = button.data('partcode');
+                var desc = button.data('desc');
                 var modal = $(this)
+                modal.find(".modal-title").text("Edit BOM of " + partcode + "-" + 
+                desc);
                 
                 $.ajax({
                     url: '/app/bill-of-materials/' + bomId + '/edit',

@@ -306,7 +306,7 @@
                                 results: $.map(data, function (item) {
                                     return {
                                         id: item.material_id,
-                                        text: item.description + "-" + item.part_code
+                                        text: item.description + "-" + item.part_code + "("+item.uom_shortcode+")"
                                     };
                                 })
                             };

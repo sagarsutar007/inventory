@@ -31,7 +31,7 @@ class BOMController extends Controller
         $query = Bom::with(['bomRecords.material']);
 
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
@@ -84,7 +84,7 @@ class BOMController extends Controller
             if ($material) {
 
                 $actionHtml = '<a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
-                    '<a href="#" role="button" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
+                    '<a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
                     '<form action="' . route("bom.destroy", ["bom" => $bom->bom_id]) . '" method="post" style="display: inline;">' .
                     csrf_field() .
                     method_field('DELETE') .
@@ -168,7 +168,7 @@ class BOMController extends Controller
 
                 if (count($rawMaterials) === count($quantities)) {
                     foreach ($rawMaterials as $index => $rawMaterialId) {
-                        if (!empty($rawMaterialId)) {
+                        if (!empty ($rawMaterialId)) {
                             $bomRecord = BomRecord::where('material_id', $rawMaterialId)
                                 ->where('bom_id', $bom->bom_id)
                                 ->first();

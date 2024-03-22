@@ -70,7 +70,7 @@ class FinishedMaterialController extends Controller
         $material->type = "finished";
         $material->created_by = Auth::id();
         $material->updated_by = Auth::id();
-        $material->opening_balance = 0;
+        // $material->opening_balance = 0;
         $material->save();
 
         if ($request->hasFile('photo')) {
@@ -127,7 +127,7 @@ class FinishedMaterialController extends Controller
         if (count($rawMaterials) === count($quantities)) {
             // Create records in the bom_records table
             foreach ($rawMaterials as $index => $rawMaterialId) {
-                if (!empty($rawMaterialId)) {
+                if (!empty ($rawMaterialId)) {
                     $bomRecord = new BomRecord();
                     $bomRecord->bom_id = $bomId;
                     $bomRecord->material_id = $rawMaterialId;
@@ -349,7 +349,7 @@ class FinishedMaterialController extends Controller
 
                 if (count($rawMaterials) === count($quantities)) {
                     foreach ($rawMaterials as $index => $rawMaterialId) {
-                        if (!empty($rawMaterialId)) {
+                        if (!empty ($rawMaterialId)) {
 
                             if ($material->bom === null) {
                                 // If Bom doesn't exist for the material, create a new one
@@ -449,18 +449,31 @@ class FinishedMaterialController extends Controller
     {
         $searchTerm = $request->input('q');
 
-        if (empty($searchTerm)) {
-            $materials = RawMaterial::select('material_id', 'description', 'part_code')->limit(10)->get();
+        if (empty ($searchTerm)) {
+            $materials = RawMaterial::with('uom')->limit(10)->get();
         } else {
-            $materials = Material::select('material_id', 'description', 'part_code')
-                ->where('description', 'like', '%' . $searchTerm . '%')
-                ->orWhere('part_code', 'like', '%' . $searchTerm . '%')
+            $materials = Material::with('uom')
+                ->where(function ($query) use ($searchTerm) {
+                    $query->where('description', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
+                })
                 ->whereIn('type', ['raw', 'semi-finished'])
                 ->orderBy('description')
                 ->get();
         }
+
+        $materials = $materials->map(function ($material) {
+            return [
+                'material_id' => $material->material_id,
+                'description' => $material->description,
+                'part_code' => $material->part_code,
+                'uom_shortcode' => $material->uom->uom_shortcode ?? null
+            ];
+        });
+
         return response()->json($materials);
     }
+
 
     private function generatePartCode($commodity_id = '', $category_id = '')
     {
