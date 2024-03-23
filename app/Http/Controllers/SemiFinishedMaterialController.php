@@ -195,6 +195,8 @@ class SemiFinishedMaterialController extends Controller
 
         $bomRecords = $material->bom?->bomRecords;
 
+        $stock = Stock::where('material_id', $material->material_id)->first();
+
         $context = [
             'material' => $material,
             'attachments' => $attachments,
@@ -205,6 +207,7 @@ class SemiFinishedMaterialController extends Controller
             'uoms' => $uoms,
             'categories' => $categories,
             'commodities' => $commodities,
+            'stock' => $stock,
         ];
 
         $returnHTML = view('edit-semi-material', $context)->render();

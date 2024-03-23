@@ -12,7 +12,7 @@
             <div class="col-12 col-md-2">
                 <div class="form-group">
                     <div class="input-group mb-3">
-                        <input type="number" class="form-control" name="opening_balance" placeholder="Opening Bal." value="{{ $material->opening_balance }}">
+                        <input type="number" class="form-control" name="opening_balance" placeholder="Opening Bal." value="{{ $stock?->opening_balance }}">
                     </div>
                 </div>
             </div>

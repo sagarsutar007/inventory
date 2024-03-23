@@ -7,6 +7,7 @@ use App\Models\Commodity;
 use App\Models\RawMaterial;
 use App\Models\MaterialAttachments;
 use App\Models\MaterialPurchase;
+use App\Models\Material;
 use App\Models\UomUnit;
 use App\Models\Vendor;
 use App\Models\Stock;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
+use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 use Excel;
 
@@ -179,6 +181,8 @@ class RawMaterialController extends Controller
         $category = $material->category()->first();
         $purchases = $material->purchases()->with('vendor')->get();
 
+        $stock = Stock::where('material_id', $material->material_id)->first();
+
         $context = [
             'material' => $material,
             'attachments' => $attachments,
@@ -189,6 +193,7 @@ class RawMaterialController extends Controller
             'categories' => $categories,
             'commodities' => $commodities,
             'purchases' => $purchases,
+            'stock' => $stock,
         ];
 
         $returnHTML = view('edit-raw-material', $context)->render();
@@ -424,4 +429,78 @@ class RawMaterialController extends Controller
             return redirect()->route('raw')->with('error', 'An error occurred while deleting the Raw Material');
         }
     }
+
+    public function priceList(){
+        return view('reports.rm-price-list');
+    }
+
+    public function fetchPriceList(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $query = Material::query()->with(['category', 'commodity']);
+
+        if (!empty($search)) {
+            $query->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        if (!in_array($columnName, ['serial', 'price_1', 'price_2', 'price_3'])) {
+            $query->orderBy($columnName, $columnSortOrder);
+        }
+
+        $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        $data = [];
+
+        foreach ($materials->items() as $index => $item) {
+            $priceStats = MaterialPurchase::where('material_id', $item->material_id)
+                ->groupBy('material_id')
+                ->select([
+                    DB::raw('MAX(price) as max_price'),
+                    DB::raw('MIN(price) as min_price'),
+                    DB::raw('AVG(price) as avg_price'),
+                ])
+                ->first();
+
+            $data[] = [
+                'serial' => $index + 1, 
+                'part_code' => $item->part_code,
+                'description' => $item->description,
+                'commodity' => $item->commodity->commodity_name,
+                'category' => $item->category->category_name,
+                'price_1' => $priceStats?->min_price,
+                'price_2' => $priceStats?->avg_price,
+                'price_3' => $priceStats?->max_price,
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $materials->total(),
+            "data" =>  $data,
+        ];
+
+        return response()->json($response);
+    }
+
+
 }

@@ -302,12 +302,12 @@ return [
         ],
 
         // Sidebar items:
-        [
-            'text' => 'Dashboard',
-            'url' => 'app/dashbaord',
-            'icon' => 'fas fa-fw fa-tachometer-alt',
-            'active' => []
-        ],
+        // [
+        //     'text' => 'Dashboard',
+        //     'url' => 'app/dashbaord',
+        //     'icon' => 'fas fa-fw fa-tachometer-alt',
+        //     'active' => []
+        // ],
         [
             'text' => 'Commodities',
             'url' => 'app/commodities',

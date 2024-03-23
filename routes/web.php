@@ -16,6 +16,7 @@ use App\Http\Controllers\AttachmentsController;
 use App\Http\Controllers\ProductionOrderController;
 use App\Http\Controllers\KittingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,6 +41,7 @@ Auth::routes();
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/app', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
     //Utility Routes
     Route::get('app/vendor/autocomplete', [VendorController::class, 'autocomplete'])->name('vendors.autocomplete');
@@ -91,6 +93,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{material}/edit', [RawMaterialController::class, 'edit'])->name('raw.edit');
         Route::post('/{material}/update', [RawMaterialController::class, 'update'])->name('raw.update');
         Route::delete('/{material}', [RawMaterialController::class, 'destroy'])->name('raw.destroy');
+        Route::post('/price-list', [RawMaterialController::class, 'fetchPriceList'])->name('raw.fetchPriceList');
     });
 
     // Semi Finished Material Routes
@@ -205,6 +208,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::post('/{user}/update', [UserController::class, 'update'])->name('users.update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('user.destroy');
+    });
+
+    Route::prefix('/app/reports')->group(function () {
+        Route::get('', [ReportController::class, 'index'])->name('reports');
+        Route::get('/rm-price-list', [RawMaterialController::class, 'priceList'])->name('reports.rmPriceList');
     });
 
 });

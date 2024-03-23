@@ -313,15 +313,18 @@
                     contentType: false,
                     success: function (response) {
                         if (response.status) {
+                            $('#modalEdit').modal('hide');
                             toastr.success(response.message);
                         }
                     },
                     error: function (xhr, status, error) {
+                        let response = JSON.parse(xhr.responseText);
                         console.error(xhr.responseText);
+                        toastr.error(response.message);
                     }
                 });
 
-                $('#modalEdit').modal('hide');
+                
             });
 
             $('.btn-save-clone-material').click(function () {
