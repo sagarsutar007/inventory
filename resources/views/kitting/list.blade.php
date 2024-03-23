@@ -10,7 +10,7 @@
                     <h3 class="card-title">Kitting</h3>
                     <div class="card-tools">
                         <div class="btn-group">
-                            <a href="{{ route('po.new') }}" class="btn btn-default btn-sm">Create</a>
+                            {{-- <a href="{{ route('po.new') }}" class="btn btn-default btn-sm">Create</a> --}}
                         </div>
                     </div>
                 </div>
@@ -61,6 +61,7 @@
 @section('js')
     <script>
         $(function () {
+
             $('#prod-orders').DataTable({
                 "responsive": true,
                 "lengthChange": true,
@@ -111,8 +112,8 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link kitting-btn btn-sm" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-edit text-primary"></i></button>' +" / "+
-                            '<button class="btn btn-link records-btn btn-sm" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-eye text-primary"></i></button>'
+                            return '<button class="btn btn-link kitting-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-edit text-primary"></i></button>' +" / "+
+                            '<button class="btn btn-link records-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-eye text-primary"></i></button>'
                             ;
                         }
                     }
@@ -139,6 +140,9 @@
                 let po_desc = $(this).data('desc');
                 let po_qty = $(this).data('qty');
                 let po_unit = $(this).data('unit');
+                let po_status = $(this).data('status');
+
+                let status = showKittingStatus(po_status);
                 $.ajax({
                     type: "GET",
                     url: "{{ route('kitting.viewKittingForm') }}",
@@ -148,8 +152,10 @@
                     success: function(response) {
                         $('#order-details-section').html(response.html);
                         $("#orderDetailsModal").find('.modal-title').html(
-                            `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
-                        ); //
+                            `<div class="d-flex align-items-center justify-content-between">
+                                <span>#${po_num} - ${status}</span>
+                                <span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
+                        );
                         $("#orderDetailsModal").modal('show');
 
                         $('#bom-table').DataTable({
@@ -157,6 +163,7 @@
                             "ordering": true,
                             "info": false,
                             "dom": 'Bfrtip',
+                            "autoWidth": true,
                             "columnDefs": [
                                 {
                                     "targets": [9],
@@ -202,7 +209,7 @@
                 $('input[name="issue[]"]').each(function() {
                     var inputValue = $(this).val();
                     var maxAttributeValue = $(this).attr('max');
-                    if (maxAttributeValue && inputValue > maxAttributeValue) {
+                    if (parseFloat(inputValue) > parseFloat(maxAttributeValue)) {
                         toastr.error('Issue quantity cannot exceed maximum allowed quantity!');
                         status = false;
                         return false;
@@ -252,6 +259,7 @@
                 let po_desc = $(this).data('desc');
                 let po_qty = $(this).data('qty');
                 let po_unit = $(this).data('unit');
+                let po_status = $(this).data('status');
                 $.ajax({
                     type: "GET",
                     url: "{{ route('kitting.warehouseRecords') }}",
@@ -259,10 +267,18 @@
                         'po_id': po_id,
                     },
                     success: function(response) {
+
+                        let status = showKittingStatus(po_status);
+
                         $('#records-section').html(response.html);
-                        // $("#orderDetailsModal").find('.modal-title').html(
-                        //     `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
-                        // ); 
+
+                        $("#recordsModal").find('.modal-title').html(
+                            `<div class="d-flex align-items-center justify-content-between">
+                                <span> Issue/Reciept Details of PO: #${po_num}</span>
+                                ${status}
+                            </div>`
+                        ); 
+
                         $("#recordsModal").modal('show');
 
                         $('#records-table').DataTable({
@@ -270,6 +286,7 @@
                             "ordering": true,
                             "info": false,
                             "dom": 'Bfrtip',
+                            "autoWidth": true,
                             "buttons": [
                                 {
                                     extend: 'excel',
@@ -336,7 +353,9 @@
                             success: function(response) {
                                 if (response.status) {
                                     toastr.success(response.message);
-                                    $("#orderDetailsModal").modal('hide');
+                                    // $("#orderDetailsModal").modal('hide');
+                                    showKittingGrid(poid);
+                                    $('#prod-orders').DataTable().ajax.reload();
                                 } else {
                                     if (response.message != undefined) {
                                         toastr.error(response.message);
@@ -363,6 +382,61 @@
                     }
                 });
             });
+
+            function showKittingGrid(poid){
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('kitting.viewKittingForm') }}",
+                    data: {
+                        'po_id': poid,
+                    },
+                    success: function(response) {
+                        $('#order-details-section').html(response.html);
+                        $("#orderDetailsModal").modal('show');
+                        $('#bom-table').DataTable({
+                            "paging": false,
+                            "ordering": true,
+                            "info": false,
+                            "dom": 'Bfrtip',
+                            "autoWidth": true,
+                            "columnDefs": [
+                                {
+                                    "targets": [9],
+                                    "orderable": false
+                                }
+                            ],
+                            "buttons": [
+                                {
+                                    extend: 'excel',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    // title: 'Production Order: #' + po_num,
+                                },
+                                {
+                                    extend: 'pdf',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    // title: 'Production Order: #' + po_num,
+                                },
+                                {
+                                    extend: 'print',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    // title: 'Production Order: #' + po_num,
+                                },
+                                'colvis',
+                            ],
+                            stateSave: true,
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        toastr.error('An error occurred while fetching order details.');
+                    }
+                });
+            }
         });
     </script>
 @stop

@@ -133,7 +133,7 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link view-btn btn-sm" data-id="' + row.po_id + '"><i class="fas fa-eye text-primary"></i></button>' + '/<button class="btn btn-link delete-btn btn-sm" data-id="' + row.po_id + '"><i class="fas fa-trash text-danger"></i></button>';
+                            return '<button class="btn btn-link view-btn btn-sm p-0" data-id="' + row.po_id + '"  data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-eye text-primary"></i></button>' + ' / <button class="btn btn-link delete-btn btn-sm p-0" data-id="' + row.po_id + '" data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-trash text-danger"></i></button>';
                         }
                     }
                 ],
@@ -175,6 +175,10 @@
 
             $(document).on('click', '.view-btn', function() {
                 let po_id = $(this).data('id');
+                let po_num = $(this).data('pon');
+                let po_desc = $(this).data('desc');
+                let po_qty = $(this).data('qty');
+                let po_unit = $(this).data('unit');
                 $.ajax({
                     type: "GET",
                     url: "{{ route('po.viewOrder') }}",
@@ -184,6 +188,46 @@
                     success: function(response) {
                         $('#order-details-section').html(response.html);
                         $("#orderDetailsModal").modal('show');
+                        $("#orderDetailsModal").find('.modal-title').html(
+                            `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
+                        );
+                        $("#bom-table").DataTable({
+                            "paging": false,
+                            "ordering": true,
+                            "info": false,
+                            "dom": 'Bfrtip',
+                            "columnDefs": [
+                                // {
+                                //     "targets": [9],
+                                //     "orderable": false
+                                // }
+                            ],
+                            "buttons": [
+                                {
+                                    extend: 'excel',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num,
+                                },
+                                {
+                                    extend: 'pdf',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num,
+                                },
+                                {
+                                    extend: 'print',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num,
+                                },
+                                'colvis',
+                            ],
+                            stateSave: true,
+                        });
                     },
                     error: function(xhr, status, error) {
                         var jsonResponse = JSON.parse(xhr.responseText);

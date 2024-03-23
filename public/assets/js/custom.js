@@ -35,3 +35,13 @@ $(function () {
     }, 60000);
   });
 });
+
+function showKittingStatus(po_status){
+  if (po_status == 'Pending') {
+      return `<span class="text-danger">${po_status}</span>`;
+  } else if (po_status == 'Completed') {
+      return `<span class="text-success">${po_status}</span>`;
+  } else {
+      return `<span class="text-warning">${po_status}</span>`;
+  }
+}

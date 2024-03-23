@@ -15,7 +15,7 @@
                 <th>Stock</th>
                 {{-- <th>Reversal</th> --}}
                 <th style="width: 15%;">Issue</th>
-                <th>Reverse</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -39,8 +39,8 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        <button type="button" data-poid="{{ $record['po_id'] }}" data-matid="{{ $record['material_id'] }}" class="btn btn-primary reverse-btn" data-toggle="tooltip" data-placement="top" title="Reverse">
-                            <i class="fas fa-arrow-alt-circle-left"></i>
+                        <button type="button" data-poid="{{ $record['po_id'] }}" data-matid="{{ $record['material_id'] }}" class="btn btn-link reverse-btn p-0" data-toggle="tooltip" data-placement="top" title="Reversal">
+                            <img src="{{ asset('assets/img/return.png') }}" alt="Reversal of issued quantity" width="20px">
                         </button>
                     </td>
                 </tr>

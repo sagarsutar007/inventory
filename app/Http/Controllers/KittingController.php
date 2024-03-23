@@ -220,21 +220,22 @@ class KittingController extends Controller
                 $reqQty = $request->issue[$index];
                 $newQuantity = $reqQty;
 
-                $warehouseRecord = new WarehouseRecord();
-                $warehouseRecord->warehouse_record_id = Str::uuid();
-                $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
-                $warehouseRecord->material_id = $materialId;
-                $warehouseRecord->warehouse_type = 'issued';
-                $warehouseRecord->quantity = $newQuantity;
-                $warehouseRecord->created_at = now();
-                $warehouseRecord->save();
+                if ( $newQuantity > 0 ) {
+                    $warehouseRecord = new WarehouseRecord();
+                    $warehouseRecord->warehouse_record_id = Str::uuid();
+                    $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
+                    $warehouseRecord->material_id = $materialId;
+                    $warehouseRecord->warehouse_type = 'issued';
+                    $warehouseRecord->quantity = $newQuantity;
+                    $warehouseRecord->created_at = now();
+                    $warehouseRecord->save();
 
-                if (
-                    $stock && 
-                    $stock?->closing_balance != 0 && 
-                    $newQuantity <= $stock?->closing_balance
-                ) {
-                    if ($newQuantity != 0 ) {
+                    if (
+                        $stock && 
+                        $stock?->closing_balance != 0 && 
+                        $newQuantity <= $stock?->closing_balance
+                    ) {
+                        
                         $status = $this->getStatus($request->production_id, $materialId, $newQuantity);
 
                         if ($existingRecord) {
@@ -252,40 +253,39 @@ class KittingController extends Controller
 
                         $stock->issue_qty += $reqQty;
                         $stock->save();
-                    }
-                    
-                } else {
-                    $material = Material::findOrFail($materialId);
-                    if (!$material) {
-                        $error[] = [
-                            'part_code' => null,
-                            'description' => null,
-                            'message' => "Material not found!"
-                        ];
-                    }
+                    } else {
+                        $material = Material::findOrFail($materialId);
+                        if (!$material) {
+                            $error[] = [
+                                'part_code' => null,
+                                'description' => null,
+                                'message' => "Material not found!"
+                            ];
+                        }
 
-                    if (!$stock || $stock?->closing_balance == 0) {
-                        $error[] = [
-                            'part_code' => $material->part_code,
-                            'description' => $material->description,
-                            'message' => "Insufficient stock for material partcode " . $material->part_code
-                        ];
-                    }
+                        if (!$stock || $stock?->closing_balance == 0) {
+                            $error[] = [
+                                'part_code' => $material->part_code,
+                                'description' => $material->description,
+                                'message' => "Insufficient stock for material partcode " . $material->part_code
+                            ];
+                        }
 
-                    if ($newQuantity > $stock?->closing_balance) {
-                        $error[] = [
-                            'part_code' => $material->part_code,
-                            'description' => $material->description,
-                            'message' => "Requested quantity for material partcode " . $material->part_code . " is higher than stock quanitity"
-                        ];
-                    }
+                        if ($newQuantity > $stock?->closing_balance) {
+                            $error[] = [
+                                'part_code' => $material->part_code,
+                                'description' => $material->description,
+                                'message' => "Requested quantity for material partcode " . $material->part_code . " is higher than stock quanitity"
+                            ];
+                        }
 
-                    if ( $newQuantity <= $required_qty ) {
-                        $error[] = [
-                            'part_code' => $material->part_code,
-                            'description' => $material->description,
-                            'message' => $material->description + " has requested quantity that is more than the required quantity"
-                        ];
+                        if ( $newQuantity <= $required_qty ) {
+                            $error[] = [
+                                'part_code' => $material->part_code,
+                                'description' => $material->description,
+                                'message' => $material->description + " has requested quantity that is more than the required quantity"
+                            ];
+                        }
                     }
                 }
             }

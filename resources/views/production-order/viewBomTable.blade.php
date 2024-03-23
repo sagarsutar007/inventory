@@ -1,31 +1,31 @@
 @if (count($bomRecords) > 0)
-    <table id="bom-table" class="table table-bordered table-striped">
+    <table id="bom-table" class="table table-bordered table-striped" style="width:100%;">
         <thead>
             <tr>
-                <th>Part Code</th>
+                <th width="10%">Part Code</th>
                 <th>Material Description</th>
-                <th>UOM</th>
-                <th>QPA</th>
-                <th>PO Qty</th>
-                <th>Issued</th>
-                <th>Bal. to Issue</th>
-                <th>Stock Qty.</th>
-                <th>Reversal</th>
+                <th width="8%">UOM</th>
+                <th width="8%">QPA</th>
+                <th width="8%">PO Qty</th>
+                <th width="7%">Issued</th>
+                <th width="10%">Bal. to Issue</th>
+                <th width="6%">Stock Qty</th>
+                {{-- <th>Reversal</th> --}}
                 <th>Status</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($bomRecords as $record)
                 <tr>
-                    <td>{{ $record['part_code'] }}</td>
+                    <td width="10%">{{ $record['part_code'] }}</td>
                     <td>{{ $record['material_description'] }}</td>
-                    <td>{{ $record['uom_shortcode'] }}</td>
-                    <td>{{ $record['bom_qty'] }}</td>
-                    <td>{{ $record['quantity'] }}</td>
-                    <td>{{ $record['issued'] }}</td>
-                    <td>{{ $record['balance'] }}</td>
-                    <td>{{ $record['closing_balance'] }}</td>
-                    <td></td>
+                    <td width="8%">{{ $record['uom_shortcode'] }}</td>
+                    <td width="8%">{{ $record['bom_qty'] }}</td>
+                    <td width="8%">{{ $record['quantity'] }}</td>
+                    <td width="7%">{{ $record['issued'] }}</td>
+                    <td width="10%">{{ $record['balance'] }}</td>
+                    <td width="6%">{{ $record['closing_balance'] }}</td>
+                    {{-- <td></td> --}}
                     <td>
                         @if ($record['quantity'] > $record['closing_balance'])
                             <span class="text-danger">Shortage</span>

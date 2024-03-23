@@ -65,3 +65,7 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
   display: inline-block;
   margin-left: 10px ;
 }
+
+.modal-title {
+  width: 98%;
+}

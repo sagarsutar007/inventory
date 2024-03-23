@@ -2,25 +2,25 @@
     <table id="records-table" class="table table-bordered table-striped" style="width: 100%;">
         <thead>
             <tr>
-                <td>Transaction ID</td>
-                <td>Type</td>
-                <td>Date</td>
-                <td>Partcode</td>
-                <td>Description</td>
-                <td>Unit</td>
-                <td>Qty</td>
+                <th width="10%">ID</th>
+                <th width="7%">Type</th>
+                <th width="14%">Date</th>
+                <th width="10%">Partcode</th>
+                <th>Description</th>
+                <th width="7%">Unit</th>
+                <th width="8%">Qty</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($records as $record)
             <tr>
-                <td>{{ $record['transaction_id'] }}</td>
-                <td>{{ ucfirst($record['type']) }}</td>
-                <td>{{ $record['created_at'] }}</td>
-                <td>{{ $record['part_code'] }}</td>
+                <td width="10%">{{ $record['transaction_id'] }}</td>
+                <td width="7%">{{ ucfirst($record['type']) }}</td>
+                <td width="14%">{{ $record['created_at'] }}</td>
+                <td width="10%">{{ $record['part_code'] }}</td>
                 <td>{{ $record['description'] }}</td>
-                <td>{{ $record['uom'] }}</td>
-                <td style="{{ $record['type'] === 'reversal' ? 'color: red;' : '' }}">{{ $record['quantity'] }}</td>
+                <td width="7%">{{ $record['uom'] }}</td>
+                <td width="8%" style="{{ $record['type'] === 'reversal' ? 'color: red;' : '' }}">{{ $record['quantity'] }}</td>
             </tr>
             @endforeach
         </tbody>
