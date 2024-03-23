@@ -7,7 +7,10 @@
                 <th>UOM</th>
                 <th>QPA</th>
                 <th>PO Qty</th>
+                <th>Issued</th>
+                <th>Bal. to Issue</th>
                 <th>Stock Qty.</th>
+                <th>Reversal</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -19,7 +22,10 @@
                     <td>{{ $record['uom_shortcode'] }}</td>
                     <td>{{ $record['bom_qty'] }}</td>
                     <td>{{ $record['quantity'] }}</td>
+                    <td>{{ $record['issued'] }}</td>
+                    <td>{{ $record['balance'] }}</td>
                     <td>{{ $record['closing_balance'] }}</td>
+                    <td></td>
                     <td>
                         @if ($record['quantity'] > $record['closing_balance'])
                             <span class="text-danger">Shortage</span>

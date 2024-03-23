@@ -13,7 +13,9 @@
                 <th>Issued</th>
                 <th>Bal. to Issue</th>
                 <th>Stock</th>
+                {{-- <th>Reversal</th> --}}
                 <th style="width: 15%;">Issue</th>
+                <th>Reverse</th>
             </tr>
         </thead>
         <tbody>
@@ -28,12 +30,18 @@
                     <td>{{ $record['issued'] }}</td>
                     <td>{{ $record['balance'] }}</td>
                     <td>{{ $record['closing_balance'] }}</td>
+                    {{-- <td></td> --}}
                     <td style="width: 15%;">
                         @if ( $record['balance'] != 0)
-                        <input type="number" name="issue[]" max="{{ $record['closing_balance'] }}" class="form-control" placeholder="Issue Quantity">
+                        <input type="number" name="issue[]" max="{{ $record['balance'] }}" class="form-control" placeholder="Issue Quantity">
                         @else
                         <input type="number" name="issue[]" class="form-control" readonly placeholder="Issue Completed">
                         @endif
+                    </td>
+                    <td class="text-center">
+                        <button type="button" data-poid="{{ $record['po_id'] }}" data-matid="{{ $record['material_id'] }}" class="btn btn-primary reverse-btn" data-toggle="tooltip" data-placement="top" title="Reverse">
+                            <i class="fas fa-arrow-alt-circle-left"></i>
+                        </button>
                     </td>
                 </tr>
             @endforeach

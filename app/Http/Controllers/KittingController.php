@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +7,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-
 
 use App\Models\Material;
 use App\Models\BomRecord;
@@ -70,6 +67,7 @@ class KittingController extends Controller
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
                     } else {
                         $bomRecords[$record->material->description] = [
+                            'po_id' => $po_id,
                             'material_id' => $record->material->material_id,
                             'part_code' => $record->material->part_code,
                             'material_description' => $record->material->description,
@@ -88,6 +86,94 @@ class KittingController extends Controller
         $bomRecords = array_values($bomRecords);
 
         return $bomRecords;
+    }
+
+    public function reverseItem(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'po_id' => 'required|exists:production_orders,po_id',
+            'material_id' => 'required|exists:materials,material_id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ]);
+        }
+
+        $prodOrder = ProductionOrder::where('po_id', $request->po_id)->first();
+
+        $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $request->po_id)
+                                ->where('material_id', $request->material_id)
+                                ->first();
+                                
+        $material = Material::find($request->material_id);
+
+        $stock = Stock::where('material_id', $request->material_id)->first();
+
+        if (!$stock) {
+            return response()->json([
+                'status' => false,
+                'message' => "Item entry not found in stock",
+            ]);
+        }
+
+        if($request->reverse_qty > $prodOrderMaterial->quantity){
+            return response()->json([
+                'status' => false,
+                'message' => "Reverse quantity cannot exceed Issued Quantity",
+            ]);
+        }
+
+        DB::beginTransaction();
+        try {
+            $warehouseIssue = new Warehouse();
+            $warehouseIssue->warehouse_id = Str::uuid();
+            $warehouseIssue->transaction_id = $this->generateTransactionId();
+            $warehouseIssue->type = 'reversal';
+            $warehouseIssue->popn = $prodOrder->po_number;
+            $warehouseIssue->po_id = $prodOrder->po_id;
+            $warehouseIssue->po_kitting = 'true';
+            $warehouseIssue->kitting_reversal = 'true';
+            $warehouseIssue->created_by = Auth::id();
+            $warehouseIssue->created_at = Carbon::now();
+            $warehouseIssue->date = Carbon::now()->toDateString();
+            $warehouseIssue->save();
+
+            $warehouseRecord = new WarehouseRecord();
+            $warehouseRecord->warehouse_record_id = Str::uuid();
+            $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
+            $warehouseRecord->material_id = $request->material_id;
+            $warehouseRecord->warehouse_type = 'reversed';
+            $warehouseRecord->quantity = $request->reverse_qty;
+            $warehouseRecord->created_at = now();
+            $warehouseRecord->save();
+
+            $prodOrderMaterial->status = 'Partial';
+            $prodOrderMaterial->quantity -= $request->reverse_qty;
+            $prodOrderMaterial->save();
+
+            $stock->receipt_qty += $request->reverse_qty;
+            $stock->updated_by = Auth::id();
+            $stock->save();
+
+            $this->updateProdOrderStatus($request->po_id);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => $material->part_code . ' item reversed successfully',
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+                'status' => false,
+                'message' => 'Error reversing item: ' . $e->getMessage(),
+            ]);
+        }
     }
 
     public function issueOrder(Request $request)
@@ -109,20 +195,28 @@ class KittingController extends Controller
 
         try {
             $prodOrder = ProductionOrder::where('po_id', $request->production_id)->first();
-
+            $material = Material::with('bom')->find($prodOrder->material_id);  
+            $bomid = $material->bom->bom_id;
             $warehouseIssue = new Warehouse();
             $warehouseIssue->warehouse_id = Str::uuid();
             $warehouseIssue->transaction_id = $this->generateTransactionId();
             $warehouseIssue->type = 'issue';
-            $warehouseIssue->popn = $request->production_id;
-            //po_kitting will be true
+            $warehouseIssue->popn = $prodOrder->po_number;
+            $warehouseIssue->po_id = $prodOrder->po_id;
+            $warehouseIssue->po_kitting = 'true';
             $warehouseIssue->created_by = Auth::id();
             $warehouseIssue->created_at = Carbon::now();
             $warehouseIssue->date = Carbon::now()->toDateString();
             $warehouseIssue->save();
 
             foreach ($request->material as $index => $materialId) {
+                
+                $bomrecord = BomRecord::where('bom_id', $bomid)->where('material_id', $materialId)->first();
                 $stock = Stock::where('material_id', $materialId)->first();
+
+                $required_qty = $bomrecord->quantity * $prodOrder->quantity;
+
+                $existingRecord = ProdOrdersMaterial::where('po_id', $request->production_id)->where('material_id', $materialId)->first();
                 $reqQty = $request->issue[$index];
                 $newQuantity = $reqQty;
 
@@ -135,31 +229,32 @@ class KittingController extends Controller
                 $warehouseRecord->created_at = now();
                 $warehouseRecord->save();
 
-                if ($stock && $stock?->closing_balance != 0 && $newQuantity <= $stock?->closing_balance && $newQuantity != 0) {
+                if (
+                    $stock && 
+                    $stock?->closing_balance != 0 && 
+                    $newQuantity <= $stock?->closing_balance
+                ) {
+                    if ($newQuantity != 0 ) {
+                        $status = $this->getStatus($request->production_id, $materialId, $newQuantity);
 
-                    $existingRecord = ProdOrdersMaterial::where('po_id', $request->production_id)
-                        ->where('material_id', $materialId)
-                        ->first();
+                        if ($existingRecord) {
+                            $newQuantity += $existingRecord->quantity;
+                            $existingRecord->update(['quantity' => $newQuantity, 'status' => $status]);
+                        } else {
+                            ProdOrdersMaterial::create([
+                                'po_id' => $request->production_id,
+                                'material_id' => $materialId,
+                                'quantity' => $newQuantity,
+                                'created_by' => Auth::id(),
+                                'status' => $status,
+                            ]);
+                        }
 
-                    $status = $this->getStatus($request->production_id, $materialId, $newQuantity);
-
-                    if ($existingRecord) {
-                        $newQuantity += $existingRecord->quantity;
-                        $existingRecord->update(['quantity' => $newQuantity, 'status' => $status]);
-                    } else {
-                        ProdOrdersMaterial::create([
-                            'po_id' => $request->production_id,
-                            'material_id' => $materialId,
-                            'quantity' => $newQuantity,
-                            'created_by' => Auth::id(),
-                            'status' => $status,
-                        ]);
+                        $stock->issue_qty += $reqQty;
+                        $stock->save();
                     }
-
-                    $stock->issue_qty += $reqQty;
-                    $stock->save();
+                    
                 } else {
-
                     $material = Material::findOrFail($materialId);
                     if (!$material) {
                         $error[] = [
@@ -183,22 +278,23 @@ class KittingController extends Controller
                             'description' => $material->description,
                             'message' => "Requested quantity for material partcode " . $material->part_code . " is higher than stock quanitity"
                         ];
-                    } else if ($newQuantity == 0) {
+                    }
+
+                    if ( $newQuantity <= $required_qty ) {
                         $error[] = [
                             'part_code' => $material->part_code,
                             'description' => $material->description,
-                            'message' => "Quantity for material partcode " . $material->part_code . " is 0"
+                            'message' => $material->description + " has requested quantity that is more than the required quantity"
                         ];
                     }
-
-
                 }
             }
 
             $this->updateProdOrderStatus($request->production_id);
+
             if (empty ($error)) {
                 DB::commit();
-                return response()->json(['success' => true, 'message' => 'Order Issued Successfully!']);
+                return response()->json(['status' => true, 'message' => 'Order Issued Successfully!']);
             } else {
                 DB::rollBack();
                 return response()->json([
@@ -284,5 +380,22 @@ class KittingController extends Controller
         $prodOrder->save();
 
         return $overallStatus;
+    }
+
+    public function warehouseRecords(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'po_id' => 'required|exists:production_orders,po_id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ]);
+        }
+
+        $po_id = $request->input('po_id');
+        $productionOrder = ProductionOrder::find($po_id);
     }
 }

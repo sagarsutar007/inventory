@@ -21,6 +21,7 @@ class Warehouse extends Model
         'warehouse_id',
         'material_id',
         'transaction_id',
+        'po_id',
         'quantity',
         'created_by',
         'created_at',

@@ -160,13 +160,18 @@ class WarehouseController extends Controller
         foreach ($warehouses as $index => $warehouse) {
             $actionHtml = '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" data-transactionid="' . $warehouse->transaction_id . '" class="btn btn-sm btn-link" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>';
             // $actionHtml = '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
-
+            if ($warehouse->type == 'reversal') {
+                $type = "<span class='text-danger'>" . ucfirst($warehouse->type) . "</span>";
+            } else {
+                $type = ucfirst($warehouse->type);
+            }
+            
             $data[] = [
                 // 'sno' => $index + $start + 1,
                 'transaction_id' => $warehouse->transaction_id,
                 'vendor' => $warehouse->vendor->vendor_name ?? 'Not Available',
                 'popn' => $warehouse->popn,
-                'type' => ucfirst($warehouse->type),
+                'type' => $type,
                 'date' => date('d-m-Y', strtotime($warehouse->date)),
                 'action' => $actionHtml,
             ];
@@ -374,8 +379,17 @@ class WarehouseController extends Controller
     {
         // Get all records of this warehouse issue
         $records = WarehouseRecord::where('warehouse_id', '=', $warehouse->warehouse_id)->get();
+
+        if ($warehouse->type == "issue") {
+            $type = ($warehouse->po_kitting == 'true')?'Material Issue Voucher <span class="text-danger">(Kitting)</span>':'Material Issue Voucher <span class="text-danger">(Manual)</span>';
+        } else if ($warehouse->type == "reversal") {
+            $type = 'Material Reciept Voucher <span class="text-danger">(Reversal)</span>';
+        } else {
+            $type = 'Material Reciept Voucher';
+        }
+
         $context = [
-            'title' => ($warehouse->type == "issue") ? 'Material Issue Voucher(Manual)' : 'Material Reciept Voucher',
+            'title' => $type,
             'warehouse' => $warehouse,
             'records' => $records
         ];

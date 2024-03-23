@@ -172,7 +172,6 @@
                 ],
                 "stateSave": true // Add the saveState option here
             }).buttons().container().appendTo('#materials_wrapper .col-md-6:eq(0)');
-            
 
             // Show Error Messages
             @if ($errors->any())

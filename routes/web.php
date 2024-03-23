@@ -164,7 +164,9 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('/app/po-kitting')->group(function () {
         Route::get('', [KittingController::class, 'index'])->name('kitting');
         Route::get('/view-kitting-form', [KittingController::class, 'viewKittingForm'])->name('kitting.viewKittingForm');
+        Route::get('/view-kitting-records', [KittingController::class, 'viewWarehouseRecords'])->name('kitting.warehouseRecords');
         Route::post('/issue-kitting', [KittingController::class, 'issueOrder'])->name('kitting.issue');
+        Route::post('/reverse-kitting', [KittingController::class, 'reverseItem'])->name('kitting.reverse');
     });
 
     Route::prefix('/app/vendors')->group(function () {

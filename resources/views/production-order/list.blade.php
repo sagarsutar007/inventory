@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <x-adminlte-modal id="orderDetailsModal" title="Order Details" icon="fas fa-info-circle" size='lg'>
+    <x-adminlte-modal id="orderDetailsModal" title="Order Details" icon="fas fa-info-circle" size='xl'>
         <div class="row">
             <div class="col-md-12" id="order-details-section">
             </div>

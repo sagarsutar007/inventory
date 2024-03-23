@@ -50,7 +50,7 @@ class ProductionOrderController extends Controller
         $partCodes = [$productionOrder->material->part_code];
         $quantities = [$productionOrder->quantity];
 
-        $bomRecords = $this->fetchBomRecords($partCodes, $quantities);
+        $bomRecords = $this->fetchBomRecords($partCodes, $quantities, $po_id);
 
         $context = [
             'bomRecords' => $bomRecords,
@@ -91,7 +91,7 @@ class ProductionOrderController extends Controller
         return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
-    public function fetchBomRecords($partCodes = [], $quantities = [])
+    public function fetchBomRecords($partCodes = [], $quantities = [], $po_id = '')
     {
         $bomRecords = [];
 
@@ -100,6 +100,7 @@ class ProductionOrderController extends Controller
             if ($material && $material->bom) {
                 $records = BomRecord::where('bom_id', $material->bom->bom_id)->get();
                 foreach ($records as $record) {
+                    $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
                     $quantity = $record->quantity * $quantities[$key];
                     if (isset ($bomRecords[$record->material->description])) {
@@ -111,6 +112,8 @@ class ProductionOrderController extends Controller
                             'material_description' => $record->material->description,
                             'quantity' => $quantity,
                             'bom_qty' => $record->quantity,
+                            'issued' => $prodOrderMaterial ? $prodOrderMaterial->quantity : 0,
+                            'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
                             'closing_balance' => $closingBalance,
                         ];
@@ -165,7 +168,7 @@ class ProductionOrderController extends Controller
                     'description' => $material->description,
                     'unit' => $material->uom->uom_shortcode,
                     'quantity' => $order->quantity,
-                    'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+                    'created_at' => date('d-m-Y h:i a', strtotime('+5 hours 30 minutes', strtotime($order->created_at))),
                     'created_by' => $order->user->name,
                     'status' => $order->status,
                 ];
