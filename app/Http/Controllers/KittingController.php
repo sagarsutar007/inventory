@@ -397,5 +397,35 @@ class KittingController extends Controller
 
         $po_id = $request->input('po_id');
         $productionOrder = ProductionOrder::find($po_id);
+
+        $warehouseRecords = Warehouse::with('records')->where('po_id', $productionOrder->po_id)->get();
+
+        $flattenedRecords = [];
+
+        foreach ($warehouseRecords as $warehouse) {
+            foreach ($warehouse->records as $record) {
+                $flattenedRecords[] = [
+                    'transaction_id' => $warehouse->transaction_id,
+                    'type' => $warehouse->type,
+                    'created_at' => date('d-m-Y h:i a', strtotime('+5 hours 30 minutes', strtotime($warehouse->created_at))),
+                    'part_code' => $record->material->part_code,
+                    'description' => $record->material->description,
+                    'uom' => $record->material->uom->uom_shortcode,
+                    'quantity' => $record->quantity,
+                ];
+            }
+        }
+
+        usort($flattenedRecords, function ($a, $b) {
+            return $a['transaction_id'] <=> $b['transaction_id'];
+        });
+
+        $context = [
+            'records' => $flattenedRecords,
+            'prodId' => $po_id,
+        ];
+
+        $returnHTML = view('kitting.viewWarehouseRecords', $context)->render();
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 }

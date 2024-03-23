@@ -276,21 +276,21 @@
                                     exportOptions: {
                                         columns: ':visible:not(.exclude)'
                                     },
-                                    // title: 'Production Order: #' + po_num,
+                                    title: 'Kitting Issue/Reciept: #' + po_num,
                                 },
                                 {
                                     extend: 'pdf',
                                     exportOptions: {
                                         columns: ':visible:not(.exclude)'
                                     },
-                                    // title: 'Production Order: #' + po_num,
+                                    title: 'Kitting Issue/Reciept: #' + po_num,
                                 },
                                 {
                                     extend: 'print',
                                     exportOptions: {
                                         columns: ':visible:not(.exclude)'
                                     },
-                                    // title: 'Production Order: #' + po_num,
+                                    title: 'Kitting Issue/Reciept: #' + po_num,
                                 },
                                 'colvis',
                             ],
