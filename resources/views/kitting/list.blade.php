@@ -153,7 +153,7 @@
                         $('#order-details-section').html(response.html);
                         $("#orderDetailsModal").find('.modal-title').html(
                             `<div class="d-flex align-items-center justify-content-between">
-                                <span>#${po_num} - ${status}</span>
+                                <span>#${po_num} - <span id="status">${status}</span></span>
                                 <span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
                         );
                         $("#orderDetailsModal").modal('show');
@@ -354,7 +354,7 @@
                                 if (response.status) {
                                     toastr.success(response.message);
                                     // $("#orderDetailsModal").modal('hide');
-                                    showKittingGrid(poid);
+                                    showKittingGrid(poid, true);
                                     $('#prod-orders').DataTable().ajax.reload();
                                 } else {
                                     if (response.message != undefined) {
@@ -383,7 +383,7 @@
                 });
             });
 
-            function showKittingGrid(poid){
+            function showKittingGrid(poid, isReversed){
                 $.ajax({
                     type: "GET",
                     url: "{{ route('kitting.viewKittingForm') }}",
@@ -431,6 +431,12 @@
                             ],
                             stateSave: true,
                         });
+
+                        if (isReversed) {
+                            let status = showKittingStatus("Partially Issued");
+                            $("#status").html(status);
+                        }
+
                     },
                     error: function(xhr, status, error) {
                         toastr.error('An error occurred while fetching order details.');
