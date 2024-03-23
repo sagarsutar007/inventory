@@ -5,16 +5,16 @@
     <table id="bom-table" class="table table-bordered table-striped" style="width: 100%;">
         <thead>
             <tr>
-                <th>Part Code</th>
+                <th width="10%">Part Code</th>
                 <th>Description</th>
-                <th>UOM</th>
-                <th>QPA</th>
-                <th>PO QTY</th>
-                <th>Issued</th>
+                <th width="3%">UOM</th>
+                <th width="5%">QPA</th>
+                <th width="5%">PO QTY</th>
+                <th width="5%">Issued</th>
                 <th>Bal. to Issue</th>
-                <th>Stock</th>
+                <th width="5%">Stock</th>
                 {{-- <th>Reversal</th> --}}
-                <th style="width: 15%;">Issue</th>
+                <th style="width: 10%;">Issue</th>
                 <th></th>
             </tr>
         </thead>
@@ -31,7 +31,7 @@
                     <td>{{ $record['balance'] }}</td>
                     <td>{{ $record['closing_balance'] }}</td>
                     {{-- <td></td> --}}
-                    <td style="width: 15%;">
+                    <td style="width: 10%;">
                         @if ( $record['balance'] != 0)
                         <input type="number" name="issue[]" max="{{ $record['balance'] }}" class="form-control" placeholder="Issue Quantity">
                         @else
