@@ -94,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{material}/update', [RawMaterialController::class, 'update'])->name('raw.update');
         Route::delete('/{material}', [RawMaterialController::class, 'destroy'])->name('raw.destroy');
         Route::post('/price-list', [RawMaterialController::class, 'fetchPriceList'])->name('raw.fetchPriceList');
+        Route::post('/material-list', [RawMaterialController::class, 'fetchMaterialList'])->name('raw.fetchMaterialList');
     });
 
     // Semi Finished Material Routes
@@ -130,6 +131,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{bom}/edit', [BOMController::class, 'edit'])->name('bom.edit');
         Route::post('/{bom}/update', [BOMController::class, 'update'])->name('bom.update');
         Route::delete('/{bom}', [BOMController::class, 'destroy'])->name('bom.destroy');
+        Route::post('/bom-list', [BOMController::class, 'fetchBomList'])->name('bom.fetchBomList');
+        Route::post('/bom-cost-list', [BOMController::class, 'getBomRecords'])->name('bom.getBomRecords');
     });
 
     // Warehouse Routes
@@ -213,6 +216,18 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('/app/reports')->group(function () {
         Route::get('', [ReportController::class, 'index'])->name('reports');
         Route::get('/rm-price-list', [RawMaterialController::class, 'priceList'])->name('reports.rmPriceList');
+        Route::get('/material-list', [RawMaterialController::class, 'materialList'])->name('reports.materialList');
+        Route::get('/bom-view', [BOMController::class, 'bomView'])->name('reports.bom');
+        Route::get('/bom-cost-view', [BOMController::class, 'bomCostView'])->name('reports.bomCost');
+        Route::get('/fg-bom-cost', [BOMController::class, 'fgBomCostSummary'])->name('reports.fgBomCostSummary');
+        Route::get('/rm-stock', [RawMaterialController::class, 'stockReport'])->name('reports.stockReport');
+        Route::get('/po-stock', [ProductionOrderController::class, 'poReport'])->name('reports.poReport');
+        Route::get('/po-shortage-stock', [ProductionOrderController::class, 'poShortageReport'])->name('reports.poShortageReport');
+        Route::get('/po-shortage-consolidated-stock', [ProductionOrderController::class, 'poConsolidatedShortageReport'])->name('reports.poConsolidatedShortageReport');
+        Route::get('/plo-shortage-report', [ProductionOrderController::class, 'ploShortageReport'])->name('reports.ploShortageReport');
+        Route::get('/plo-shortage-consolidated-report', [ProductionOrderController::class, 'ploConsolidatedShortageReport'])->name('reports.ploConsolidatedShortageReport');
+        Route::get('/rm-purcahse-report', [RawMaterialController::class, 'rmPurchaseReport'])->name('reports.rmPurchaseReport');
+        Route::get('/rm-issuance-report', [RawMaterialController::class, 'rmIssuanceReport'])->name('reports.rmIssuanceReport');
     });
 
 });

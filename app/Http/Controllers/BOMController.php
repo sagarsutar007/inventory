@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 use App\Models\Bom;
 use App\Models\BomRecord;
+use App\Models\MaterialPurchase;
+use App\Models\Material;
+use App\Models\ProdOrdersMaterial;
+use App\Models\Stock;
 
 class BOMController extends Controller
 {
@@ -15,6 +19,7 @@ class BOMController extends Controller
     {
         return view('bom.bill-of-material');
     }
+
     public function getBom(Request $request)
     {
         $draw = $request->input('draw');
@@ -115,6 +120,7 @@ class BOMController extends Controller
 
         return response()->json($response);
     }
+
     public function show(Bom $bom)
     {
 
@@ -214,5 +220,95 @@ class BOMController extends Controller
     {
         $bom->delete();
         return redirect()->back()->with('success', 'BOM deleted successfully');
+    }
+
+    public function bomView()
+    {
+        return view('reports.bom');
+    }
+
+    public function bomCostView() 
+    {
+        return view('reports.bomCostView');
+    }
+
+    public function getBomRecords(Request $request)
+    {
+        // Validate input data
+        $validator = Validator::make($request->all(), [
+            'part_code' => 'required|array',
+            'quantity' => 'required|array',
+            'part_code.*' => 'required|string',
+            'quantity.*' => 'required|numeric',
+        ]);
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => $validator->errors()->first(),
+            ]);
+        }
+
+        $partCodes = $request->input('part_code', []);
+        $quantities = $request->input('quantity', []);
+
+        $bomRecords = $this->fetchBomRecords($partCodes, $quantities);
+
+        $context = [
+            'bomRecords' => $bomRecords,
+        ];
+        
+        $returnHTML = view('reports.viewBomCostTable', $context)->render();
+        
+        return response()->json(array('status' => true, 'html' => $returnHTML));
+    }
+
+    public function fetchBomRecords($partCodes = [], $quantities = [], $po_id = '')
+    {
+        $bomRecords = [];
+
+        foreach ($partCodes as $key => $partCode) {
+            $material = Material::with('category', 'commodity')->where('part_code', $partCode)->first();
+            if ($material && $material->bom) {
+                
+                $records = BomRecord::where('bom_id', $material->bom->bom_id)->get();
+                foreach ($records as $record) {
+                    $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
+                    $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
+                    $priceStats = MaterialPurchase::where('material_id', $record->material->material_id)
+                        ->groupBy('material_id')
+                        ->select([
+                            DB::raw('MAX(price) as max_price'),
+                            DB::raw('MIN(price) as min_price'),
+                            DB::raw('AVG(price) as avg_price'),
+                        ])
+                        ->first();
+                    $quantity = $record->quantity * $quantities[$key];
+                    if (isset ($bomRecords[$record->material->description])) {
+                        $bomRecords[$record->material->description]['quantity'] += $quantity;
+                    } else {
+                        $bomRecords[$record->material->description] = [
+                            'material_id' => $record->material->material_id,
+                            'part_code' => $record->material->part_code,
+                            'material_description' => $record->material->description,
+                            'category' => $record->material->category->category_name,
+                            'commodity' => $record->material->commodity->commodity_name,
+                            'quantity' => $quantity,
+                            'bom_qty' => $record->quantity,
+                            'issued' => $prodOrderMaterial ? $prodOrderMaterial->quantity : 0,
+                            'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
+                            'uom_shortcode' => $record->material->uom->uom_shortcode,
+                            'closing_balance' => $closingBalance,
+                            'avg_price' => $priceStats->avg_price??null,
+                            'min_price' => $priceStats->min_price??null,
+                            'max_price' => $priceStats->max_price??null,
+                        ];
+                    }
+                }
+            }
+        }
+        $bomRecords = array_values($bomRecords);
+        return $bomRecords;
     }
 }

@@ -446,7 +446,7 @@ class RawMaterialController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = Material::query()->with(['category', 'commodity']);
+        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
 
         if (!empty($search)) {
             $query->where(function ($query) use ($search) {
@@ -491,6 +491,80 @@ class RawMaterialController extends Controller
                 'price_3' => $priceStats?->max_price,
             ];
         }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $materials->total(),
+            "data" =>  $data,
+        ];
+
+        return response()->json($response);
+    }
+
+    public function materialList(){
+        return view('reports.material-master-list');
+    }
+
+    public function fetchMaterialList(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
+
+        if (!empty($search)) {
+            $query->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        if (!in_array($columnName, ['serial', 'vendor_1', 'vendor_2', 'vendor_3'])) {
+            $query->orderBy($columnName, $columnSortOrder);
+        }
+
+        $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        $data = [];
+
+        foreach ($materials->items() as $index => $item) {
+            $vendorList = MaterialPurchase::with('vendor')
+                ->where('material_id', $item->material_id)
+                ->limit(3)
+                ->get();
+        
+            $vendorArr = [];
+        
+            for ($i = 0; $i < 3; $i++) { 
+                $temp['vendor_' . ($i + 1)] = $vendorList[$i]->vendor->vendor_name ?? null;
+                $vendorArr[] = $temp;
+            }
+        
+            $dummy = [
+                'serial' => $index + 1, 
+                'part_code' => $item->part_code,
+                'description' => $item->description,
+                'commodity' => $item->commodity->commodity_name,
+                'category' => $item->category->category_name,
+            ];
+        
+            $data[] = array_merge($dummy, ...$vendorArr);
+        }        
 
         $response = [
             "draw" => intval($draw),

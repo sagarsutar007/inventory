@@ -332,6 +332,9 @@
                     input: "number",
                     inputLabel: "Please enter quantity",
                     showCancelButton: true,
+                    inputAttributes: {
+                        step: '0.001',
+                    },
                     preConfirm: (quantity) => {
                         if (!quantity || isNaN(quantity) || quantity <= 0) {
                             Swal.showValidationMessage('Please enter a valid quantity');

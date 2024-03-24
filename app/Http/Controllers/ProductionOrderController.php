@@ -87,7 +87,12 @@ class ProductionOrderController extends Controller
             'bomRecords' => $bomRecords,
         ];
 
-        $returnHTML = view('production-order.viewBomTable', $context)->render();
+        if ($request->input('report')) {
+            $returnHTML = view('reports.viewBomTable', $context)->render();
+        } else {
+            $returnHTML = view('production-order.viewBomTable', $context)->render();
+        }
+        
         return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
@@ -96,7 +101,7 @@ class ProductionOrderController extends Controller
         $bomRecords = [];
 
         foreach ($partCodes as $key => $partCode) {
-            $material = Material::where('part_code', $partCode)->first();
+            $material = Material::with('category', 'commodity')->where('part_code', $partCode)->first();
             if ($material && $material->bom) {
                 $records = BomRecord::where('bom_id', $material->bom->bom_id)->get();
                 foreach ($records as $record) {
@@ -110,6 +115,8 @@ class ProductionOrderController extends Controller
                             'material_id' => $record->material->material_id,
                             'part_code' => $record->material->part_code,
                             'material_description' => $record->material->description,
+                            'category' => $record->material->category->category_name,
+                            'commodity' => $record->material->commodity->commodity_name,
                             'quantity' => $quantity,
                             'bom_qty' => $record->quantity,
                             'issued' => $prodOrderMaterial ? $prodOrderMaterial->quantity : 0,
