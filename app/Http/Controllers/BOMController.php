@@ -153,16 +153,16 @@ class BOMController extends Controller
      */
     public function update(Request $request, Bom $bom)
     {
-        // try {
-        //     $validatedData = $request->validate([
-        //         'raw' => 'required|array',
-        //         'raw.*' => 'required|string',
-        //         'quantity' => 'required|array',
-        //         'quantity.*' => 'required|numeric',
-        //     ]);
-        // } catch (ValidationException $e) {
-        //     return response()->json(['status' => false, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
-        // }
+        try {
+            $validatedData = $request->validate([
+                'raw' => 'required|array',
+                'raw.*' => 'required|string',
+                'quantity' => 'required|array',
+                'quantity.*' => 'required|numeric',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json(['status' => false, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        }
 
         try {
             DB::beginTransaction();
