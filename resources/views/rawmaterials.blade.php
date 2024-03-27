@@ -137,7 +137,7 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "450px",
+                "scrollY": "440px",
                 "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('raw.fetchRawMaterials') }}",
@@ -151,7 +151,7 @@
                     { "data": "image", "name": "image" },
                     { "data": "part_code", "name": "part_code" },
                     { "data": "description", "name": "description" },
-                    { "data": "unit", "name": "unit" },
+                    { "data": "unit", "name": "uom_shortcode" },
                     { "data": "commodity_name", "name": "commodity_name" },
                     { "data": "category_name", "name": "category_name" },
                     { "data": "actions", "name": "actions" },

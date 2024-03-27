@@ -112,8 +112,8 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link kitting-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-edit text-primary"></i></button>' +" / "+
-                            '<button class="btn btn-link records-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-eye text-primary"></i></button>'
+                            return '<button class="btn btn-link kitting-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-partcode="'+ row.part_code +'" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-edit text-primary"></i></button>' +" / "+
+                            '<button class="btn btn-link records-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-partcode="'+ row.part_code +'" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-eye text-primary"></i></button>'
                             ;
                         }
                     }
@@ -138,6 +138,7 @@
                 let po_id = $(this).data('id');
                 let po_num = $(this).data('pon');
                 let po_desc = $(this).data('desc');
+                let po_partcode = $(this).data('partcode');
                 let po_qty = $(this).data('qty');
                 let po_unit = $(this).data('unit');
                 let po_status = $(this).data('status');
@@ -154,7 +155,7 @@
                         $("#orderDetailsModal").find('.modal-title').html(
                             `<div class="d-flex align-items-center justify-content-between">
                                 <span>#${po_num} - <span id="status">${status}</span></span>
-                                <span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
+                                <span class="ml-auto">${po_partcode} - ${po_desc} - ${po_qty} ${po_unit}</span></div>`
                         );
                         $("#orderDetailsModal").modal('show');
 
@@ -257,6 +258,7 @@
                 let po_id = $(this).data('id');
                 let po_num = $(this).data('pon');
                 let po_desc = $(this).data('desc');
+                let po_partcode = $(this).data('partcode');
                 let po_qty = $(this).data('qty');
                 let po_unit = $(this).data('unit');
                 let po_status = $(this).data('status');
@@ -274,7 +276,7 @@
 
                         $("#recordsModal").find('.modal-title').html(
                             `<div class="d-flex align-items-center justify-content-between">
-                                <span> Issue/Reciept Details of PO: #${po_num}</span>
+                                <span> Issue/Reciept PO: #${po_num} - ${po_partcode} - ${po_desc} - ${po_qty} ${po_unit}</span>
                                 ${status}
                             </div>`
                         ); 
@@ -312,6 +314,7 @@
                                 'colvis',
                             ],
                             stateSave: true,
+                            order: [[2, 'desc']],
                         });
 
                         $('[data-toggle="tooltip"]').tooltip();

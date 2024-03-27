@@ -25,10 +25,11 @@
                         <thead>
                             <tr>
                                 <!-- <th width="5%">Sno.</th> -->
-                                <th>Transaction ID</th>
+                                <th width="12%">Transaction ID</th>
                                 <th>Vendor</th>
                                 <th>PO / Purchase Number</th>
                                 <th>Type</th>
+                                <th>Reason</th>
                                 <th>Date</th>
                                 <th>Action</th>
                             </tr>
@@ -113,6 +114,7 @@
                     { "data": "vendor", "name": "vendor" },
                     { "data": "popn", "name": "popn" },
                     { "data": "type", "name": "type" },
+                    { "data": "reason", "name": "reason" },
                     { "data": "date", "name": "date" },
                     { "data": "action" },
                 ],

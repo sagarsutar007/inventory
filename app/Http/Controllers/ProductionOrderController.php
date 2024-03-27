@@ -92,7 +92,7 @@ class ProductionOrderController extends Controller
         } else {
             $returnHTML = view('production-order.viewBomTable', $context)->render();
         }
-        
+
         return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
@@ -172,6 +172,7 @@ class ProductionOrderController extends Controller
                 $data[] = [
                     'po_id' => $order->po_id,
                     'po_number' => $order->po_number,
+                    'part_code' => $material->part_code,
                     'description' => $material->description,
                     'unit' => $material->uom->uom_shortcode,
                     'quantity' => $order->quantity,

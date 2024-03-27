@@ -45,7 +45,7 @@ class RawMaterialController extends Controller
 
         $rawmaterials = RawMaterial::with('uom', 'commodity', 'category')->where('type', 'raw');
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             $rawmaterials->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
@@ -67,7 +67,18 @@ class RawMaterialController extends Controller
         $totalRecords = $rawmaterials->count();
 
         if (!in_array($columnName, ['serial', 'image', 'actions'])) {
-            $rawmaterials->orderBy($columnName, $columnSortOrder);
+            if ($columnName === 'uom_shortcode') {
+                $rawmaterials->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } else if ($columnName === 'commodity_name') {
+                $rawmaterials->join('commodities', 'materials.commodity_id', '=', 'commodities.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } else if ($columnName === 'category_name') {
+                $rawmaterials->join('categories', 'materials.category_id', '=', 'categories.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else {
+                $rawmaterials->orderBy($columnName, $columnSortOrder);
+            }
         }
 
         $materials = $rawmaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
@@ -79,10 +90,10 @@ class RawMaterialController extends Controller
             $serial = ($currentPage - 1) * $length + $index + 1;
 
             $imageAttachment = $material->attachments()->where('type', 'image')->first();
-            if($imageAttachment){
+            if ($imageAttachment) {
                 $image = '<div class="text-center"><img src="' . asset('assets/uploads/materials/' . $imageAttachment->path) . '" class="mt-2" width="30px" height="30px"></div>';
             } else {
-                $image = '<div class="text-center"><img src="'. asset('assets/img/default-image.jpg') .'" class="mt-2" width="30px" height="30px"></div>';
+                $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="30px" height="30px"></div>';
             }
 
             $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
@@ -105,7 +116,7 @@ class RawMaterialController extends Controller
                 'actions' => $actions,
             ];
         }
-        
+
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
@@ -222,7 +233,7 @@ class RawMaterialController extends Controller
         }
         $vendor_id = null;
         for ($i = 0; $i < count($validatedData['vendor']); $i++) {
-            if (!empty($validatedData['vendor'][$i])) {
+            if (!empty ($validatedData['vendor'][$i])) {
                 $vendor = Vendor::firstOrCreate(
                     ['vendor_name' => $validatedData['vendor'][$i]],
                     ['vendor_id' => Str::uuid(), 'created_at' => Carbon::now()]
@@ -454,7 +465,7 @@ class RawMaterialController extends Controller
                     }
 
                     foreach ($vendors as $index => $vendor) {
-                        if (!empty($vendor)) {
+                        if (!empty ($vendor)) {
                             $vendorModel = Vendor::firstOrCreate(
                                 ['vendor_name' => $vendor],
                                 ['vendor_id' => Str::uuid(), 'created_at' => Carbon::now()]
@@ -515,7 +526,8 @@ class RawMaterialController extends Controller
         }
     }
 
-    public function priceList(){
+    public function priceList()
+    {
         return view('reports.rm-price-list');
     }
 
@@ -533,7 +545,7 @@ class RawMaterialController extends Controller
 
         $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             $query->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
@@ -566,11 +578,12 @@ class RawMaterialController extends Controller
                 ->first();
 
             $data[] = [
-                'serial' => $index + 1, 
+                'serial' => $index + 1,
                 'part_code' => $item->part_code,
                 'description' => $item->description,
                 'commodity' => $item->commodity->commodity_name,
                 'category' => $item->category->category_name,
+                'uom_shortcode' => $item->uom->uom_shortcode,
                 'price_1' => $priceStats?->min_price,
                 'price_2' => $priceStats?->avg_price,
                 'price_3' => $priceStats?->max_price,
@@ -581,13 +594,14 @@ class RawMaterialController extends Controller
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
             "recordsFiltered" => $materials->total(),
-            "data" =>  $data,
+            "data" => $data,
         ];
 
         return response()->json($response);
     }
 
-    public function materialList(){
+    public function materialList()
+    {
         return view('reports.material-master-list');
     }
 
@@ -605,7 +619,7 @@ class RawMaterialController extends Controller
 
         $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             $query->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
@@ -632,30 +646,33 @@ class RawMaterialController extends Controller
                 ->where('material_id', $item->material_id)
                 ->limit(3)
                 ->get();
-        
+
             $vendorArr = [];
-        
-            for ($i = 0; $i < 3; $i++) { 
+
+            for ($i = 0; $i < 3; $i++) {
                 $temp['vendor_' . ($i + 1)] = $vendorList[$i]->vendor->vendor_name ?? null;
                 $vendorArr[] = $temp;
             }
-        
+
             $dummy = [
-                'serial' => $index + 1, 
+                'serial' => $index + 1,
                 'part_code' => $item->part_code,
                 'description' => $item->description,
                 'commodity' => $item->commodity->commodity_name,
                 'category' => $item->category->category_name,
+                'make' => $item->make,
+                'mpn' => $item->mpn,
+                'uom' => $item->uom->uom_shortcode,
             ];
-        
+
             $data[] = array_merge($dummy, ...$vendorArr);
-        }        
+        }
 
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
             "recordsFiltered" => $materials->total(),
-            "data" =>  $data,
+            "data" => $data,
         ];
 
         return response()->json($response);
@@ -680,15 +697,15 @@ class RawMaterialController extends Controller
 
         $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
 
-        if (!empty($request->searchTerm)) {
+        if (!empty ($request->searchTerm)) {
             $query->where('part_code', 'like', '%' . $request->searchTerm . '%');
         }
 
-        if (!empty($request->startDate) && !empty($request->endDate)) {
+        if (!empty ($request->startDate) && !empty ($request->endDate)) {
             $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
         }
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             $query->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')

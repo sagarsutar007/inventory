@@ -28,10 +28,22 @@
                                 <div id="err-vendor"></div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <!-- <div class="col-md-4">
                             <div class="form-group">
                                 <label for="ponum">PO number:</label><br />
                                 <input type="text" id="ponum" name="popn" class="form-control" placeholder="Enter PO Number" value="">
+                            </div>
+                        </div> -->
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="reason">Reason</label>
+                                <select name="reason" id="reason" class="form-control" style="width:100%;">
+                                    <option value=""></option>
+                                    <option value="Rejection in PO">Rejection in PO</option>
+                                    <option value="Additional Issue">Additional Issue</option>
+                                    <option value="Return to Vendor">Return to Vendor</option>
+                                    <option value="Others">Others</option>
+                                </select>
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -87,9 +99,14 @@
 @section('js')
     <script>
         $(function () {
-
             $(".select2").select2({
                 placeholder: 'Select Vendor',
+                theme: 'bootstrap4',
+            });
+
+            $("#reason").select2({
+                placeholder: 'Select Reason',
+                minimumResultsForSearch: Infinity,
                 theme: 'bootstrap4',
             });
             

@@ -42,7 +42,7 @@ class WarehouseController extends Controller
 
         $query = Stock::with('material');
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
@@ -110,7 +110,7 @@ class WarehouseController extends Controller
 
         return response()->json($response);
     }
-    
+
     public function fetchTransactions(Request $request)
     {
         $draw = $request->input('draw');
@@ -125,7 +125,7 @@ class WarehouseController extends Controller
 
         $query = Warehouse::with('vendor');
 
-        if (!empty($search)) {
+        if (!empty ($search)) {
             // $query->whereHas('material', function ($q) use ($search) {
             //     $q->where('part_code', 'like', '%' . $search . '%')
             //         ->orWhere('description', 'like', '%' . $search . '%')
@@ -165,12 +165,13 @@ class WarehouseController extends Controller
             } else {
                 $type = ucfirst($warehouse->type);
             }
-            
+
             $data[] = [
                 // 'sno' => $index + $start + 1,
                 'transaction_id' => $warehouse->transaction_id,
                 'vendor' => $warehouse->vendor->vendor_name ?? 'Not Available',
                 'popn' => $warehouse->popn,
+                'reason' => $warehouse->reason,
                 'type' => $type,
                 'date' => date('d-m-Y', strtotime($warehouse->date)),
                 'action' => $actionHtml,
@@ -252,7 +253,7 @@ class WarehouseController extends Controller
             $warehouse->save();
 
             foreach ($validatedData['part_code'] as $key => $materialId) {
-                if (!empty($materialId)) {
+                if (!empty ($materialId)) {
                     $material = Material::where('part_code', $materialId)->first();
                     $stock = Stock::where('material_id', $material->material_id)->first();
                     if ($stock) {
@@ -293,7 +294,7 @@ class WarehouseController extends Controller
         $validatedData = $request->validate([
             'vendor' => 'nullable|exists:vendors,vendor_id',
             'date' => 'required',
-            'popn' => 'nullable',
+            'reason' => 'required',
             'part_code' => 'required|array',
             'part_code.*' => 'required|exists:materials,part_code',
             'quantity' => 'required|array',
@@ -306,7 +307,8 @@ class WarehouseController extends Controller
             $warehouse = new Warehouse();
             $warehouse->vendor_id = $validatedData['vendor'];
             $warehouse->transaction_id = $this->generateTransactionId();
-            $warehouse->popn = $validatedData['popn'];
+            // $warehouse->popn = $validatedData['popn'];
+            $warehouse->reason = $validatedData['reason'];
             $warehouse->type = 'issue';
             $warehouse->date = date('y-m-d', strtotime($validatedData['date']));
             $warehouse->created_by = Auth::id();
@@ -381,7 +383,7 @@ class WarehouseController extends Controller
         $records = WarehouseRecord::where('warehouse_id', '=', $warehouse->warehouse_id)->get();
 
         if ($warehouse->type == "issue") {
-            $type = ($warehouse->po_kitting == 'true')?'Material Issue Voucher <span class="text-danger">(Kitting)</span>':'Material Issue Voucher <span class="text-danger">(Manual)</span>';
+            $type = ($warehouse->po_kitting == 'true') ? 'Material Issue Voucher <span class="text-danger">(Kitting)</span>' : 'Material Issue Voucher <span class="text-danger">(Manual)</span>';
         } else if ($warehouse->type == "reversal") {
             $type = 'Material Reciept Voucher <span class="text-danger">(Reversal)</span>';
         } else {
@@ -546,7 +548,7 @@ class WarehouseController extends Controller
         $transactionId = sprintf('%02d%02d%02d', $year, $weekNumber, $date);
         $lastTransactionId = Warehouse::where('transaction_id', 'like', $year . '%')->max('transaction_id');
         if ($lastTransactionId) {
-            $lastNumericPart = intval(substr($lastTransactionId, 6)); 
+            $lastNumericPart = intval(substr($lastTransactionId, 6));
             $newNumericPart = str_pad($lastNumericPart + 1, 5, '0', STR_PAD_LEFT);
             $transactionId .= $newNumericPart;
         } else {

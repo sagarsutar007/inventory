@@ -20,6 +20,7 @@
                                 <th>Description</th>
                                 <th>Commodity</th>
                                 <th>Category</th>
+                                <th>Unit</th>
                                 <th>Price 1</th>
                                 <th>Price 2</th>
                                 <th>Price 3</th>
@@ -82,6 +83,7 @@
                     { "data": "description", "name": "description" },
                     { "data": "commodity", "name": "commodity" },
                     { "data": "category", "name": "category" },
+                    { "data": "uom_shortcode", "name": "uom_shortcode" },
                     { "data": "price_1", "name": "price_1" },
                     { "data": "price_2", "name": "price_2" },
                     { "data": "price_3", "name": "price_3" }

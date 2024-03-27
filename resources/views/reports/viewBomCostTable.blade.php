@@ -12,6 +12,7 @@
                 <th width="10%">Avg Price</th>
                 <th width="10%">Lowest Price</th>
                 <th width="10%">Highest Price</th>
+                <th>Total Avg Price</th>
             </tr>
         </thead>
         <tbody>
@@ -27,6 +28,7 @@
                     <td width="10%">{{ $record['avg_price'] }}</td>
                     <td width="10%">{{ $record['min_price'] }}</td>
                     <td width="10%">{{ $record['max_price'] }}</td>
+                    <td>{{ $record['total_avg'] }}</td>
                 </tr>
             @endforeach
         </tbody>

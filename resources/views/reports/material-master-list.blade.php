@@ -20,6 +20,9 @@
                                 <th>Description</th>
                                 <th>Commodity</th>
                                 <th>Category</th>
+                                <th>Make</th>
+                                <th>MPN</th>
+                                <th>UOM</th>
                                 <th>Vendor 1</th>
                                 <th>Vendor 2</th>
                                 <th>Vendor 3</th>
@@ -82,6 +85,9 @@
                     { "data": "description", "name": "description" },
                     { "data": "commodity", "name": "commodity" },
                     { "data": "category", "name": "category" },
+                    { "data": "make", "name": "make" },
+                    { "data": "mpn", "name": "mpn" },
+                    { "data": "uom", "name": "uom" },
                     { "data": "vendor_1", "name": "vendor_1" },
                     { "data": "vendor_2", "name": "vendor_2" },
                     { "data": "vendor_3", "name": "vendor_3" }

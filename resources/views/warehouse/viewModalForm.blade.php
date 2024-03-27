@@ -6,8 +6,12 @@
         <tr>
             @if($warehouse->type == 'issue')
                 <th>Issue Date:</th>
-                <th>{{ date('d-m-Y', strtotime($warehouse->created_at)) }}</th>
-                <th colspan="4" align="left">PO No: {{$warehouse->popn}}</th>
+                <td>{{ date('d-m-Y', strtotime($warehouse->created_at)) }}</td>
+                @if ($warehouse->po_kitting != 'true') 
+                    <th colspan="4" align="left">Reason: {{$warehouse->reason}}</th>
+                @else
+                    <th colspan="4" align="left">PO No: {{$warehouse->popn}}</th>
+                @endif
             @else
                 <th align="left">Receipt Date:</th>
                 <th align="left">{{ date('d-m-Y', strtotime($warehouse->created_at)) }}</th>

@@ -105,9 +105,9 @@ class KittingController extends Controller
         $prodOrder = ProductionOrder::where('po_id', $request->po_id)->first();
 
         $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $request->po_id)
-                                ->where('material_id', $request->material_id)
-                                ->first();
-                                
+            ->where('material_id', $request->material_id)
+            ->first();
+
         $material = Material::find($request->material_id);
 
         $stock = Stock::where('material_id', $request->material_id)->first();
@@ -119,7 +119,7 @@ class KittingController extends Controller
             ]);
         }
 
-        if($request->reverse_qty > $prodOrderMaterial->quantity){
+        if ($request->reverse_qty > $prodOrderMaterial->quantity) {
             return response()->json([
                 'status' => false,
                 'message' => "Reverse quantity cannot exceed Issued Quantity",
@@ -195,7 +195,7 @@ class KittingController extends Controller
 
         try {
             $prodOrder = ProductionOrder::where('po_id', $request->production_id)->first();
-            $material = Material::with('bom')->find($prodOrder->material_id);  
+            $material = Material::with('bom')->find($prodOrder->material_id);
             $bomid = $material->bom->bom_id;
             $warehouseIssue = new Warehouse();
             $warehouseIssue->warehouse_id = Str::uuid();
@@ -210,7 +210,7 @@ class KittingController extends Controller
             $warehouseIssue->save();
 
             foreach ($request->material as $index => $materialId) {
-                
+
                 $bomrecord = BomRecord::where('bom_id', $bomid)->where('material_id', $materialId)->first();
                 $stock = Stock::where('material_id', $materialId)->first();
 
@@ -220,7 +220,7 @@ class KittingController extends Controller
                 $reqQty = $request->issue[$index];
                 $newQuantity = $reqQty;
 
-                if ( $newQuantity > 0 ) {
+                if ($newQuantity > 0) {
                     $warehouseRecord = new WarehouseRecord();
                     $warehouseRecord->warehouse_record_id = Str::uuid();
                     $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
@@ -231,11 +231,11 @@ class KittingController extends Controller
                     $warehouseRecord->save();
 
                     if (
-                        $stock && 
-                        $stock?->closing_balance != 0 && 
+                        $stock &&
+                        $stock?->closing_balance != 0 &&
                         $newQuantity <= $stock?->closing_balance
                     ) {
-                        
+
                         $status = $this->getStatus($request->production_id, $materialId, $newQuantity);
 
                         if ($existingRecord) {
@@ -279,7 +279,7 @@ class KittingController extends Controller
                             ];
                         }
 
-                        if ( $newQuantity <= $required_qty ) {
+                        if ($newQuantity <= $required_qty) {
                             $error[] = [
                                 'part_code' => $material->part_code,
                                 'description' => $material->description,
@@ -398,7 +398,7 @@ class KittingController extends Controller
         $po_id = $request->input('po_id');
         $productionOrder = ProductionOrder::find($po_id);
 
-        $warehouseRecords = Warehouse::with('records')->where('po_id', $productionOrder->po_id)->get();
+        $warehouseRecords = Warehouse::with('records')->where('po_id', $productionOrder->po_id)->orderByDesc('created_at')->get();
 
         $flattenedRecords = [];
 
