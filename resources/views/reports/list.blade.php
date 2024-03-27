@@ -55,7 +55,7 @@
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Raw Material Purchase Report</a>
+                    <a href="{{ route('reports.rmPurchaseReport') }}">Raw Material Purchase Report</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">

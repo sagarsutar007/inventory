@@ -24,8 +24,8 @@
                     <table id="rawmaterials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <!-- <th width="5%">Sno.</th> -->
-                                <th>Image</th>
+                                <th width="5%">Sno.</th>
+                                <th class="text-center">Image</th>
                                 <th width="10%">Code</th>
                                 <th>Raw Material Name</th>
                                 <th>Unit</th>
@@ -35,36 +35,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach($rawmaterials as $material)
-                            <tr>
-                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
-                                <td class="text-center">
-                                    @php
-                                        $imageAttachment = $material->attachments()->where('type', 'image')->first();
-                                    @endphp
-                                    @if($imageAttachment)
-                                        <img src="{{ asset('assets/uploads/materials/' . $imageAttachment->path) }}" class="mt-2" width="30px" height="30px">
-                                    @else
-                                        <img src="{{ asset('assets/img/default-image.jpg') }}" class="mt-2" width="30px" height="30px">
-                                    @endif
-                                </td>
-                                <td width="10%">{{ $material->part_code }}</td>
-                                <td>{{ $material->description }}</td>
-                                <td>{{ $material->uom->uom_text }}</td>
-                                <td>{{ $material->commodity->commodity_name }}</td>
-                                <td>{{ $material->category->category_name }}</td>
-                                <td width="13%" class="text-center">
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> /
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>
-                                    /<form action="{{ route('raw.destroy', $material->material_id) }}" method="post" style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this record?')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -137,19 +107,13 @@
 @section('js')
     <script>
         $(function () {
-            $("#rawmaterials").DataTable({
-                responsive: true,
-                lengthChange: true,
-                autoWidth: true,
-                paging: true,
-                info: true,
-                stateSave: true,
-                scrollY: "320px",
-                scrollCollapse: true,
-                language: {
-                    "lengthMenu": "_MENU_"
-                },
-                buttons: [
+            $('#rawmaterials').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": true,
+                "paging": true,
+                "info": true,
+                "buttons": [
                     {
                         extend: 'excel',
                         exportOptions: {
@@ -168,11 +132,48 @@
                             columns: ':visible:not(.exclude)'
                         }
                     },
-                    'colvis'
-                ]
-            }).buttons().container().appendTo('#rawmaterials_wrapper .col-md-6:eq(0)');
+                    'colvis',
+                ],
+                "processing": true,
+                "serverSide": true,
+                "stateSave": true,
+                "scrollY": "450px",
+                "scrollCollapse": true,
+                "ajax": {
+                    "url": "{{ route('raw.fetchRawMaterials') }}",
+                    "type": "POST",
+                    "data": function ( d ) {
+                        d._token = '{{ csrf_token() }}';
+                    }
+                },
+                "columns": [
+                    { "data": "serial", "name": "serial" },
+                    { "data": "image", "name": "image" },
+                    { "data": "part_code", "name": "part_code" },
+                    { "data": "description", "name": "description" },
+                    { "data": "unit", "name": "unit" },
+                    { "data": "commodity_name", "name": "commodity_name" },
+                    { "data": "category_name", "name": "category_name" },
+                    { "data": "actions", "name": "actions" },
+                ],
+                "lengthMenu": [10, 25, 50, 75, 100],
+                "searching": true,
+                "ordering": true,
+                "columnDefs": [
+                    {
+                        "targets": [0, 1, 7],
+                        "orderable": false,
+                    }
+                ],
+                "dom": 'lBfrtip',
+                "language": {
+                    "lengthMenu": "_MENU_"
+                },
+                "initComplete": function(settings, json) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
 
-            
             $('#modalEdit').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');

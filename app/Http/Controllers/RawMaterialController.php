@@ -28,9 +28,94 @@ class RawMaterialController extends Controller
 {
     public function index()
     {
-        $rawmaterials = RawMaterial::with('uom', 'commodity', 'category')->where('type', 'raw')->orderBy('created_at', 'desc')->get();
-        return view('rawmaterials', compact('rawmaterials'));
+        return view('rawmaterials');
     }
+
+    public function fetchRawMaterials(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $rawmaterials = RawMaterial::with('uom', 'commodity', 'category')->where('type', 'raw');
+
+        if (!empty($search)) {
+            $rawmaterials->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                        $query->orWhere('category_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                        $query->orWhere('commodity_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($query) use ($search) {
+                        $query->where('uom_shortcode', 'like', '%' . $search . '%');
+                        $query->orWhere('uom_text', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $rawmaterials->count();
+
+        if (!in_array($columnName, ['serial', 'image', 'actions'])) {
+            $rawmaterials->orderBy($columnName, $columnSortOrder);
+        }
+
+        $materials = $rawmaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+
+        $data = [];
+        foreach ($materials as $index => $material) {
+
+            $currentPage = ($start / $length) + 1;
+            $serial = ($currentPage - 1) * $length + $index + 1;
+
+            $imageAttachment = $material->attachments()->where('type', 'image')->first();
+            if($imageAttachment){
+                $image = '<div class="text-center"><img src="' . asset('assets/uploads/materials/' . $imageAttachment->path) . '" class="mt-2" width="30px" height="30px"></div>';
+            } else {
+                $image = '<div class="text-center"><img src="'. asset('assets/img/default-image.jpg') .'" class="mt-2" width="30px" height="30px"></div>';
+            }
+
+            $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
+                <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> /
+                <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>
+                / <form action="' . route('raw.destroy', $material->material_id) . '" method="post" style="display: inline;">
+                    ' . csrf_field() . '
+                    ' . method_field('DELETE') . '
+                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this record?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
+                </form>';
+
+            $data[] = [
+                'serial' => $serial,
+                'image' => $image,
+                'part_code' => $material->part_code,
+                'description' => $material->description,
+                'unit' => $material->uom->uom_shortcode,
+                'commodity_name' => $material->commodity->commodity_name,
+                'category_name' => $material->category->category_name,
+                'actions' => $actions,
+            ];
+        }
+        
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $materials->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
+    }
+
     public function add()
     {
         $uom = UomUnit::all();
@@ -576,5 +661,56 @@ class RawMaterialController extends Controller
         return response()->json($response);
     }
 
+    public function rmPurchaseReport()
+    {
+        return view('reports.rm-purchase');
+    }
+
+    public function fetchPurchaseList(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
+
+        if (!empty($request->searchTerm)) {
+            $query->where('part_code', 'like', '%' . $request->searchTerm . '%');
+        }
+
+        if (!empty($request->startDate) && !empty($request->endDate)) {
+            $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
+        }
+
+        if (!empty($search)) {
+            $query->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        // $response = [
+        //     "draw" => intval($draw),
+        //     "recordsTotal" => $totalRecords,
+        //     "recordsFiltered" => $materials->total(),
+        //     "data" =>  $data,
+        // ];
+
+        // return response()->json($response);
+    }
 
 }

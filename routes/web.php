@@ -85,6 +85,7 @@ Route::middleware(['auth'])->group(function () {
     // Raw Material Routes
     Route::prefix('/app/raw-materials')->group(function () {
         Route::get('', [RawMaterialController::class, 'index'])->name('raw');
+        Route::post('/fetch-raw-materials', [RawMaterialController::class, 'fetchRawMaterials'])->name('raw.fetchRawMaterials');
         Route::get('/add', [RawMaterialController::class, 'add'])->name('raw.add');
         Route::post('/store', [RawMaterialController::class, 'store'])->name('raw.store');
         Route::get('/bulk', [RawMaterialController::class, 'bulk'])->name('raw.bulk');
@@ -95,6 +96,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{material}', [RawMaterialController::class, 'destroy'])->name('raw.destroy');
         Route::post('/price-list', [RawMaterialController::class, 'fetchPriceList'])->name('raw.fetchPriceList');
         Route::post('/material-list', [RawMaterialController::class, 'fetchMaterialList'])->name('raw.fetchMaterialList');
+        Route::post('/purchase-list', [RawMaterialController::class, 'fetchPurchaseList'])->name('raw.fetchPurchaseList');
     });
 
     // Semi Finished Material Routes
@@ -226,7 +228,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/po-shortage-consolidated-stock', [ProductionOrderController::class, 'poConsolidatedShortageReport'])->name('reports.poConsolidatedShortageReport');
         Route::get('/plo-shortage-report', [ProductionOrderController::class, 'ploShortageReport'])->name('reports.ploShortageReport');
         Route::get('/plo-shortage-consolidated-report', [ProductionOrderController::class, 'ploConsolidatedShortageReport'])->name('reports.ploConsolidatedShortageReport');
-        Route::get('/rm-purcahse-report', [RawMaterialController::class, 'rmPurchaseReport'])->name('reports.rmPurchaseReport');
+        Route::get('/rm-purchase-report', [RawMaterialController::class, 'rmPurchaseReport'])->name('reports.rmPurchaseReport');
         Route::get('/rm-issuance-report', [RawMaterialController::class, 'rmIssuanceReport'])->name('reports.rmIssuanceReport');
     });
 
