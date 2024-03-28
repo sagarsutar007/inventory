@@ -417,24 +417,36 @@ class SemiFinishedMaterialController extends Controller
     public function getRawMaterials(Request $request)
     {
         $searchTerm = $request->input('q');
+        $selectedValues = $request->input('selected_values', []);
 
-        $materials = RawMaterial::select('materials.material_id', 'materials.description', 'materials.part_code')
-            ->when(!empty($searchTerm), function ($query) use ($searchTerm) {
-                $query->where(function ($subquery) use ($searchTerm) {
-                    $subquery->where('description', 'like', '%' . $searchTerm . '%')
-                        ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
-                });
-            })
+        $selectedValues = array_filter($selectedValues, function ($value) {
+            return $value !== null;
+        });
+
+        $query = RawMaterial::select('materials.material_id', 'materials.description', 'materials.part_code')
             ->where('type', '=', 'raw')
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('material_purchases')
                     ->whereColumn('material_purchases.material_id', 'materials.material_id');
-            })
-            ->orderBy('description')
-            ->get();
+            });
+
+        if (!empty($searchTerm)) {
+            $query->where(function ($subquery) use ($searchTerm) {
+                $subquery->where('description', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if (!empty($selectedValues)) {
+            $query->whereNotIn('materials.material_id', $selectedValues);
+        }
+
+        $materials = $query->orderBy('description')->get();
+
         return response()->json($materials);
     }
+
 
     private function generatePartCode($commodity_id = '', $category_id = '')
     {
@@ -448,5 +460,102 @@ class SemiFinishedMaterialController extends Controller
         }
         return null;
 
+    }
+
+    public function fetchSemiMaterials(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $semiMaterials = RawMaterial::with('uom', 'commodity', 'category')->where('type', 'semi-finished');
+
+        if (!empty ($search)) {
+            $semiMaterials->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                        $query->orWhere('category_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                        $query->orWhere('commodity_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($query) use ($search) {
+                        $query->where('uom_shortcode', 'like', '%' . $search . '%');
+                        $query->orWhere('uom_text', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $semiMaterials->count();
+
+        if (!in_array($columnName, ['serial', 'image', 'actions'])) {
+            if ($columnName === 'uom_shortcode') {
+                $semiMaterials->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } else if ($columnName === 'commodity_name') {
+                $semiMaterials->join('commodities', 'materials.commodity_id', '=', 'commodities.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } else if ($columnName === 'category_name') {
+                $semiMaterials->join('categories', 'materials.category_id', '=', 'categories.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else {
+                $semiMaterials->orderBy($columnName, $columnSortOrder);
+            }
+        }
+
+        $materials = $semiMaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+
+        $data = [];
+        foreach ($materials as $index => $material) {
+
+            $currentPage = ($start / $length) + 1;
+            $serial = ($currentPage - 1) * $length + $index + 1;
+
+            $imageAttachment = $material->attachments()->where('type', 'image')->first();
+            if ($imageAttachment) {
+                $image = '<div class="text-center"><img src="' . asset('assets/uploads/materials/' . $imageAttachment->path) . '" class="mt-2" width="30px" height="30px"></div>';
+            } else {
+                $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="30px" height="30px"></div>';
+            }
+
+            $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
+                <a href="#" role="button" data-matid="' . $material->material_id . '"  class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> /
+                <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>
+                / <form action="' . route('semi.destroy', $material->material_id) . '" method="post" style="display: inline;">
+                    ' . csrf_field() . '
+                    ' . method_field('DELETE') . '
+                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this record?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
+                </form> / 
+                <button role="button" data-matid="'.$material->material_id.'" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / <button role="button" data-desc="'. $material->description .'" data-matid="'.$material->material_id.'" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
+
+            $data[] = [
+                'serial' => $serial,
+                'image' => $image,
+                'part_code' => $material->part_code,
+                'description' => $material->description,
+                'unit' => $material->uom->uom_shortcode,
+                'commodity_name' => $material->commodity->commodity_name,
+                'category_name' => $material->category->category_name,
+                'actions' => $actions,
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $materials->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
     }
 }

@@ -273,6 +273,7 @@ class BOMController extends Controller
             if ($material && $material->bom) {
 
                 $records = BomRecord::where('bom_id', $material->bom->bom_id)->get();
+                
                 foreach ($records as $record) {
                     $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
@@ -288,7 +289,7 @@ class BOMController extends Controller
                     if (isset ($bomRecords[$record->material->description])) {
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
                     } else {
-                        $total_avg = ($quantity * ($priceStats->avg_price ?? 0) + $quantity * ($priceStats->min_price ?? 0) + $quantity * ($priceStats->max_price ?? 0)) / 3;
+
                         $bomRecords[$record->material->description] = [
                             'material_id' => $record->material->material_id,
                             'part_code' => $record->material->part_code,
@@ -301,10 +302,9 @@ class BOMController extends Controller
                             'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
                             'closing_balance' => $closingBalance,
-                            'avg_price' => $priceStats->avg_price ?? null,
-                            'min_price' => $priceStats->min_price ?? null,
-                            'max_price' => $priceStats->max_price ?? null,
-                            'total_avg' => $total_avg,
+                            'avg_price' => number_format($priceStats->avg_price ?? null, 2),
+                            'min_price' => number_format($priceStats->min_price ?? null, 2),
+                            'max_price' => number_format($priceStats->max_price ?? null, 2),
                         ];
                     }
                 }

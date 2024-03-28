@@ -276,6 +276,7 @@ class WarehouseController extends Controller
                     $warehouseRecord->warehouse_type = 'received';
                     $warehouseRecord->quantity = $validatedData['quantity'][$key];
                     $warehouseRecord->created_by = Auth::id();
+                    // $warehouseRecord->created_at = Carbon::now();
                     $warehouseRecord->save();
                 }
             }
@@ -336,6 +337,7 @@ class WarehouseController extends Controller
                 $warehouseRecord->warehouse_type = 'issued';
                 $warehouseRecord->quantity = $validatedData['quantity'][$key];
                 $warehouseRecord->created_by = Auth::id();
+                // $warehouseRecord->created_at = Carbon::now();
                 $warehouseRecord->save();
             }
 

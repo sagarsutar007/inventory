@@ -18,6 +18,7 @@
                     <table id="vendors-table" class="table table-bordered table-striped">
                         <thead>
                             <tr>
+                                <th width="10%">Vendor Code</th>
                                 <th>Name</th>
                                 <th>Address</th>
                                 <th>City</th>
@@ -107,6 +108,7 @@
                     }
                 },
                 "columns": [
+                    { "data": "vendor_code", "name": "vendor_code" },
                     { "data": "vendor_name", "name": "vendor_name" },
                     { "data": "vendor_city", "name": "vendor_city" },
                     { "data": "vendor_address", "name": "vendor_address" },
@@ -127,64 +129,6 @@
                 "language": {
                     "lengthMenu": "_MENU_"
                 }
-            });
-
-            $(document).on('click', '.kitting-btn', function() {
-                let po_id = $(this).data('id');
-                let po_num = $(this).data('pon');
-                $.ajax({
-                    type: "GET",
-                    url: "{{ route('kitting.viewKittingForm') }}",
-                    data: {
-                        'po_id': po_id,
-                    },
-                    success: function(response) {
-                        $('#order-details-section').html(response.html);
-                        $("#orderDetailsModal").find('.modal-title').text('Production Order: #' + po_num);
-                        $("#orderDetailsModal").modal('show');
-
-                        $('#bom-table').DataTable({
-                            "paging": false,
-                            "ordering": true,
-                            "info": false,
-                            "dom": 'Bfrtip',
-                            "columnDefs": [
-                                {
-                                    "targets": [8],
-                                    "orderable": false
-                                }
-                            ],
-                            "buttons": [
-                                {
-                                    extend: 'excel',
-                                    exportOptions: {
-                                        columns: ':visible:not(.exclude)'
-                                    },
-                                    title: 'Production Order: #' + po_num,
-                                },
-                                {
-                                    extend: 'pdf',
-                                    exportOptions: {
-                                        columns: ':visible:not(.exclude)'
-                                    },
-                                    title: 'Production Order: #' + po_num,
-                                },
-                                {
-                                    extend: 'print',
-                                    exportOptions: {
-                                        columns: ':visible:not(.exclude)'
-                                    },
-                                    title: 'Production Order: #' + po_num,
-                                },
-                                'colvis',
-                            ],
-                            stateSave: true,
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        toastr.error('An error occurred while fetching order details.');
-                    }
-                });
             });
 
             $(document).on('click', '.edit-vendor-btn', function() {

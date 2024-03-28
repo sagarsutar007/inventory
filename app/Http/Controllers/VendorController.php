@@ -34,7 +34,8 @@ class VendorController extends Controller
         if (!empty($search)) {
             $query->where('vendor_name', 'like', '%' . $search . '%')
                 ->orWhere('vendor_city', 'like', '%' . $search . '%')
-                ->orWhere('vendor_address', 'like', '%' . $search . '%');
+                ->orWhere('vendor_address', 'like', '%' . $search . '%')
+                ->orWhere('vendor_code', 'like', '%' . $search . '%');
         }
 
         $totalRecords = $query->count();

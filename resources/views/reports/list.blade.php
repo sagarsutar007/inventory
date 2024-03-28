@@ -31,7 +31,7 @@
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Raw Material Stock Report</a>
+                    <a href="{{ route('reports.stockReport') }}">Raw Material Stock Report</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">

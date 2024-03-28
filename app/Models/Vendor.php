@@ -22,7 +22,24 @@ class Vendor extends Model
         'created_at',
         'created_by',
         'updated_by',
+        'vendor_code',
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($vendor) {
+            $latestVendor = self::orderBy('vendor_code', 'desc')->first();
+            if ($latestVendor) {
+                $lastCode = intval(substr($latestVendor->vendor_code, 4));
+                $nextCode = $lastCode + 1;
+            } else {
+                $nextCode = 1;
+            }
+            $vendor->vendor_code = 'VND' . str_pad($nextCode, 5, '0', STR_PAD_LEFT);
+        });
+    }
 
     public function materialPurchase()
     {

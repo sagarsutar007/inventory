@@ -617,17 +617,23 @@ class RawMaterialController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
+        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity', 'uom']);
 
         if (!empty ($search)) {
             $query->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('make', 'like', '%' . $search . '%')
+                    ->orWhere('mpn', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
                     })
                     ->orWhereHas('commodity', function ($query) use ($search) {
                         $query->where('commodity_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($query) use ($search) {
+                        $query->where('uom_text', 'like', '%' . $search . '%');
+                        $query->orWhere('uom_shortcode', 'like', '%' . $search . '%');
                     });
             });
         }
@@ -728,6 +734,92 @@ class RawMaterialController extends Controller
         // ];
 
         // return response()->json($response);
+    }
+
+    public function stockReport()
+    {
+        return view('reports.rm-stock');
+    }
+
+    public function fetchRmStockList(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+        
+        $material = Material::query()->where('type', 'raw')->with(['category', 'commodity', 'uom', 'stock']);
+
+        if (!empty ($search)) {
+            $material->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('make', 'like', '%' . $search . '%')
+                    ->orWhere('mpn', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($query) use ($search) {
+                        $query->where('uom_text', 'like', '%' . $search . '%');
+                        $query->orWhere('uom_shortcode', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $material->count();
+
+        if (!in_array($columnName, ['serial'])) {
+            $material->orderBy($columnName, $columnSortOrder);
+        }
+
+        if ($length == -1) {
+            $materials = $material->get();
+        } else {
+            $materials = $material->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        }
+        
+        
+        $data = [];
+
+        foreach ($materials as $index => $item) {
+
+            if ($item?->stock && $item?->re_order && $item?->stock?->closing_balance < $item?->re_order) {
+                $rostatus = "<span class='text-danger font-weight-bold'>Required</span>";
+            } else {
+                $rostatus = "";
+            }
+
+            $data[] = [
+                'serial' => $index + 1,
+                'part_code' => $item->part_code,
+                'description' => $item->description,
+                'commodity' => $item->commodity->commodity_name,
+                'category' => $item->category->category_name,
+                'make' => $item->make,
+                'mpn' => $item->mpn,
+                'uom' => $item->uom->uom_shortcode,
+                'stock' => $item->stock?->closing_balance,
+                'reorder_qty' => $item->re_order,
+                'reorder' => $rostatus,
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $totalRecords,
+            "data" => $data,
+        ];
+
+        return response()->json($response);
     }
 
 }

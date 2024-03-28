@@ -225,6 +225,9 @@ class FinishedMaterialController extends Controller
         $uom = $material->uom()->first();
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
+
+        $stock = Stock::where('material_id', $material->material_id)->first();
+
         if ($material->bom) {
             $bomRecords = $material->bom->bomRecords;
         } else {
@@ -241,6 +244,7 @@ class FinishedMaterialController extends Controller
             'uoms' => $uoms,
             'categories' => $categories,
             'commodities' => $commodities,
+            'stock' => $stock,
         ];
 
         $returnHTML = view('finished-goods.edit-finished-material', $context)->render();
@@ -448,19 +452,30 @@ class FinishedMaterialController extends Controller
     public function getMaterials(Request $request)
     {
         $searchTerm = $request->input('q');
+        $selectedValues = $request->input('selected_values', []);
 
-        if (empty ($searchTerm)) {
-            $materials = RawMaterial::with('uom')->limit(10)->get();
-        } else {
-            $materials = Material::with('uom')
-                ->where(function ($query) use ($searchTerm) {
-                    $query->where('description', 'like', '%' . $searchTerm . '%')
-                        ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
-                })
-                ->whereIn('type', ['raw', 'semi-finished'])
-                ->orderBy('description')
-                ->get();
+        $selectedValues = array_filter($selectedValues, function ($value) {
+            return $value !== null;
+        });
+
+        $query = RawMaterial::with('uom');
+
+        if (!empty($searchTerm)) {
+            $query->where(function ($query) use ($searchTerm) {
+                $query->where('description', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
+            });
         }
+
+        $query->whereIn('type', ['raw', 'semi-finished'])
+            ->orderBy('description')
+            ->limit(10);
+
+        if (!empty($selectedValues)) {
+            $query->whereNotIn('material_id', $selectedValues);
+        }
+
+        $materials = $query->get();
 
         $materials = $materials->map(function ($material) {
             return [
@@ -473,6 +488,7 @@ class FinishedMaterialController extends Controller
 
         return response()->json($materials);
     }
+
 
 
     private function generatePartCode($commodity_id = '', $category_id = '')

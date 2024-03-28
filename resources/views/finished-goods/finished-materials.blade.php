@@ -285,9 +285,14 @@
                         method: 'post',
                         delay: 250,
                         data: function (params) {
+                            var selectedItems = [];
+                            $('.raw-materials').each(function() {
+                                selectedItems.push($(this).val());
+                            });
                             return {
-                                q: params.term,
                                 _token: '{{ csrf_token() }}',
+                                q: params.term,
+                                selected_values: selectedItems,
                             };
                         },
                         processResults: function (data) {

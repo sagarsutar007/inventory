@@ -188,9 +188,9 @@
             function initializeBomTable() {
                 $('#bom-table').DataTable({
                     "responsive": true,
-                    "lengthChange": false,
+                    "lengthChange": true,
                     "autoWidth": true,
-                    "paging": false,
+                    "paging": true,
                     "info": false,
                     "buttons": [
                         {
@@ -216,9 +216,16 @@
                     "processing": true,
                     "scrollY": "320px",
                     "scrollCollapse": true,
-                    "searching": false,
+                    "searching": true,
                     "ordering": true,
-                    "dom": 'Bfrtip',
+                    "dom": 'lBfrtip',
+                    "language": {
+                        "lengthMenu": "_MENU_"
+                    },
+                    "lengthMenu": [
+                        [ -1, 10, 25, 50, 100],
+                        ['All', 10, 25, 50, 100]
+                    ]
                 });
             }
 

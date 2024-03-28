@@ -97,6 +97,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/price-list', [RawMaterialController::class, 'fetchPriceList'])->name('raw.fetchPriceList');
         Route::post('/material-list', [RawMaterialController::class, 'fetchMaterialList'])->name('raw.fetchMaterialList');
         Route::post('/purchase-list', [RawMaterialController::class, 'fetchPurchaseList'])->name('raw.fetchPurchaseList');
+        Route::post('/stock-list', [RawMaterialController::class, 'fetchRmStockList'])->name('raw.fetchRmStockList');
     });
 
     // Semi Finished Material Routes
@@ -109,6 +110,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{material}/edit', [SemiFinishedMaterialController::class, 'edit'])->name('semi.edit');
         Route::post('/{material}/update', [SemiFinishedMaterialController::class, 'update'])->name('semi.update');
         Route::delete('/{material}', [SemiFinishedMaterialController::class, 'destroy'])->name('semi.destroy');
+        Route::post('/fetch-semi-materials', [SemiFinishedMaterialController::class, 'fetchSemiMaterials'])->name('semi.fetchRawMaterials');
     });
 
     // Finished Material Routes

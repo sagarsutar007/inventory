@@ -23,7 +23,8 @@
                     <table id="materials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <!-- <th width="5%">Sno.</th> -->
+                                <th width="5%">Sno.</th>
+                                <th class="text-center">Image</th>
                                 <th width="10%">Code</th>
                                 <th>Material Name</th>
                                 <th>Unit</th>
@@ -33,46 +34,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach($materials as $material)
-                            <tr>
-                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
-                                <td width="10%">{{ $material->part_code }}</td>
-                                <td>{{ $material->description }}</td>
-                                <td>{{ $material->uom->uom_text }}</td>
-                                <td>{{ $material->commodity->commodity_name }}</td>
-                                <td>{{ $material->category->category_name }}</td>
-                                <td width="15%">
-                                    <a href="#" role="button" data-partcode="{{ $material->part_code }}" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
-                                        <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
-                                    </a> / 
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / 
-                                    <form action="{{ route('semi.destroy', $material->material_id) }}" method="post" style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this material?')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
-                                    </form> / 
-                                    <button role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / 
-                                    <button role="button" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>
-                                </td>
-                            </tr>
-                        @endforeach
+                        
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- <x-adminlte-modal id="modalView" title="View Material" icon="fas fa-box" scrollable>
-        <div class="row" id="view-material-modal">
-            <div class="col-12">
-                <h2 class="text-secondary text-center">Loading...</h2>
-            </div>
-        </div>
-        <x-slot name="footerSlot">
-            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
-        </x-slot>
-    </x-adminlte-modal> -->
 
     <x-adminlte-modal id="modalEdit" title="Edit Material" icon="fas fa-box" size='lg' scrollable>
         <form action="/" id="edit-material-form" method="post" enctype="multipart/form-data">
@@ -156,11 +124,6 @@
                 "autoWidth": true,
                 "paging": true,
                 "info": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
-                "language": {
-                    "lengthMenu": "_MENU_"
-                },
                 "buttons": [
                     {
                         extend: 'excel',
@@ -182,8 +145,46 @@
                     },
                     'colvis',
                 ],
-                "stateSave": true
-            }).buttons().container().appendTo('#materials_wrapper .col-md-6:eq(0)');
+                "processing": true,
+                "serverSide": true,
+                "stateSave": true,
+                "scrollY": "440px",
+                "scrollCollapse": true,
+                "ajax": {
+                    "url": "{{ route('semi.fetchRawMaterials') }}",
+                    "type": "POST",
+                    "data": function ( d ) {
+                        d._token = '{{ csrf_token() }}';
+                        d.type = 'semi-finished';
+                    }
+                },
+                "columns": [
+                    { "data": "serial", "name": "serial" },
+                    { "data": "image", "name": "image" },
+                    { "data": "part_code", "name": "part_code" },
+                    { "data": "description", "name": "description" },
+                    { "data": "unit", "name": "uom_shortcode" },
+                    { "data": "commodity_name", "name": "commodity_name" },
+                    { "data": "category_name", "name": "category_name" },
+                    { "data": "actions", "name": "actions" },
+                ],
+                "lengthMenu": [10, 25, 50, 75, 100],
+                "searching": true,
+                "ordering": true,
+                "columnDefs": [
+                    {
+                        "targets": [0, 1, 7],
+                        "orderable": false,
+                    }
+                ],
+                "dom": 'lBfrtip',
+                "language": {
+                    "lengthMenu": "_MENU_"
+                },
+                "initComplete": function(settings, json) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
 
             // Show Error Messages
             @if ($errors->any())

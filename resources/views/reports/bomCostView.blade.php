@@ -186,30 +186,37 @@
             });
 
             function initializeBomTable() {
+
+                var partcode = $(".suggest-goods").val();
+
                 $('#bom-table').DataTable({
                     "responsive": true,
                     "lengthChange": false,
                     "autoWidth": true,
                     "paging": false,
                     "info": false,
+                    "footer": true,
                     "buttons": [
                         {
                             extend: 'excel',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            }
+                            },
+                            title: "BOM of " + partcode,
                         },
                         {
                             extend: 'pdf',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            }
+                            },
+                            title: "BOM of " + partcode,
                         },
                         {
                             extend: 'print',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            }
+                            },
+                            title: "BOM of " + partcode,
                         },
                         'colvis',
                     ],
@@ -278,69 +285,6 @@
                         }
                     });
                 }
-            });
-
-            $(document).on('click', "#create-prod-order", function () {
-
-                $(this)
-                .html('<div class="spinner-grow text-light spinner-grow-sm" role="status"><span class="sr-only">Loading...</span></div> Loading...')
-                .attr('disabled', true);
-
-
-                $('.validation-error').remove();
-                var isValid = true;
-                $('.suggest-goods').each(function() {
-                    if ($(this).val() === '') {
-                        $(this).after('<span class="text-danger validation-error">Partcode is required.</span>');
-                        isValid = false;
-                    }
-                });
-
-                $('.quantity').each(function() {
-                    if ($(this).val() === '') {
-                        $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity is required.</span>');
-                        isValid = false;
-                    }
-
-                    let val = parseFloat($(this).val());
-                    let max = parseFloat($(this).attr('max'));
-
-                    if (val > max) {
-                        $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity can\'t exceed more than '+$(this).attr('max')+'. </span>');
-                        isValid = false;
-                    }
-                });
-
-                if (!isValid) return;
-
-                var formData = $("#get-bom-form").serialize();
-
-                $.ajax({
-                    type: "POST",
-                    url: "{{ route('po.createOrder') }}", 
-                    data: formData,
-                    success: function(response){
-                        if (response.status) {
-                            toastr.success(response.message);
-                            //reload after 2 seconds
-                            setTimeout(() => { window.location.reload() }, 1500);
-                        } else {
-                            toastr.error(response.message);
-                            $("#create-prod-order")
-                            .html("Create Order")
-                            .removeAttr('disabled');
-                        }
-                    },
-                    error: function(xhr, status, error){
-                        var jsonResponse = JSON.parse(xhr.responseText);
-                        toastr.error(jsonResponse.message);
-                        console.error(jsonResponse.error);
-                        $("#create-prod-order")
-                        .html("Create Order")
-                        .removeAttr('disabled');
-                    }
-                });
-
             });
         })
     </script>

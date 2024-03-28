@@ -8,9 +8,9 @@
                 <th>Issue Date:</th>
                 <td>{{ date('d-m-Y', strtotime($warehouse->created_at)) }}</td>
                 @if ($warehouse->po_kitting != 'true') 
-                    <th colspan="4" align="left">Reason: {{$warehouse->reason}}</th>
+                    <th colspan="4" align="left">Reason: <span class="font-weight-normal">{{$warehouse->reason}}</span></th>
                 @else
-                    <th colspan="4" align="left">PO No: {{$warehouse->popn}}</th>
+                    <th colspan="4" align="left">PO No: <span class="font-weight-normal">{{$warehouse->popn}}</span></th>
                 @endif
             @else
                 <th align="left">Receipt Date:</th>
@@ -45,7 +45,7 @@
     <tfoot>
         <tr>
             <th colspan="3" align="left">
-                Issued by:- {{$warehouse->createdBy->name}}
+                Issued by:- <span class="font-weight-normal">{{$warehouse->createdBy->name}}</span>
                 <p class="m-0 text-secondary text-sm font-weight-light">{{ date('d-m-Y h:i a', strtotime('+5 hours 30 minutes', strtotime($warehouse->created_at))) }}</p>
             </th>
             <th colspan="3" align="left">Recieved by:-</th>

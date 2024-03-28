@@ -14,7 +14,7 @@ class WarehouseRecord extends Model
     public $incrementing = false;
     protected $keyType = 'string';
 
-    public $timestamps = false;
+    // public $timestamps = false;
 
     protected $fillable = [
         'warehouse_record_id',
@@ -22,7 +22,7 @@ class WarehouseRecord extends Model
         'material_id',
         'warehouse_type',
         'quantity',
-        'created_at'
+        // 'created_at'
     ];
 
     public function warehouse()

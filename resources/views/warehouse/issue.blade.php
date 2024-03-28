@@ -44,12 +44,19 @@
                                     <option value="Return to Vendor">Return to Vendor</option>
                                     <option value="Others">Others</option>
                                 </select>
+                                <div id="err-reason"></div>
                             </div>
                         </div>
                         <div class="col-md-3">
+                            @php
+                                $defaultTimeZone = date_default_timezone_get();
+                                date_default_timezone_set('Asia/Kolkata');
+                                $dateIST = date('d-m-Y');
+                                date_default_timezone_set($defaultTimeZone);
+                            @endphp
                             <div class="form-group">
-                                <label for="date">Issue Date: *</label><br />
-                                <input type="text" id="date" name="date" class="form-control" placeholder="Enter Date" value="{{ date('d-m-Y') }}" readonly required>
+                                <label for="date">Issue Date: *</label><br /> 
+                                <input type="text" id="date" name="date" class="form-control" placeholder="Enter Date" value="{{ $dateIST }}" readonly required>
                             </div>
                         </div>
                     </div>
@@ -238,8 +245,8 @@
                 }
             });
 
-            $('#vendor').change(function() {
-                $('#err-vendor').empty();
+            $('#reason').change(function() {
+                $('#err-reason').empty();
             });
 
             $('#submitForm').click(function() {
@@ -247,11 +254,11 @@
                 $('.validation-error').remove();
                 var isValid = true;
 
-                // var selectedVendor = $('#vendor').val();
-                // if (!selectedVendor) {
-                //     $('#err-vendor').append('<span class="text-danger validation-error">Vendor is required.</span>');
-                //     isValid = false;
-                // }
+                var selectedReason = $('#reason').val();
+                if (!selectedReason) {
+                    $('#err-reason').append('<span class="text-danger validation-error">Reason is required.</span>');
+                    isValid = false;
+                }
 
                 $('.suggest-partcode').each(function() {
                     if ($(this).val() === '') {
