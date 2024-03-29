@@ -126,31 +126,35 @@ class WarehouseController extends Controller
         $query = Warehouse::with('vendor');
 
         if (!empty($search)) {
-            // $query->whereHas('material', function ($q) use ($search) {
-            //     $q->where('part_code', 'like', '%' . $search . '%')
-            //         ->orWhere('description', 'like', '%' . $search . '%')
-            //         ->orWhereHas('uom', function ($u) use ($search) {
-            //             $u->where('uom_text', 'like', '%' . $search . '%');
-            //         });
-            // });
+            $query->leftJoin('vendors', 'vendors.vendor_id', '=', 'warehouse.vendor_id')
+                ->where(function ($query) use ($search) {
+                    $query->where('vendors.vendor_name', 'like', '%' . $search . '%');
+                })
+                ->orWhere('popn', 'like', '%' . $search . '%')
+                ->orWhere('type', 'like', '%' . $search . '%')
+                ->orWhere('reason', 'like', '%' . $search . '%')
+                ->orWhere('transaction_id', 'like', '%' . $search . '%')
+                ->orWhere('date', 'like', '%' . date('Y-m-d', strtotime($search)) . '%');
         }
+
+        // print_r($query->toSql());
+        // exit();
 
         $totalRecords = $query->count();
 
-        if ($columnName === 'part_code') {
-            $query->join('materials', 'materials.material_id', '=', 'warehouse.material_id')
-                ->orderBy('materials.part_code', $columnSortOrder);
-        } elseif ($columnName === 'description') {
-            $query->join('materials', 'materials.material_id', '=', 'warehouse.material_id')
-                ->orderBy('materials.description', $columnSortOrder);
-        } elseif ($columnName === 'uom_text') {
-            $query->join('materials', 'materials.material_id', '=', 'warehouse.material_id')
-                ->join('uom_units', 'uom_units.id', '=', 'materials.uom_id')
-                ->orderBy('uom_units.uom_text', $columnSortOrder);
-        } elseif ($columnName === 'quantity') {
-            $query->orderBy('quantity', $columnSortOrder);
-        } else {
-            $query->orderBy('created_at', 'desc');
+        if ($columnName === 'vendor') {
+            $query->join('vendors', 'vendors.vendor_id', '=', 'warehouse.vendor_id')
+                ->orderBy('vendors.vendor_name', $columnSortOrder);
+        } elseif ($columnName === 'popn') {
+            $query->orderBy('popn', $columnSortOrder);
+        } elseif ($columnName === 'type') {
+            $query->orderBy('type', $columnSortOrder);
+        } elseif ($columnName === 'reason') {
+            $query->orderBy('reason', $columnSortOrder);
+        } elseif ($columnName === 'transaction_id') {
+            $query->orderBy('warehouse.created_at', $columnSortOrder);
+        } elseif ($columnName === 'date') {
+            $query->orderBy('date', $columnSortOrder);
         }
 
         // Paginate the query

@@ -72,7 +72,7 @@
             $('#materials').DataTable({
                 "responsive": true,
                 "lengthChange": true,
-                "autoWidth": true,
+                "autoWidth": false,
                 "paging": true,
                 "info": true,
                 "buttons": [
