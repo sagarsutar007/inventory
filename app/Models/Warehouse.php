@@ -57,4 +57,9 @@ class Warehouse extends Model
     {
         return $this->hasMany(WarehouseRecord::class, 'warehouse_id', 'warehouse_id');
     }
+
+    public function production()
+    {
+        return $this->belongsTo(ProductionOrder::class, 'po_id', 'po_id');
+    }
 }

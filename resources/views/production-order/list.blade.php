@@ -208,21 +208,21 @@
                                     exportOptions: {
                                         columns: ':visible:not(.exclude)'
                                     },
-                                    title: 'Production Order: #' + po_num,
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
                                 },
                                 {
                                     extend: 'pdf',
                                     exportOptions: {
                                         columns: ':visible:not(.exclude)'
                                     },
-                                    title: 'Production Order: #' + po_num,
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
                                 },
                                 {
                                     extend: 'print',
                                     exportOptions: {
                                         columns: ':visible:not(.exclude)'
                                     },
-                                    title: 'Production Order: #' + po_num,
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
                                 },
                                 'colvis',
                             ],

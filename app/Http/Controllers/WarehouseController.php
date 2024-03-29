@@ -42,7 +42,7 @@ class WarehouseController extends Controller
 
         $query = Stock::with('material');
 
-        if (!empty ($search)) {
+        if (!empty($search)) {
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
@@ -125,7 +125,7 @@ class WarehouseController extends Controller
 
         $query = Warehouse::with('vendor');
 
-        if (!empty ($search)) {
+        if (!empty($search)) {
             // $query->whereHas('material', function ($q) use ($search) {
             //     $q->where('part_code', 'like', '%' . $search . '%')
             //         ->orWhere('description', 'like', '%' . $search . '%')
@@ -253,7 +253,7 @@ class WarehouseController extends Controller
             $warehouse->save();
 
             foreach ($validatedData['part_code'] as $key => $materialId) {
-                if (!empty ($materialId)) {
+                if (!empty($materialId)) {
                     $material = Material::where('part_code', $materialId)->first();
                     $stock = Stock::where('material_id', $material->material_id)->first();
                     if ($stock) {
@@ -392,13 +392,18 @@ class WarehouseController extends Controller
             $type = 'Material Reciept Voucher';
         }
 
+        $wh = Warehouse::with('production')->first();
+
+        $finishedGood = $warehouse->production?->material->description;
+        $quantity = $warehouse->production?->quantity . " " . $warehouse->production?->material?->uom?->uom_shortcode;
+
         $context = [
             'title' => $type,
             'warehouse' => $warehouse,
             'records' => $records
         ];
         $returnHTML = view('warehouse.viewModalForm', $context)->render();
-        return response()->json(array('status' => true, 'html' => $returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML, 'quantity' => $quantity, 'material' => $finishedGood));
     }
 
     /**
