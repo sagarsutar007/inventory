@@ -72,7 +72,7 @@
             $('#materials').DataTable({
                 "responsive": true,
                 "lengthChange": true,
-                "autoWidth": true,
+                "autoWidth": false,
                 "paging": true,
                 "info": true,
                 "buttons": [
@@ -181,13 +181,14 @@
                 var type = button.data('type');
                 var transId = button.data('transactionid');
                 var modal = $(this);
-                modal.find('.modal-title').text("Transaction Details: #" + transId);
+                
 
                 $.ajax({
                     url: '/app/warehouse/' + warehouseId + '/viewTransaction',
                     method: 'GET',
                     success: function(response) {
                         if (response.status) {
+                            modal.find('.modal-title').text("Transaction Details: #" + transId + "-" + response.material + "("+response.quantity+")");
                             $("#view-transaction-section").html(response.html);
                         }
                     },
