@@ -19,6 +19,7 @@
                         <thead>
                             <tr>
                                 <th>Order Number</th>
+                                <th>PartCode</th>
                                 <th>Material</th>
                                 <th>Unit</th>
                                 <th>Quantity</th>
@@ -103,6 +104,7 @@
                 },
                 "columns": [
                     { "data": "po_number", "name": "po_number" },
+                    { "data": "part_code", "name": "part_code" },
                     { "data": "description", "name": "description" },
                     { "data": "unit", "name": "uom_shortcode" },
                     { "data": "quantity", "name": "quantity" },

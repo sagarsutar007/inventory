@@ -237,8 +237,6 @@ class WarehouseController extends Controller
             ],
         ]);
 
-
-
         try {
             DB::beginTransaction();
 
@@ -276,7 +274,8 @@ class WarehouseController extends Controller
                     $warehouseRecord->warehouse_type = 'received';
                     $warehouseRecord->quantity = $validatedData['quantity'][$key];
                     $warehouseRecord->created_by = Auth::id();
-                    // $warehouseRecord->created_at = Carbon::now();
+                    $warehouseRecord->created_at = Carbon::now();
+                    $warehouseRecord->record_date = $warehouse->date;
                     $warehouseRecord->save();
                 }
             }
@@ -311,7 +310,7 @@ class WarehouseController extends Controller
             // $warehouse->popn = $validatedData['popn'];
             $warehouse->reason = $validatedData['reason'];
             $warehouse->type = 'issue';
-            $warehouse->date = date('y-m-d', strtotime($validatedData['date']));
+            $warehouse->date = date('Y-m-d', strtotime($validatedData['date']));
             $warehouse->created_by = Auth::id();
             $warehouse->created_at = Carbon::now();
             $warehouse->save();
@@ -337,7 +336,8 @@ class WarehouseController extends Controller
                 $warehouseRecord->warehouse_type = 'issued';
                 $warehouseRecord->quantity = $validatedData['quantity'][$key];
                 $warehouseRecord->created_by = Auth::id();
-                // $warehouseRecord->created_at = Carbon::now();
+                $warehouseRecord->created_at = Carbon::now();
+                $warehouseRecord->record_date = $warehouse->date;
                 $warehouseRecord->save();
             }
 

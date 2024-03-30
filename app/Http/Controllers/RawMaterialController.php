@@ -247,6 +247,7 @@ class RawMaterialController extends Controller
             }
         }
 
+        $this->updatePrices($rawMaterial->material_id);
         //Insert data in stocks table
         $stock = new Stock;
         $stock->material_id = $rawMaterial->material_id;
@@ -417,7 +418,7 @@ class RawMaterialController extends Controller
 
             // Update or insert Vendor records
             $this->updateMaterialVendors($material, $request);
-
+            $this->updatePrices($material->material_id);
             //Update or Insert Stock records
             $stock = Stock::where('material_id', $material->material_id)->first();
 
@@ -689,6 +690,11 @@ class RawMaterialController extends Controller
         return view('reports.rm-purchase');
     }
 
+    public function rmIssuanceReport()
+    {
+        return view('reports.rm-issue');
+    }
+
     public function fetchPurchaseList(Request $request)
     {
         $draw = $request->input('draw');
@@ -701,14 +707,23 @@ class RawMaterialController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
+        $query = Material::query()->where('type', 'raw')
+        ->with(['category', 'commodity'])
+        ->join('warehouse_records', 'materials.material_id', '=', 'warehouse_records.material_id');
+
+        if ($request->input('type') == 'issued') {
+            $query->where('warehouse_type', 'issued');
+        } else {
+            $query->where('warehouse_type', 'received');
+        }
+        
 
         if (!empty ($request->searchTerm)) {
             $query->where('part_code', 'like', '%' . $request->searchTerm . '%');
         }
 
         if (!empty ($request->startDate) && !empty ($request->endDate)) {
-            $query->whereBetween('created_at', [$request->startDate, $request->endDate]);
+            $query->whereBetween('warehouse_records.created_at', [$request->startDate, $request->endDate]);
         }
 
         if (!empty ($search)) {
@@ -720,20 +735,47 @@ class RawMaterialController extends Controller
                     })
                     ->orWhereHas('commodity', function ($query) use ($search) {
                         $query->where('commodity_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('warehouse_records', function ($query) use ($search) {
+                        $query->where('record_date', 'like', '%' . date('Y-m-d',strtotime($search)) . '%');
                     });
             });
         }
 
         $totalRecords = $query->count();
 
-        // $response = [
-        //     "draw" => intval($draw),
-        //     "recordsTotal" => $totalRecords,
-        //     "recordsFiltered" => $materials->total(),
-        //     "data" =>  $data,
-        // ];
+        if ($length == -1) {
+            $materials = $query->get();
+        } else {
+            $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        }
 
-        // return response()->json($response);
+        $data = [];
+
+        foreach ($materials as $index => $item) {
+
+            $data[] = [
+                'serial' => $index + 1,
+                'part_code' => $item->part_code,
+                'description' => $item->description,
+                'commodity' => $item->commodity->commodity_name,
+                'category' => $item->category->category_name,
+                'unit' => $item->uom->uom_shortcode,
+                'receipt_date' => $item->record_date,
+                'quantity' => $item->quantity,
+                'price_3' => $item->avg_price,
+                'amount' => $item->avg_price * $item->quantity,
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $materials->total(),
+            "data" =>  $data,
+        ];
+
+        return response()->json($response);
     }
 
     public function stockReport()
@@ -822,4 +864,28 @@ class RawMaterialController extends Controller
         return response()->json($response);
     }
 
+    private function updatePrices($material_id='')
+    {
+        if (empty($material_id)) { return false; }
+        $material = Material::find($material_id);
+        $existingPrices = $material->purchases()->pluck('price')->toArray();
+
+        if (!empty($existingPrices)) {
+            // Calculate average price
+            $avgPrice = array_sum($existingPrices) / count($existingPrices);
+            $material->avg_price = $avgPrice;
+
+            // Update lowest price
+            $lowestPrice = min($existingPrices);
+            $material->min_price = $lowestPrice;
+
+            // Update highest price
+            $highestPrice = max($existingPrices);
+            $material->max_price = $highestPrice;
+
+            // Save the changes
+            $material->save();
+        }
+        return true;
+    }
 }

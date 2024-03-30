@@ -218,13 +218,13 @@ class ProductionOrderController extends Controller
 
         try {
             $poNumber = $this->generatePoNumber();
-
             for ($i = 0; $i < count($request->part_code); $i++) {
                 $material = Material::where('part_code', $request->part_code[$i])->first();
                 ProductionOrder::create([
                     'po_number' => $poNumber,
                     'material_id' => $material->material_id,
                     'quantity' => $request->quantity[$i],
+                    'record_date' => $this->getISTDate(),
                     'status' => 'Pending',
                     'created_by' => Auth::id(),
                 ]);
@@ -290,6 +290,7 @@ class ProductionOrderController extends Controller
                     'material_id' => $material->material_id,
                     'quantity' => $request->quantity[$i],
                     'status' => 'Pending',
+                    'record_date' => $this->getISTDate(),
                     'created_by' => Auth::id(),
                 ]);
 
@@ -378,5 +379,15 @@ class ProductionOrderController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'An error occurred while processing your request.'], 500);
         }
+    }
+    
+    public function getISTDate()
+    {
+        $defaultTimeZone = date_default_timezone_get();
+        date_default_timezone_set('Asia/Kolkata');
+        $dateIST = date('Y-m-d');
+        date_default_timezone_set($defaultTimeZone);
+
+        return $dateIST;
     }
 }

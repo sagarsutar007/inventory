@@ -59,7 +59,7 @@
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Raw Material Issuance Report</a>
+                    <a href="{{ route('reports.rmIssuanceReport') }}">Raw Material Issuance Report</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                 </ul>

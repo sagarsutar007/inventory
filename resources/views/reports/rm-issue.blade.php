@@ -131,7 +131,7 @@
                         d.startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
                         d.endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
                         d.searchTerm = $('#term').val();
-                        d.type = "received";
+                        d.type = "issued";
                     }
                 },
                 "columns": [

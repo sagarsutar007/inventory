@@ -22,7 +22,7 @@ class WarehouseRecord extends Model
         'material_id',
         'warehouse_type',
         'quantity',
-        // 'created_at'
+        'created_at'
     ];
 
     public function warehouse()

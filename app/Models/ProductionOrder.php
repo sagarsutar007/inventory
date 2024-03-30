@@ -20,6 +20,7 @@ class ProductionOrder extends Model
         'material_id',
         'quantity',
         'status',
+        'record_date',
         'created_by',
         'updated_by',
     ];
