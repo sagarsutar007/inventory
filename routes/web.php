@@ -137,6 +137,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{bom}', [BOMController::class, 'destroy'])->name('bom.destroy');
         Route::post('/bom-list', [BOMController::class, 'fetchBomList'])->name('bom.fetchBomList');
         Route::post('/bom-cost-list', [BOMController::class, 'getBomRecords'])->name('bom.getBomRecords');
+        Route::post('/bom-cost-summary', [BOMController::class, 'fetchFgCostSummary'])->name('bom.fetchFgCostSummary');
     });
 
     // Warehouse Routes
@@ -168,6 +169,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/new-order', [ProductionOrderController::class, 'initOrder'])->name('po.initOrder');
         Route::delete('/remove-order', [ProductionOrderController::class, 'removeOrder'])->name('po.removeOrder');
         Route::get('/view-order', [ProductionOrderController::class, 'viewOrder'])->name('po.viewOrder');
+        Route::post('/order-report', [ProductionOrderController::class, 'fetchPoReport'])->name('po.fetchPoReport');
+        Route::post('/shortage-order-report', [ProductionOrderController::class, 'fetchPoShortageReport'])->name('po.fetchPoShortageReport');
+        Route::post('/consolidated-shortage-order-report', [ProductionOrderController::class, 'fetchPoConsolidatedShortageReport'])->name('po.fetchPoConsolidatedShortageReport');
     });
 
     // Production Orders Routes
@@ -223,7 +227,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/material-list', [RawMaterialController::class, 'materialList'])->name('reports.materialList');
         Route::get('/bom-view', [BOMController::class, 'bomView'])->name('reports.bom');
         Route::get('/bom-cost-view', [BOMController::class, 'bomCostView'])->name('reports.bomCost');
-        Route::get('/fg-bom-cost', [BOMController::class, 'fgBomCostSummary'])->name('reports.fgBomCostSummary');
+        Route::get('/fg-cost-summary', [BOMController::class, 'fgCostSummary'])->name('reports.fgCostSummary');
         Route::get('/rm-stock', [RawMaterialController::class, 'stockReport'])->name('reports.stockReport');
         Route::get('/po-stock', [ProductionOrderController::class, 'poReport'])->name('reports.poReport');
         Route::get('/po-shortage-stock', [ProductionOrderController::class, 'poShortageReport'])->name('reports.poShortageReport');

@@ -313,4 +313,117 @@ class BOMController extends Controller
         $bomRecords = array_values($bomRecords);
         return $bomRecords;
     }
+    
+    public function fgCostSummary()
+    {
+        return view('reports.fgCostSummary');
+    }
+
+    public function fetchFgCostSummary(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+
+        $query = Bom::whereHas('material', function ($query) {
+            $query->where('type', 'finished');
+        })->with(['bomRecords.material']);
+
+
+        if (!empty ($search)) {
+            $query->whereHas('material', function ($q) use ($search) {
+                $q->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhereHas('commodity', function ($cm) use ($search) {
+                        $cm->where('commodity_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('category', function ($ct) use ($search) {
+                        $ct->where('category_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($u) use ($search) {
+                        $u->where('uom_text', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+
+        $totalRecords = $query->count();
+
+
+        if ($columnName === 'part_code') {
+            $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
+                ->orderBy('materials.part_code', $columnSortOrder);
+        } elseif ($columnName === 'description') {
+            $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
+                ->orderBy('materials.description', $columnSortOrder);
+        } elseif ($columnName === 'uom_text') {
+            $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
+                ->join('uom_units', 'uom_units.id', '=', 'materials.uom_id')
+                ->orderBy('uom_units.uom_text', $columnSortOrder);
+        } elseif ($columnName === 'commodity_name') {
+            $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
+                ->join('commodities', 'commodities.id', '=', 'materials.commodity_id')
+                ->orderBy('commodities.commodity_name', $columnSortOrder);
+        } elseif ($columnName === 'category_name') {
+            $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
+                ->join('categories', 'categories.id', '=', 'materials.category_id')
+                ->orderBy('categories.category_name', $columnSortOrder);
+        } else {
+            // $query->orderBy($columnName, $columnSortOrder);
+        }
+
+        $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+
+        $boms = $bomsQuery->items();
+        $data = [];
+
+        foreach ($boms as $index => $bom) {
+            $material = $bom->material;
+            $bomRecords = $bom->bomRecords;
+
+            if ($material) {
+
+                $low = 0;
+                $avg = 0;
+                $high = 0;
+
+                if ($bomRecords) {
+                    foreach ($bomRecords as $records => $rec) {
+                        $brMaterial = $rec->material;
+                        $low = $brMaterial->min_price * $rec->quantity;
+                        $avg = $brMaterial->avg_price * $rec->quantity;
+                        $high = $brMaterial->max_price * $rec->quantity;
+                    }
+                }
+
+                $data[] = [
+                    'serial' => $index + $start + 1,
+                    'code' => $material->part_code,
+                    'material_name' => $material->description,
+                    'unit' => $material->uom->uom_text,
+                    'commodity' => $material->commodity->commodity_name,
+                    'category' => $material->category->category_name,
+                    'lowest' => $low,
+                    'average' => $avg,
+                    'highest' => $high,
+                ];
+            }
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $bomsQuery->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
+    }
 }

@@ -23,4 +23,9 @@ class ProdOrdersMaterial extends Model
         'created_by',
         'updated_by',
     ];
+
+    public function material()
+    {
+        return $this->belongsTo(Material::class, 'material_id', 'material_id');
+    }
 }

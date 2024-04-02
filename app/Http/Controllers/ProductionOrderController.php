@@ -390,4 +390,290 @@ class ProductionOrderController extends Controller
 
         return $dateIST;
     }
+
+    public function poReport()
+    {
+        return view('reports.po-report');
+    }
+
+    public function fetchPoReport(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $searchTerm = $request->input('searchTerm');
+        $status = $request->input('status');
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $query = ProductionOrder::with('material.uom');
+
+        if(!empty($searchTerm)){
+            $query->whereHas('material', function ($q) use ($searchTerm) {
+                $q->where('description', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if(!empty($status)){
+            $query->where('status', 'like', $status);
+        }
+                    
+
+        if (!empty($startDate) && !empty($endDate)) {
+            $query->whereBetween('record_date', [$startDate, $endDate]);
+        }
+
+        if (!empty ($search)) {
+            $query->whereHas('material', function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        if ($columnName === 'description') {
+            $query->orderBy('description', $columnSortOrder);
+        } elseif ($columnName === 'quantity') {
+            $query->orderBy('quantity', $columnSortOrder);
+        } elseif ($columnName === 'po_number') {
+            $query->orderBy('po_number', $columnSortOrder);
+        } elseif ($columnName === 'po_date') {
+            $query->orderBy('record_date', $columnSortOrder);
+        } elseif ($columnName === 'part_code') {
+            $query->join('materials', 'production_orders.material_id', '=', 'materials.material_id')
+                  ->orderBy('materials.part_code', $columnSortOrder);
+        } elseif ($columnName === 'unit') {
+            $query->join('materials', 'production_orders.material_id', '=', 'materials.material_id')
+                  ->join('uoms', 'materials.uom_id', '=', 'uoms.uom_id')
+                  ->orderBy('uoms.uom_shortcode', $columnSortOrder);
+        } elseif ($columnName === 'status') {
+            $query->orderBy('status', $columnSortOrder);
+        }
+
+        // Paginate the query
+        $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        $productionOrders = $poQuery->items();
+        $data = [];
+        foreach ($productionOrders as $index => $order) {
+            $material = $order->material;
+            if ($material) {
+
+                $currentPage = ($start / $length) + 1;
+                $serial = ($currentPage - 1) * $length + $index + 1;
+                $data[] = [
+                    'serial' => $serial,
+                    'po_id' => $order->po_id,
+                    'po_number' => $order->po_number,
+                    'po_date' => $order->record_date,
+                    'description' => $material->description,
+                    'part_code' => $material->part_code,
+                    'unit' => $material->uom->uom_shortcode,
+                    'quantity' => $order->quantity,
+                    'status' => $order->status,
+                ];
+            }
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $poQuery->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
+    }
+    
+    public function poShortageReport()
+    {
+        return view('reports.po-shortage-report');
+    }
+
+    public function fetchPoShortageReport(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        // $searchTerm = $request->input('searchTerm');
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $query = ProductionOrder::with('material','prod_order_materials')->where('production_orders.status', 'Partially Issued');
+
+        if (!empty($startDate) && !empty($endDate)) {
+            $query->whereBetween('record_date', [$startDate, $endDate]);
+        }
+
+        if (!empty ($search)) {
+            $query->whereHas('material', function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        if ($columnName === 'po_number') {
+            $query->orderBy('po_number', $columnSortOrder);
+        } elseif ($columnName === 'po_date') {
+            $query->orderBy('record_date', $columnSortOrder);
+        } elseif ($columnName === 'quantity') {
+            $query->orderBy('quantity', $columnSortOrder);
+        } 
+
+        // Paginate the query
+        $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        $productionOrders = $poQuery->items();
+        $data = [];
+        foreach ($productionOrders as $index => $order) {
+            $poMaterials = $order->prod_order_materials;
+            if ($poMaterials) {
+                foreach ($poMaterials as $pomIndex => $pomObject) {
+                    if ($pomObject->status == "Partial") {
+                        $currentPage = ($start / $length) + 1;
+                        $serial = ($currentPage - 1) * $length + $index + 1;
+                        $data[] = [
+                            'serial' => $serial,
+                            'po_id' => $order->po_id,
+                            'po_number' => $order->po_number,
+                            'po_date' => $order->record_date,
+                            'part_code' => $pomObject->material->part_code,
+                            'description' => $pomObject->material->description,
+                            'make' => $pomObject->material->make,
+                            'mpn' => $pomObject->material->mpn,
+                            'quantity' => $order->quantity,
+                            'stock' => $pomObject->material->stock->closing_balance,
+                            'shortage' => $pomObject->material->bomRecord->quantity * $order->quantity - $pomObject->quantity,
+                            'unit' => $pomObject->material->uom->uom_shortcode,
+                            'status' => $pomObject->status,
+                        ];
+                    }
+                }
+            }
+        }
+
+        if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'shortage', 'unit'])) {
+            usort($data, function ($a, $b) {
+                return strcmp($a[$columnName], $b[$columnName]);
+            });
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $poQuery->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
+    }
+    
+    public function poConsolidatedShortageReport()
+    {
+        return view('reports.po-consolidated-shortage-report');
+    }
+
+    public function fetchPoConsolidatedShortageReport(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        // $searchTerm = $request->input('searchTerm');
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $query = ProductionOrder::with('material','prod_order_materials')->where('production_orders.status', 'Partially Issued');
+
+        if (!empty($startDate) && !empty($endDate)) {
+            $query->whereBetween('record_date', [$startDate, $endDate]);
+        }
+
+        if (!empty ($search)) {
+            $query->whereHas('material', function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%');
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        if ($columnName === 'po_number') {
+            $query->orderBy('po_number', $columnSortOrder);
+        } elseif ($columnName === 'po_date') {
+            $query->orderBy('record_date', $columnSortOrder);
+        } elseif ($columnName === 'quantity') {
+            $query->orderBy('quantity', $columnSortOrder);
+        } 
+
+        // Paginate the query
+        $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        $productionOrders = $poQuery->items();
+        $data = [];
+        foreach ($productionOrders as $index => $order) {
+            $poMaterials = $order->prod_order_materials;
+            if ($poMaterials) {
+                foreach ($poMaterials as $pomIndex => $pomObject) {
+                    if ($pomObject->status == "Partial") {
+
+                        if ($pomObject->material->type == "semi-finished") {
+
+                        } else {
+                            $currentPage = ($start / $length) + 1;
+                            $serial = ($currentPage - 1) * $length + $index + 1;
+                            $data[] = [
+                                'serial' => $serial,
+                                'po_id' => $order->po_id,
+                                'po_number' => $order->po_number,
+                                'po_date' => $order->record_date,
+                                'part_code' => $pomObject->material->part_code,
+                                'description' => $pomObject->material->description,
+                                'make' => $pomObject->material->make,
+                                'mpn' => $pomObject->material->mpn,
+                                'quantity' => $order->quantity,
+                                'stock' => $pomObject->material->stock->closing_balance,
+                                'shortage' => $pomObject->material->bomRecord->quantity * $order->quantity - $pomObject->quantity,
+                                'unit' => $pomObject->material->uom->uom_shortcode,
+                                'status' => $pomObject->status,
+                            ];
+                        }
+                        
+                    }
+                }
+            }
+        }
+
+        if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'shortage', 'unit'])) {
+            usort($data, function ($a, $b) {
+                return strcmp($a[$columnName], $b[$columnName]);
+            });
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $poQuery->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
+    }
 }

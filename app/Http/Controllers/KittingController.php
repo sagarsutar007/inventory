@@ -367,12 +367,17 @@ class KittingController extends Controller
     {
         $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
         $prodOrderMaterials = ProdOrdersMaterial::where('po_id', $prodId)->get();
-        $overallStatus = 'Completed';
 
-        foreach ($prodOrderMaterials as $material) {
-            if ($material->status === 'Partial') {
-                $overallStatus = 'Partially Issued';
-                break;
+        if ($prodOrderMaterials->isEmpty()) {
+            $overallStatus = 'Pending';
+        } else {
+            $overallStatus = 'Completed';
+
+            foreach ($prodOrderMaterials as $material) {
+                if ($material->status === 'Partial') {
+                    $overallStatus = 'Partially Issued';
+                    break;
+                }
             }
         }
 

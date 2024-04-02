@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('material_purchases', function (Blueprint $table) {
             $table->uuid('mat_pur_id')->primary();
             $table->uuid('material_id');
-            $table->decimal('price', 7, 3);
+            $table->decimal('price', 10, 2)->nullable();
             $table->uuid('vendor_id');
             $table->timestamps();
 

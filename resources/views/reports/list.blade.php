@@ -27,7 +27,7 @@
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Finished Good Cost Summary</a>
+                    <a href="{{ route('reports.fgCostSummary') }}">Finished Good Cost Summary</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
@@ -35,15 +35,15 @@
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Production Order Report</a>
+                    <a href="{{ route('reports.poReport') }}">Production Order Report</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Production Order Shortage Report</a>
+                    <a href="{{ route('reports.poShortageReport') }}">Production Order Shortage Report</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Production Order Shortage Report Consolidated</a>
+                    <a href="{{ route('reports.poConsolidatedShortageReport') }}">Production Order Shortage Report Consolidated</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">

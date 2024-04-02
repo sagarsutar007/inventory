@@ -585,9 +585,9 @@ class RawMaterialController extends Controller
                 'commodity' => $item->commodity->commodity_name,
                 'category' => $item->category->category_name,
                 'uom_shortcode' => $item->uom->uom_shortcode,
-                'price_1' => $priceStats?->min_price,
-                'price_2' => $priceStats?->avg_price,
-                'price_3' => $priceStats?->max_price,
+                'price_1' => number_format($priceStats?->min_price??0, 2),
+                'price_2' => number_format($priceStats?->avg_price??0, 2),
+                'price_3' => number_format($priceStats?->max_price??0, 2),
             ];
         }
 
@@ -742,6 +742,21 @@ class RawMaterialController extends Controller
             });
         }
 
+        if (!in_array($columnName, ['serial', 'image', 'actions'])) {
+            if ($columnName === 'uom_shortcode') {
+                $rawmaterials->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } else if ($columnName === 'commodity_name') {
+                $rawmaterials->join('commodities', 'materials.commodity_id', '=', 'commodities.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } else if ($columnName === 'category_name') {
+                $rawmaterials->join('categories', 'materials.category_id', '=', 'categories.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else {
+                $rawmaterials->orderBy($columnName, $columnSortOrder);
+            }
+        }
+
         $totalRecords = $query->count();
 
         if ($length == -1) {
@@ -795,7 +810,8 @@ class RawMaterialController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
         
-        $material = Material::query()->where('type', 'raw')->with(['category', 'commodity', 'uom', 'stock']);
+        $material = Material::query()->where('type', 'raw')->with(['category', 'commodity', 'uom']);
+        $material->join('stocks', 'materials.material_id', '=', 'stocks.material_id');
 
         if (!empty ($search)) {
             $material->where(function ($query) use ($search) {
@@ -803,6 +819,7 @@ class RawMaterialController extends Controller
                     ->orWhere('description', 'like', '%' . $search . '%')
                     ->orWhere('make', 'like', '%' . $search . '%')
                     ->orWhere('mpn', 'like', '%' . $search . '%')
+                    ->orWhere('stock', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
                     })
@@ -819,7 +836,22 @@ class RawMaterialController extends Controller
         $totalRecords = $material->count();
 
         if (!in_array($columnName, ['serial'])) {
-            $material->orderBy($columnName, $columnSortOrder);
+            if ($columnName === 'uom_shortcode') {
+                $material->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } else if ($columnName === 'commodity') {
+                $material->join('commodities', 'materials.commodity_id', '=', 'commodities.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } else if ($columnName === 'category') {
+                $material->join('categories', 'materials.category_id', '=', 'categories.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else if ($columnName === 'stock') {
+                $material->join('stocks', 'materials.material_id', '=', 'stocks.material_id')
+                    ->orderBy('stocks.closing_balance', $columnSortOrder);
+            } else {
+                $material->orderBy($columnName, $columnSortOrder);
+            }
+            
         }
 
         if ($length == -1) {
@@ -847,7 +879,7 @@ class RawMaterialController extends Controller
                 'category' => $item->category->category_name,
                 'make' => $item->make,
                 'mpn' => $item->mpn,
-                'uom' => $item->uom->uom_shortcode,
+                'uom' => $item->uom?->uom_shortcode,
                 'stock' => $item->stock?->closing_balance,
                 'reorder_qty' => $item->re_order,
                 'reorder' => $rostatus,
