@@ -633,27 +633,32 @@ class ProductionOrderController extends Controller
             if ($poMaterials) {
                 foreach ($poMaterials as $pomIndex => $pomObject) {
                     if ($pomObject->status == "Partial") {
-
+                        
                         if ($pomObject->material->type == "semi-finished") {
+                            $bomRecords = $pomObject->material->bom->bomrecords;
 
+                            foreach ($bomRecords as $brIndex => $bRecord) {
+                                
+                            }
                         } else {
-                            $currentPage = ($start / $length) + 1;
-                            $serial = ($currentPage - 1) * $length + $index + 1;
-                            $data[] = [
-                                'serial' => $serial,
-                                'po_id' => $order->po_id,
-                                'po_number' => $order->po_number,
-                                'po_date' => $order->record_date,
-                                'part_code' => $pomObject->material->part_code,
-                                'description' => $pomObject->material->description,
-                                'make' => $pomObject->material->make,
-                                'mpn' => $pomObject->material->mpn,
-                                'quantity' => $order->quantity,
-                                'stock' => $pomObject->material->stock->closing_balance,
-                                'shortage' => $pomObject->material->bomRecord->quantity * $order->quantity - $pomObject->quantity,
-                                'unit' => $pomObject->material->uom->uom_shortcode,
-                                'status' => $pomObject->status,
-                            ];
+                            // $currentPage = ($start / $length) + 1;
+                            // $serial = ($currentPage - 1) * $length + $index + 1;
+                            // $data[] = [
+                            //     'serial' => $serial,
+                            //     'po_id' => $order->po_id,
+                            //     'po_number' => $order->po_number,
+                            //     'po_date' => $order->record_date,
+                            //     'part_code' => $pomObject->material->part_code,
+                            //     'description' => $pomObject->material->description,
+                            //     'make' => $pomObject->material->make,
+                            //     'mpn' => $pomObject->material->mpn,
+                            //     'quantity' => $order->quantity,
+                            //     'stock' => $pomObject->material->stock->closing_balance,
+                            //     'shortage' => $pomObject->material->bomRecord->quantity * $order->quantity - $pomObject->quantity,
+                            //     'unit' => $pomObject->material->uom->uom_shortcode,
+                            //     'status' => $pomObject->status,
+                            // ];
+                            $conMaterials[] = $pomObject->material->material_id;
                         }
                         
                     }
