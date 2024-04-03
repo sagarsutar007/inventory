@@ -13,6 +13,15 @@ div.dataTables_wrapper div.dataTables_filter {
   display: inline-block;
 }
 
+.dataTables_info {
+  display: inline-block;
+}
+
+div.dataTables_wrapper div.dataTables_paginate {
+  display: inline-block;
+  float: right;
+}
+
 .dropdown-icon-disabled.dropdown-toggle::after {
   display: none !important;
 }

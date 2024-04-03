@@ -222,6 +222,46 @@
                     success: function(response) {
                         if (response.status) {
                             $('#view-details').html(response.html);
+                            $('#material-shortage-tbl').DataTable({
+                                "responsive": true,
+                                "lengthChange": true,
+                                "autoWidth": true,
+                                "paging": true,
+                                "info": true,
+                                "buttons": [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        "messageBottom": datetime,
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        "messageBottom": datetime,
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        },
+                                        "messageBottom": datetime,
+                                    },
+                                    'colvis',
+                                ],
+                                "scrollY": "320px",
+                                "scrollCollapse": true,
+                                "lengthMenu": [10, 25, 50, 75, 100],
+                                "searching": true,
+                                "ordering": true,
+                                "dom": 'lBfrtip',
+                                "language": {
+                                    "lengthMenu": "_MENU_"
+                                },
+                            });
                         } else {
                             console.error(response.message);
                         }
