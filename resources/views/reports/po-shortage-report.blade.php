@@ -70,7 +70,7 @@
                                 <th>Stock Qty</th>
                                 <th>Shortage Qty</th>
                                 <th>Unit</th>
-                                <th>Status</th>
+                                <!-- <th>Status</th> -->
                             </tr>
                         </thead>
                         <tbody>
@@ -161,7 +161,7 @@
                     { "data": "stock", "name": "stock" },
                     { "data": "shortage", "name": "shortage" },
                     { "data": "unit", "name": "unit" },
-                    { "data": "status", "name": "status" },
+                    // { "data": "status", "name": "status" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
                 "searching": true,

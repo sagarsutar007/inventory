@@ -52,7 +52,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <h3 class="card-title">
-                        <i class="fas fa-clipboard-list"></i>&nbsp;Production Order Shortage Report
+                        <i class="fas fa-clipboard-list"></i>&nbsp;Production Order Shortage Report Consolidated
                     </h3> 
                 </div>
                 <div class="card-body">
@@ -60,8 +60,6 @@
                         <thead>
                             <tr>
                                 <th>S.no</th>
-                                <th>PO No</th>
-                                <th>PO Date</th>
                                 <th>RM Part Code</th>
                                 <th>Description</th>
                                 <th>Make</th>
@@ -70,7 +68,6 @@
                                 <th>Stock Qty</th>
                                 <th>Shortage Qty</th>
                                 <th>Unit</th>
-                                <!-- <th>Status</th> -->
                             </tr>
                         </thead>
                         <tbody>
@@ -80,6 +77,15 @@
             </div>
         </div>
     </div>
+
+    <x-adminlte-modal id="view-modal" title="View Details" icon="fas fa-eye" size='xl' scrollable>
+        <div id="view-details">
+
+        </div>
+        <x-slot name="footerSlot">
+            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+        </x-slot>
+    </x-adminlte-modal>
 @stop
 
 @section('js')
@@ -151,9 +157,13 @@
                 },
                 "columns": [
                     { "data": "serial", "name": "serial" },
-                    { "data": "po_number", "name": "po_number" },
-                    { "data": "po_date", "name": "po_date" },
-                    { "data": "part_code", "name": "part_code" },
+                    { 
+                        "data": "part_code", 
+                        "name": "part_code",
+                        "render": function(data, type, row, meta) {
+                            return '<a href="#" data-partcode="'+data+'" data-description="'+row.description+'" data-toggle="modal" data-target="#view-modal">' + data + '</a>';
+                        }
+                    },
                     { "data": "description", "name": "description" },
                     { "data": "make", "name": "make" },
                     { "data": "mpn", "name": "mpn" },
@@ -161,7 +171,6 @@
                     { "data": "stock", "name": "stock" },
                     { "data": "shortage", "name": "shortage" },
                     { "data": "unit", "name": "unit" },
-                    // { "data": "status", "name": "status" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
                 "searching": true,
@@ -188,6 +197,40 @@
                 });
                 
                 dataTable.ajax.reload();
+            });
+
+            $(document).on('show.bs.modal', '#view-modal', function (event) {
+                var button = $(event.relatedTarget);
+                var partcode = button.data('partcode');
+                var description = button.data('description');
+                var startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                var endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
+
+                var modal = $(this);
+                modal.find('.modal-title').text('View: #' + partcode + ' - ' + description);
+
+                $.ajax({
+                    url: "{{ route('po.fetchMaterialShortageConsolidated') }}",
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        partcode: partcode,
+                        startDate: startDate,
+                        endDate: endDate,
+                        _token: '{{ csrf_token() }}',
+                    },
+                    success: function(response) {
+                        if (response.status) {
+                            $('#view-details').html(response.html);
+                        } else {
+                            console.error(response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+
             });
         })
     </script>

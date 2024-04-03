@@ -779,7 +779,7 @@ class RawMaterialController extends Controller
                 'receipt_date' => $item->record_date,
                 'quantity' => $item->quantity,
                 'price_3' => $item->avg_price,
-                'amount' => $item->avg_price * $item->quantity,
+                'amount' => number_format($item->avg_price * $item->quantity,2),
             ];
         }
 

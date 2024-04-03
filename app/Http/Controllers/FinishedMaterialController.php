@@ -160,7 +160,6 @@ class FinishedMaterialController extends Controller
         }
     }
 
-
     public function suggestPartcode(Request $request)
     {
         $commodityId = $request->input('commodity_id');
@@ -180,7 +179,6 @@ class FinishedMaterialController extends Controller
 
         return response()->json(['suggested_part_code' => $suggestedPartCode]);
     }
-
 
     /**
      * Display the specified resource.
