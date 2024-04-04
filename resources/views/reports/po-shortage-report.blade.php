@@ -62,12 +62,14 @@
                                 <th>S.no</th>
                                 <th>PO No</th>
                                 <th>PO Date</th>
-                                <th>RM Part Code</th>
+                                <th>FG Partcode</th>
+                                <th>RM Partcode</th>
                                 <th>Description</th>
                                 <th>Make</th>
                                 <th>MPN</th>
-                                <th>PO Qty</th>
+                                <th><div title="Consolidated PO Quantity">CPO Qty</div></th>
                                 <th>Stock Qty</th>
+                                <th><div title="Balance to Issue Quantity">BTI Qty</div></th>
                                 <th>Shortage Qty</th>
                                 <th>Unit</th>
                                 <!-- <th>Status</th> -->
@@ -80,10 +82,21 @@
             </div>
         </div>
     </div>
+
+    <x-adminlte-modal id="orderDetailsModal" title="Order Details" icon="fas fa-info-circle" size='xl'>
+        <div class="row">
+            <div class="col-md-12" id="order-details-section">
+            </div>
+        </div>
+        <x-slot name="footerSlot">
+            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+        </x-slot>
+    </x-adminlte-modal>
 @stop
 
 @section('js')
     <script>
+        var dataTable;
         $(function(){
 
             var currentdate = new Date();
@@ -103,7 +116,7 @@
                 }
             });
 
-            $('#po-report-tbl').DataTable({
+            dataTable = $('#po-report-tbl').DataTable({
                 "responsive": true,
                 "lengthChange": true,
                 "autoWidth": true,
@@ -143,22 +156,29 @@
                     "type": "POST",
                     "data": function ( d ) {
                         d._token = '{{ csrf_token() }}';
-                        d.startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
-                        d.endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
-                        // d.searchTerm = $('#term').val();
-                        // d.status = $("#status").val();
+                        d.startDate = ""; //$('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD')
+                        d.endDate = ""; //$('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD')
+                        d.searchTerm = $('#term').val();
                     }
                 },
                 "columns": [
                     { "data": "serial", "name": "serial" },
-                    { "data": "po_number", "name": "po_number" },
+                    { 
+                        "data": "po_number", 
+                        "name": "po_number",
+                        "render": function(data, type, row, meta) {
+                            return '<a href="#" data-poid="'+row.po_id+'" data-ponum="'+data+'" class="view-btn">' + data + '</a>';
+                        }
+                    },
                     { "data": "po_date", "name": "po_date" },
+                    { "data": "fg_partcode", "name": "fg_partcode" },
                     { "data": "part_code", "name": "part_code" },
                     { "data": "description", "name": "description" },
                     { "data": "make", "name": "make" },
                     { "data": "mpn", "name": "mpn" },
                     { "data": "quantity", "name": "quantity" },
                     { "data": "stock", "name": "stock" },
+                    { "data": "balance", "name": "balance" },
                     { "data": "shortage", "name": "shortage" },
                     { "data": "unit", "name": "unit" },
                     // { "data": "status", "name": "status" },
@@ -181,13 +201,74 @@
                 
                 var dataTable = $('#po-report-tbl').DataTable();
                 
-                dataTable.ajax.params({
-                    startDate: startDate,
-                    endDate: endDate,
-                    searchTerm: searchTerm
-                });
+                dataTable.ajax.reload(null, false);
+                dataTable.settings()[0].ajax.data = function (d) {
+                    d.startDate = startDate;
+                    d.endDate = endDate;
+                    d.searchTerm = searchTerm;
+                    d._token = '{{ csrf_token() }}';
+                };
                 
                 dataTable.ajax.reload();
+            });
+
+            $(document).on('click', '.view-btn', function() {
+                let po_num = $(this).data('ponum');
+                let po_id = $(this).data('poid');
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('po.viewOrder') }}",
+                    data: {
+                        'po_id': po_id,
+                    },
+                    success: function(response) {
+
+                        var po_desc = response.info.material.description;
+                        var po_qty = response.info.quantity;
+                        var po_unit = response.info.material.uom.uom_shortcode;
+
+                        $('#order-details-section').html(response.html);
+                        $("#orderDetailsModal").modal('show');
+                        $("#orderDetailsModal").find('.modal-title').html(
+                            `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
+                        );
+                        $("#bom-table").DataTable({
+                            "paging": false,
+                            "ordering": true,
+                            "info": false,
+                            "dom": 'Bfrtip',
+                            "buttons": [
+                                {
+                                    extend: 'excel',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
+                                },
+                                {
+                                    extend: 'pdf',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
+                                },
+                                {
+                                    extend: 'print',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
+                                },
+                                'colvis',
+                            ],
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
+                    }
+                });
             });
         })
     </script>

@@ -502,10 +502,10 @@ class RawMaterialController extends Controller
             $commodityCode = str_pad(Commodity::find($commodity_id)->commodity_number, 2, '0', STR_PAD_LEFT);
             $categoryCode = str_pad(Category::find($category_id)->category_number, 3, '0', STR_PAD_LEFT);
             $lastMaterial = RawMaterial::where('type', 'raw')
-                ->where('commodity_id', $commodity_id)
-                ->where('category_id', $category_id)
                 ->orderBy('part_code', 'desc')
                 ->first();
+                // ->where('commodity_id', $commodity_id)
+                // ->where('category_id', $category_id)
             $lastPartCode = $lastMaterial ? substr($lastMaterial->part_code, -5) + 1 : 1;
             $newPartCode = $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);
             return $newPartCode;

@@ -64,8 +64,9 @@
                                 <th>Description</th>
                                 <th>Make</th>
                                 <th>MPN</th>
-                                <th>RC Qty</th>
+                                <th><div title="Consolidated PO Quantity">CPO Qty</div></th>
                                 <th>Stock Qty</th>
+                                <th><div title="Balance to Issue Quantity">BTI Qty</div></th>
                                 <th>Shortage Qty</th>
                                 <th>Unit</th>
                             </tr>
@@ -149,8 +150,8 @@
                     "type": "POST",
                     "data": function ( d ) {
                         d._token = '{{ csrf_token() }}';
-                        d.startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
-                        d.endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                        d.startDate = ""; // $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                        d.endDate = ""; // $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
                         // d.searchTerm = $('#term').val();
                         // d.status = $("#status").val();
                     }
@@ -169,6 +170,7 @@
                     { "data": "mpn", "name": "mpn" },
                     { "data": "quantity", "name": "quantity" },
                     { "data": "stock", "name": "stock" },
+                    { "data": "balance", "name": "balance" },
                     { "data": "shortage", "name": "shortage" },
                     { "data": "unit", "name": "unit" },
                 ],
@@ -190,11 +192,13 @@
                 
                 var dataTable = $('#po-report-tbl').DataTable();
                 
-                dataTable.ajax.params({
-                    startDate: startDate,
-                    endDate: endDate,
-                    searchTerm: searchTerm
-                });
+                dataTable.ajax.reload(null, false);
+                dataTable.settings()[0].ajax.data = function (d) {
+                    d.startDate = startDate;
+                    d.endDate = endDate;
+                    d.searchTerm = searchTerm;
+                    d._token = '{{ csrf_token() }}';
+                };
                 
                 dataTable.ajax.reload();
             });
@@ -272,6 +276,8 @@
                 });
 
             });
+
+            
         })
     </script>
 @stop

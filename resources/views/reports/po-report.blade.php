@@ -74,6 +74,7 @@
 
 @section('js')
     <script>
+        var dataTable 
         $(function(){
 
             var currentdate = new Date();
@@ -93,7 +94,7 @@
                 }
             });
 
-            $('#po-report-tbl').DataTable({
+            dataTable =  $('#po-report-tbl').DataTable({
                 "responsive": true,
                 "lengthChange": true,
                 "autoWidth": true,
@@ -134,8 +135,8 @@
                     "type": "POST",
                     "data": function ( d ) {
                         d._token = '{{ csrf_token() }}';
-                        d.startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
-                        d.endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                        d.startDate = ""; // $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD')
+                        d.endDate = ""; // $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD')
                         d.searchTerm = $('#term').val();
                         d.status = $("#status").val();
                     }
@@ -167,11 +168,13 @@
                 
                 var dataTable = $('#po-report-tbl').DataTable();
                 
-                dataTable.ajax.params({
-                    startDate: startDate,
-                    endDate: endDate,
-                    searchTerm: searchTerm
-                });
+                dataTable.ajax.reload(null, false);
+                dataTable.settings()[0].ajax.data = function (d) {
+                    d.startDate = startDate;
+                    d.endDate = endDate;
+                    d.searchTerm = searchTerm;
+                    d._token = '{{ csrf_token() }}';
+                };
                 
                 dataTable.ajax.reload();
             });

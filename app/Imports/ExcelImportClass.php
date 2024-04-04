@@ -274,11 +274,12 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
             try {
                 \DB::beginTransaction();
                 $lastMaterial = RawMaterial::where('type', 'raw')
-                    ->where('commodity_id', $commodity_number)
-                    ->where('category_id', $category_number)
                     ->orderBy('part_code', 'desc')
                     ->pluck('part_code')
                     ->first();
+                    
+                    // ->where('commodity_id', $commodity_number)
+                    // ->where('category_id', $category_number)
                 $lastPartCode = $lastMaterial ? substr($lastMaterial, -5) + 1 : 1;
 
                 do {

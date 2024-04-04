@@ -46,7 +46,7 @@ class ProductionOrderController extends Controller
         }
 
         $po_id = $request->input('po_id');
-        $productionOrder = ProductionOrder::findOrFail($po_id);
+        $productionOrder = ProductionOrder::with('material.uom')->findOrFail($po_id);
         $partCodes = [$productionOrder->material->part_code];
         $quantities = [$productionOrder->quantity];
 
@@ -57,7 +57,7 @@ class ProductionOrderController extends Controller
         ];
 
         $returnHTML = view('production-order.viewBomTable', $context)->render();
-        return response()->json(array('status' => true, 'html' => $returnHTML));
+        return response()->json(array('status' => true, 'html' => $returnHTML, 'info' => $productionOrder));
     }
 
     public function getBomRecords(Request $request)
@@ -172,6 +172,7 @@ class ProductionOrderController extends Controller
                 $data[] = [
                     'po_id' => $order->po_id,
                     'po_number' => $order->po_number,
+                    'fg_partcode' => $order->material->part_code,
                     'part_code' => $material->part_code,
                     'description' => $material->description,
                     'unit' => $material->uom->uom_shortcode,
@@ -555,18 +556,24 @@ class ProductionOrderController extends Controller
                     if ($pomObject->status == "Partial") {
                         $currentPage = ($start / $length) + 1;
                         $serial = ($currentPage - 1) * $length + $index + 1;
+
+                        $stock = $pomObject->material->stock->closing_balance;
+                        $balance = $pomObject->material->bomRecord->quantity * $order->quantity - $pomObject->quantity;
+
                         $data[] = [
                             'serial' => $serial,
                             'po_id' => $order->po_id,
                             'po_number' => $order->po_number,
                             'po_date' => $order->record_date,
+                            'fg_partcode' => $order->material->part_code,
                             'part_code' => $pomObject->material->part_code,
                             'description' => $pomObject->material->description,
                             'make' => $pomObject->material->make,
                             'mpn' => $pomObject->material->mpn,
                             'quantity' => $order->quantity * $pomObject->material->bomRecord->quantity,
-                            'stock' => $pomObject->material->stock->closing_balance,
-                            'shortage' => $pomObject->material->bomRecord->quantity * $order->quantity - $pomObject->quantity,
+                            'stock' => $stock,
+                            'balance' => $balance,
+                            'shortage' => abs($stock - $balance),
                             'unit' => $pomObject->material->uom->uom_shortcode,
                             'status' => $pomObject->status,
                         ];
@@ -636,7 +643,7 @@ class ProductionOrderController extends Controller
                 $stock = $prOdrMat ? $prOdrMat->material->stock->closing_balance : $bomRec->material->stock->closing_balance;
 
                 if ($prOdrMat === null || $prOdrMat->status == "Partial") {
-                    $shortage = $prOdrMat ? $quantity - $prOdrMat->quantity : $quantity;
+                    $balance = $prOdrMat ? $quantity - $prOdrMat->quantity : $quantity;
 
                     $matchesSearch = false;
                     if (!empty($search)) {
@@ -657,12 +664,12 @@ class ProductionOrderController extends Controller
                             'mpn' => $bomRec->material->mpn,
                             'quantity' => 0,
                             'stock' => $stock,
-                            'shortage' => 0,
+                            'balance' => 0,
                             'unit' => $bomRec->material->uom->uom_shortcode
                         ];
 
                         $data[$bomRec->material_id]['quantity'] += $quantity;
-                        $data[$bomRec->material_id]['shortage'] += $shortage;
+                        $data[$bomRec->material_id]['balance'] += $balance;
                     }
                 }
             }
@@ -684,6 +691,7 @@ class ProductionOrderController extends Controller
             $index = $start + $key + 1;
             if ($index >= $start && $index < ($start + $length)) {
                 $obj['serial'] = $serialNo++;
+                $obj['shortage'] = abs($obj['stock'] - $obj['balance']);
                 $paginatedData[] = $obj;
             }
         }
@@ -735,7 +743,8 @@ class ProductionOrderController extends Controller
                         'unit' => $bomObject->material->uom->uom_shortcode,
                         'status' => $prodOrderMaterial->status,
                     ];
-                } else if ($partcode == $bomObject->material->part_code) {
+                } 
+                else if ($partcode == $bomObject->material->part_code && empty($prodOrderMaterial)) {
                     $quantity = $order->quantity * $bomObject->quantity;
                     $stock = $bomObject->material->stock->closing_balance;
                     $shortage = $bomObject->quantity * $order->quantity;
