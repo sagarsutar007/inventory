@@ -110,7 +110,7 @@ class RawMaterialController extends Controller
                 'image' => $image,
                 'part_code' => $material->part_code,
                 'description' => $material->description,
-                'unit' => $material->uom->uom_shortcode,
+                'unit' => $material->uom?->uom_shortcode,
                 'commodity_name' => $material->commodity->commodity_name,
                 'category_name' => $material->category->category_name,
                 'actions' => $actions,
@@ -502,12 +502,18 @@ class RawMaterialController extends Controller
             $commodityCode = str_pad(Commodity::find($commodity_id)->commodity_number, 2, '0', STR_PAD_LEFT);
             $categoryCode = str_pad(Category::find($category_id)->category_number, 3, '0', STR_PAD_LEFT);
             $lastMaterial = RawMaterial::where('type', 'raw')
-                ->orderBy('part_code', 'desc')
+                ->orderBy('created_at', 'desc')
                 ->first();
                 // ->where('commodity_id', $commodity_id)
                 // ->where('category_id', $category_id)
             $lastPartCode = $lastMaterial ? substr($lastMaterial->part_code, -5) + 1 : 1;
-            $newPartCode = $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);
+            do {
+                $newPartCode = $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);
+                $exists = RawMaterial::where('part_code', $newPartCode)->exists();
+                if ($exists) {
+                    $lastPartCode++;
+                }
+            } while ($exists);
             return $newPartCode;
         }
         return null;

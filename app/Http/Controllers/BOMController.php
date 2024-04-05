@@ -330,12 +330,10 @@ class BOMController extends Controller
         $columnIndex = $order[0]['column'];
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
-
-
+        
         $query = Bom::whereHas('material', function ($query) {
             $query->where('type', 'finished');
         })->with(['bomRecords.material']);
-
 
         if (!empty ($search)) {
             $query->whereHas('material', function ($q) use ($search) {
@@ -353,9 +351,7 @@ class BOMController extends Controller
             });
         }
 
-
         $totalRecords = $query->count();
-
 
         if ($columnName === 'part_code') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')

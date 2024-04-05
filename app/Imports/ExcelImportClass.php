@@ -274,7 +274,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
             try {
                 \DB::beginTransaction();
                 $lastMaterial = RawMaterial::where('type', 'raw')
-                    ->orderBy('part_code', 'desc')
+                    ->orderBy('created_at', 'desc')
                     ->pluck('part_code')
                     ->first();
                     
