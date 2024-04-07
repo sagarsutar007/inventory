@@ -9,15 +9,8 @@
                 <div class="card-header">
                     <h3 class="card-title">Raw Materials</h3>
                     <div class="card-tools">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" role="menu">
-                                <a class="dropdown-item" href="{{ route('raw.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
-                                <a class="dropdown-item" href="{{ route('raw.bulk') }}"><i class="fas fa-file-import text-secondary"></i> Bulk Upload</a>
-                            </div>
-                        </div>
+                        <a class="btn btn-light btn-sm" href="{{ route('raw.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
+                        <a class="btn btn-light btn-sm" href="{{ route('raw.bulk') }}"><i class="fas fa-file-import text-secondary"></i> Bulk Upload</a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -26,11 +19,16 @@
                             <tr>
                                 <th width="5%">Sno.</th>
                                 <th class="text-center">Image</th>
-                                <th width="10%">Code</th>
+                                <th width="10%">Partcode</th>
                                 <th>Raw Material Name</th>
                                 <th>Unit</th>
                                 <th>Commodity</th>
                                 <th>Category</th>
+                                <th>Make</th>
+                                <th>MPN</th>
+                                <th>Dependent Material</th>
+                                <th>Frequency</th>
+                                <th>Re Order</th>
                                 <th width="13%">Action</th>
                             </tr>
                         </thead>
@@ -103,7 +101,6 @@
     </x-modaltabs>
 @stop
 
-
 @section('js')
     <script>
         $(function () {
@@ -113,6 +110,7 @@
                 "autoWidth": true,
                 "paging": true,
                 "info": true,
+                "autoWidth":true,
                 "buttons": [
                     {
                         extend: 'excel',
@@ -154,6 +152,11 @@
                     { "data": "unit", "name": "uom_shortcode" },
                     { "data": "commodity_name", "name": "commodity_name" },
                     { "data": "category_name", "name": "category_name" },
+                    { "data": "make", "name": "make" },
+                    { "data": "mpn", "name": "mpn" },
+                    { "data": "dependent", "name": "dependent" },
+                    { "data": "frequency", "name": "frequency" },
+                    { "data": "re_order", "name": "re_order" },
                     { "data": "actions", "name": "actions" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
@@ -161,8 +164,12 @@
                 "ordering": true,
                 "columnDefs": [
                     {
-                        "targets": [0, 1, 7],
+                        "targets": [0, 1, 12],
                         "orderable": false,
+                    },
+                    {
+                        "targets": [7, 8],
+                        "visible": false,
                     }
                 ],
                 "dom": 'lBfrtip',
@@ -195,6 +202,10 @@
                             });
                             $('#category').select2({
                                 placeholder: 'Category',
+                                theme: 'bootstrap4'
+                            });
+                            $('#dependent').select2({
+                                placeholder: 'Dependent Material',
                                 theme: 'bootstrap4'
                             });
                         }

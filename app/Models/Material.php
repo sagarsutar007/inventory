@@ -19,6 +19,7 @@ class Material extends Model
         'part_code',
         'description',
         'uom_id',
+        'dm_id',
         'type',
         'make',
         'mpn',
@@ -72,5 +73,10 @@ class Material extends Model
     public function bomRecord()
     {
         return $this->belongsTo(BomRecord::class, 'material_id', 'material_id');
+    }
+
+    public function dependant()
+    {
+        return $this->belongsTo(DependentMaterial::class, 'dm_id', 'dm_id');
     }
 }

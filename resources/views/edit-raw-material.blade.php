@@ -45,7 +45,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="form-group">
                     <div class="input-group mb-3">
                         <select class="form-control select2" id="uom" name="uom_id">
@@ -61,7 +61,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="form-group">
                     <div class="input-group mb-3">
                         <select class="form-control" id="commodity" name="commodity_id">
@@ -77,7 +77,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <div class="form-group">
                     <div class="input-group mb-3">
                         <select class="form-control" id="category" name="category_id">
@@ -87,6 +87,22 @@
                                     <option value="{{$ctg->category_id}}" selected>{{$ctg->category_name}}</option>
                                 @else
                                     <option value="{{$ctg->category_id}}">{{$ctg->category_name}}</option>
+                                @endif
+                            @endforeach  
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <div class="input-group mb-3">
+                        <select class="form-control" id="dependent" name="dm_id">
+                            <option value=""></option>
+                            @foreach($dependents as $dpt)
+                                @if($material->dm_id == $dpt->dm_id)
+                                    <option value="{{$dpt->dm_id}}" selected>{{ $dpt->description ." - ".$dpt->frequency }}</option>
+                                @else
+                                    <option value="{{$dpt->dm_id}}">{{ $dpt->description ." - ".$dpt->frequency }}</option>
                                 @endif
                             @endforeach  
                         </select>

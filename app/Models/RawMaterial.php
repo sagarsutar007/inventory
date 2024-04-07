@@ -19,6 +19,7 @@ class RawMaterial extends Model
         'part_code',
         'description',
         'uom_id',
+        'dm_id',
         'type',
         'make',
         'mpn',
@@ -59,4 +60,8 @@ class RawMaterial extends Model
         return $this->belongsTo(Category::class, 'category_id', 'category_id');
     }
 
+    public function dependant()
+    {
+        return $this->belongsTo(DependentMaterial::class, 'dm_id', 'dm_id');
+    }
 }

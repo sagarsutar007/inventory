@@ -344,18 +344,17 @@ class KittingController extends Controller
                     $existingRecord = ProdOrdersMaterial::where('po_id', $prodId)
                         ->where('material_id', $materialId)
                         ->first();
-
                     if ($existingRecord) {
                         if ($existingRecord->quantity + $quantity == $required_qty) {
                             return 'Completed';
                         } else if ($existingRecord->quantity + $quantity < $required_qty) {
-                            return 'Partial';
+                            return 'Partially Issued';
                         }
                     } else {
                         if ($quantity == $required_qty) {
                             return 'Completed';
                         } else if ($quantity < $required_qty) {
-                            return 'Partial';
+                            return 'Partially Issued';
                         }
                     }
                 }
@@ -366,6 +365,7 @@ class KittingController extends Controller
     private function updateProdOrderStatus($prodId = "")
     {
         $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
+        $bomRecords = $prodOrder->material->bom?->bomRecords;
         $prodOrderMaterials = ProdOrdersMaterial::where('po_id', $prodId)->get();
 
         if ($prodOrderMaterials->isEmpty()) {
@@ -373,8 +373,12 @@ class KittingController extends Controller
         } else {
             $overallStatus = 'Completed';
 
-            foreach ($prodOrderMaterials as $material) {
-                if ($material->status === 'Partial') {
+            foreach ($bomRecords as $bomRecord) {
+                $pom = ProdOrdersMaterial::where('po_id', $prodId)
+                    ->where('material_id', $bomRecord->material_id)
+                    ->first();
+
+                if (!$pom || $pom->status !== 'Completed') {
                     $overallStatus = 'Partially Issued';
                     break;
                 }
@@ -386,6 +390,7 @@ class KittingController extends Controller
 
         return $overallStatus;
     }
+
 
     public function warehouseRecords(Request $request)
     {
@@ -401,7 +406,7 @@ class KittingController extends Controller
         }
 
         $po_id = $request->input('po_id');
-        $productionOrder = ProductionOrder::find($po_id);
+        $productionOrder = ProductionOrder::with('material.uom')->find($po_id);
 
         $warehouseRecords = Warehouse::with('records')->where('po_id', $productionOrder->po_id)->orderByDesc('created_at')->get();
 
@@ -431,6 +436,6 @@ class KittingController extends Controller
         ];
 
         $returnHTML = view('kitting.viewWarehouseRecords', $context)->render();
-        return response()->json(array('status' => true, 'html' => $returnHTML));
+        return response()->json(array('status' => true, 'info'=> $productionOrder, 'html' => $returnHTML));
     }
 }

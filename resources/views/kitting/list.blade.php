@@ -114,7 +114,13 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link kitting-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-partcode="'+ row.part_code +'" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-edit text-primary"></i></button>' +" / "+
+                            let info = ``;
+                            if (row.status === "Completed") {
+                                info = `<button class="btn btn-link view-btn btn-sm p-0" data-pon="${row.po_number}" data-id="${row.po_id}" data-partcode="${row.part_code}" data-desc="${row.description}" data-qty="${row.quantity}" data-unit="${row.unit}" data-status="${row.status}"><i class="fas fa-info-circle text-primary"></i></button>`;
+                            } else {
+                                info = `<button class="btn btn-link kitting-btn btn-sm p-0" data-pon="${row.po_number}" data-id="${row.po_id}" data-partcode="${row.part_code}" data-desc="${row.description}" data-qty="${row.quantity}" data-unit="${row.unit}" data-status="${row.status}"><i class="fas fa-edit text-primary"></i></button>`;
+                            }
+                            return info + " / " +
                             '<button class="btn btn-link records-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-partcode="'+ row.part_code +'" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-eye text-primary"></i></button>'
                             ;
                         }
@@ -387,6 +393,70 @@
                                 
                             }
                         });
+                    }
+                });
+            });
+
+            $(document).on('click', '.view-btn', function() {
+                let po_id = $(this).data('id');
+                let po_num = $(this).data('pon');
+                let po_desc = $(this).data('desc');
+                let po_qty = $(this).data('qty');
+                let po_unit = $(this).data('unit');
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('po.viewOrder') }}",
+                    data: {
+                        'po_id': po_id,
+                    },
+                    success: function(response) {
+                        $('#order-details-section').html(response.html);
+                        $("#orderDetailsModal").modal('show');
+                        $("#orderDetailsModal").find('.modal-title').html(
+                            `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
+                        );
+                        $("#bom-table").DataTable({
+                            "paging": false,
+                            "ordering": true,
+                            "info": false,
+                            "dom": 'Bfrtip',
+                            "columnDefs": [
+                                // {
+                                //     "targets": [9],
+                                //     "orderable": false
+                                // }
+                            ],
+                            "buttons": [
+                                {
+                                    extend: 'excel',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
+                                },
+                                {
+                                    extend: 'pdf',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
+                                },
+                                {
+                                    extend: 'print',
+                                    exportOptions: {
+                                        columns: ':visible:not(.exclude)'
+                                    },
+                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
+                                },
+                                'colvis',
+                            ],
+                            stateSave: true,
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        var jsonResponse = JSON.parse(xhr.responseText);
+                        console.error(jsonResponse.message);
+                        toastr.error(jsonResponse.message);
                     }
                 });
             });

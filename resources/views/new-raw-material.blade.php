@@ -60,7 +60,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
                                         <select class="form-control select2" id="uom" name="uom_id">
@@ -77,7 +77,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
                                         <select class="form-control" id="commodity" name="commodity_id">
@@ -94,7 +94,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <div class="input-group mb-3">
                                         <select class="form-control" id="category" name="category_id">
@@ -105,6 +105,23 @@
                                         </select>
                                         <div class="input-group-append">
                                             <span class="input-group-text add-category">
+                                                <i class="fas fa-plus"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <div class="input-group mb-3">
+                                        <select class="form-control" id="dm" name="dm_id">
+                                            <option value=""></option>
+                                            @foreach($dependents as $dpt)
+                                            <option value="{{$dpt->dm_id}}" {{ old('dm_id') == $dpt->dm_id ? 'selected' : '' }}>{{ $dpt->description ." - ".$dpt->frequency }}
+                                            @endforeach  
+                                        </select>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text add-dependent">
                                                 <i class="fas fa-plus"></i>
                                             </span>
                                         </div>
@@ -287,6 +304,39 @@
         </x-slot>
         </form>
     </x-adminlte-modal>
+
+    <x-adminlte-modal id="modalAddDependent" title="Add Dependent Material" icon="fas fa-edit">
+        <form action="/" method="post" id="dependent-form">
+            @csrf
+            <div class="row">
+                <div class="col-12">
+                    <div class="form-group">
+                        <label for="description">Enter Description</label>
+                        <input type="text" id="description" name="description" class="form-control" placeholder="Enter description text" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="frequency">Select Frequency</label>
+                        <select id="frequency" name="frequency" class="form-control">
+                            <option value="">-- Select Frequency --</option>
+                            <option value="Daily">Daily</option>
+                            <option value="Weekly">Weekly</option>
+                            <option value="Bi-weekly">Bi-weekly</option>
+                            <option value="Monthly">Monthly</option>
+                            <option value="Bi-monthly">Bi-monthly</option>
+                            <option value="Quarterly">Quarterly</option>
+                            <option value="Half-yearly">Half-yearly</option>
+                            <option value="Yearly">Yearly</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <x-slot name="footerSlot">
+            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+            <x-adminlte-button class="btn-sm btn-save-dependent" theme="primary" label="Save"/>
+        </x-slot>
+    </x-adminlte-modal>
 @stop
 
 
@@ -303,6 +353,10 @@
 
             if ($('#category').length){
                 loadSelect2($('#category'), 'category');
+            }
+
+            if ($('#dm').length){
+                loadSelect2($('#dm'), 'dm');
             }
 
             // Function to add a new category item
@@ -331,6 +385,10 @@
 
             $(document).on('click', '.add-category', function(){
                 $("#modalAddCategory").modal('show');
+            });
+
+            $(document).on('click', '.add-dependent', function(){
+                $("#modalAddDependent").modal('show');
             });
 
             $(document).on('click', '.btn-save-uom', function () {
@@ -416,6 +474,36 @@
                 }
             });
 
+            $(document).on('click', '.btn-save-dependent', function () {
+                $('#dependent-form .text-danger').remove();
+                var description = $('#description').val().trim();
+                var frequency = $('#frequency').val().trim();
+                var isValid = true;
+
+                if (description === '') {
+                    $('#description').after('<p class="text-danger">Description is required</p>');
+                    isValid = false;
+                } else if (frequency === '') {
+                    $('#frequency').after('<p class="text-danger">Frequency is required</p>');
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    $.ajax({
+                        url: "{{ route('dm.save') }}",
+                        method: 'POST',
+                        data: $('#dependent-form').serialize(),
+                        success: function (response) {
+                            loadSelect2($('#dm'), "dm", response.record); 
+                            $('#modalAddDependent').modal('hide');
+                        },
+                        error: function (xhr, status, error) {
+                            console.error(xhr.responseText);
+                        }
+                    });
+                }
+            });
+
             // Show Error Messages
             @if ($errors->any())
                 @foreach ($errors->all() as $error)
@@ -439,6 +527,9 @@
             } else if (type === 'category') {
                 placeholderText = "Category";
                 ajaxUrl = "{{ route('categories.search') }}";
+            } else if (type === 'dm') {
+                placeholderText = "Dependent Material";
+                ajaxUrl = "{{ route('dm.search') }}";
             } else {
                 placeholderText = "Unit";
                 ajaxUrl = "{{ route('uom.search') }}";

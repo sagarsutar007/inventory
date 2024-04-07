@@ -147,18 +147,48 @@ class ProductionOrderController extends Controller
         $query = ProductionOrder::with('material.uom');
 
         if (!empty ($search)) {
-            $query->whereHas('material', function ($q) use ($search) {
-                $q->where('description', 'like', '%' . $search . '%');
-            });
+            $search = trim(strip_tags($search));
+            $query->where('po_number', 'like', '%' . $search . '%')
+                ->orWhere('quantity', 'like', '%' . $search . '%')
+                ->orWhere('status', 'like', '%' . $search . '%')
+                ->orWhere('record_date', 'like', '%' . date('Y-m-d', strtotime($search)) . '%')
+                ->orWhereHas('user', function ($us) use ($search) {
+                    $us->where('name', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('material', function ($q) use ($search) {
+                    $q->where('description', 'like', '%' . $search . '%')
+                        ->orWhere('part_code', 'like', '%' . $search . '%')
+                        ->orWhereHas('uom', function($u) use ($search) {
+                            $u->where('uom_text', 'like', '%' . $search . '%')
+                            ->orWhere('uom_shortcode', 'like', '%' . $search . '%');
+                        });
+                });
         }
 
         $totalRecords = $query->count();
 
         if ($columnName === 'description') {
-            $query->orderBy('description', $columnSortOrder);
+            $query->join('materials', 'materials.material_id', '=', 'production_orders.material_id')
+                ->orderBy('materials.description', $columnSortOrder);
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
-        } else {
+        } elseif ($columnName === 'status') {
+            $query->orderBy('status', $columnSortOrder);
+        } elseif ($columnName === 'po_number') {
+            $query->orderBy('po_number', $columnSortOrder);
+        } elseif ($columnName === 'fg_partcode') {
+            $query->join('materials', 'materials.material_id', '=', 'production_orders.material_id')
+                ->orderBy('materials.part_code', $columnSortOrder);
+        } elseif ($columnName === 'uom_shortcode') {
+            $query->join('materials', 'materials.material_id', '=', 'production_orders.material_id')
+                ->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+        } elseif ($columnName === 'created_at') {
+            $query->orderBy('record_date', $columnSortOrder);
+        } elseif ($columnName === 'created_by') {
+            $query->leftJoin('users', 'users.id', '=', 'production_orders.created_by')
+            ->orderBy('users.name', $columnSortOrder);
+        }  else {
 
         }
 
@@ -177,7 +207,8 @@ class ProductionOrderController extends Controller
                     'description' => $material->description,
                     'unit' => $material->uom->uom_shortcode,
                     'quantity' => $order->quantity,
-                    'created_at' => date('d-m-Y h:i a', strtotime('+5 hours 30 minutes', strtotime($order->created_at))),
+                    // 'created_at' => date('d-m-Y h:i a', strtotime('+5 hours 30 minutes', strtotime($order->created_at))),
+                    'created_at' => date('d-m-Y', strtotime($order->record_date)),
                     'created_by' => $order->user->name,
                     'status' => $order->status,
                 ];
@@ -423,7 +454,11 @@ class ProductionOrderController extends Controller
         }
 
         if(!empty($status)){
-            $query->where('status', 'like', $status);
+            if ($status === "Partially + Pending") {
+                $query->whereNot('status', 'Completed'); 
+            } else {
+                $query->where('status', 'like', $status);
+            }
         }
                     
 
@@ -456,7 +491,9 @@ class ProductionOrderController extends Controller
                   ->orderBy('uoms.uom_shortcode', $columnSortOrder);
         } elseif ($columnName === 'status') {
             $query->orderBy('status', $columnSortOrder);
-        }
+        } elseif ($columnName === 'serial') {
+            $query->orderBy('created_at', $columnSortOrder=='asc'?'desc':'asc' );
+        } 
 
         // Paginate the query
         $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
@@ -504,8 +541,8 @@ class ProductionOrderController extends Controller
         $length = $request->input('length');
         $search = $request->input('search')['value'];
 
-        $startDate = $request->input('startDate');
-        $endDate = $request->input('endDate');
+        // $startDate = $request->input('startDate');
+        // $endDate = $request->input('endDate');
         // $searchTerm = $request->input('searchTerm');
 
         $order = $request->input('order');
@@ -513,11 +550,11 @@ class ProductionOrderController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = ProductionOrder::with('material','prod_order_materials')->where('production_orders.status', 'Partially Issued');
+        $query = ProductionOrder::with('material','prod_order_materials')->whereNot('production_orders.status', 'Completed');
 
-        if (!empty($startDate) && !empty($endDate)) {
-            $query->whereBetween('record_date', [$startDate, $endDate]);
-        }
+        // if (!empty($startDate) && !empty($endDate)) {
+        //     $query->whereBetween('record_date', [$startDate, $endDate]);
+        // }
 
         if (!empty($search)) {
             $query->whereHas('material', function ($q) use ($search) {
@@ -550,15 +587,19 @@ class ProductionOrderController extends Controller
         $productionOrders = $poQuery->items();
         $data = [];
         foreach ($productionOrders as $index => $order) {
-            $poMaterials = $order->prod_order_materials;
-            if ($poMaterials) {
-                foreach ($poMaterials as $pomIndex => $pomObject) {
-                    if ($pomObject->status == "Partial") {
+            $bomRecords = $order->material?->bom?->bomRecords;
+            if ($bomRecords) {
+                foreach ($bomRecords as $bomRecord) {
+                    $pomRecord = ProdOrdersMaterial::where('po_id', 'like', $order->po_id)
+                    ->where('material_id', 'like', $bomRecord->material_id)
+                    ->first();
+
+                    if ($pomRecord == null || $pomRecord->status == "Partial") {
                         $currentPage = ($start / $length) + 1;
                         $serial = ($currentPage - 1) * $length + $index + 1;
 
-                        $stock = $pomObject->material->stock->closing_balance;
-                        $balance = $pomObject->material->bomRecord->quantity * $order->quantity - $pomObject->quantity;
+                        $stock = $bomRecord->material->stock?->closing_balance;
+                        $balance = $bomRecord->quantity * $order->quantity - $pomRecord?->quantity;
 
                         $data[] = [
                             'serial' => $serial,
@@ -566,17 +607,19 @@ class ProductionOrderController extends Controller
                             'po_number' => $order->po_number,
                             'po_date' => $order->record_date,
                             'fg_partcode' => $order->material->part_code,
-                            'part_code' => $pomObject->material->part_code,
-                            'description' => $pomObject->material->description,
-                            'make' => $pomObject->material->make,
-                            'mpn' => $pomObject->material->mpn,
-                            'quantity' => $order->quantity * $pomObject->material->bomRecord->quantity,
+                            'part_code' => $bomRecord->material->part_code,
+                            'description' => $bomRecord->material->description,
+                            'make' => $bomRecord->material->make,
+                            'mpn' => $bomRecord->material->mpn,
+                            'quantity' => $order->quantity * $bomRecord->quantity,
                             'stock' => $stock,
                             'balance' => $balance,
                             'shortage' => abs($stock - $balance),
-                            'unit' => $pomObject->material->uom->uom_shortcode,
-                            'status' => $pomObject->status,
+                            'unit' => $bomRecord->material->uom->uom_shortcode,
+                            'status' => $pomRecord->status??'',
+                            'issued' => $pomRecord->quantity??0,
                         ];
+
                     }
                 }
             }
@@ -708,18 +751,18 @@ class ProductionOrderController extends Controller
 
     public function fetchMaterialShortageConsolidated(Request $request)
     {
-        $startDate = $request->input('startDate');
-        $endDate = $request->input('endDate');
+        // $startDate = $request->input('startDate');
+        // $endDate = $request->input('endDate');
         $partcode = $request->input('partcode');
 
-        $query = ProductionOrder::with('material','prod_order_materials')->where('production_orders.status', 'Partially Issued');
+        $query = ProductionOrder::with('material','prod_order_materials')->whereNot('production_orders.status', 'Completed');
 
-        if (!empty($startDate) && !empty($endDate)) {
-            $query->whereBetween('record_date', [$startDate, $endDate]);
-        }
+        // if (!empty($startDate) && !empty($endDate)) {
+        //     $query->whereBetween('record_date', [$startDate, $endDate]);
+        // }
 
         $productionOrders = $query->get();
-
+        $data = [];
         foreach ($productionOrders as $order) {
             $bomRecords = $order->material->bom->bomRecords;
             foreach ($bomRecords as $bomObject) {
@@ -727,8 +770,13 @@ class ProductionOrderController extends Controller
                 if ($prodOrderMaterial && $prodOrderMaterial->status == "Partial" && $partcode == $bomObject->material->part_code) {
                     $quantity = $order->quantity * $bomObject->quantity;
                     $stock = $bomObject->material->stock->closing_balance;
-                    $shortage = $bomObject->quantity * $order->quantity - $prodOrderMaterial->quantity;
-    
+                    $balance = $bomObject->quantity * $order->quantity - $prodOrderMaterial->quantity;
+                    if ($stock >= $balance) {
+                        $shortage = 0;
+                    } else {
+                        $shortage = abs($stock - $balance);
+                    }
+                    
                     $data[] = [
                         'po_id' => $order->po_id,
                         'po_number' => $order->po_number,
@@ -739,6 +787,7 @@ class ProductionOrderController extends Controller
                         'mpn' => $bomObject->material->mpn,
                         'quantity' => $quantity,
                         'stock' => $stock,
+                        'balance' => $balance,
                         'shortage' => $shortage,
                         'unit' => $bomObject->material->uom->uom_shortcode,
                         'status' => $prodOrderMaterial->status,
@@ -747,8 +796,12 @@ class ProductionOrderController extends Controller
                 else if ($partcode == $bomObject->material->part_code && empty($prodOrderMaterial)) {
                     $quantity = $order->quantity * $bomObject->quantity;
                     $stock = $bomObject->material->stock->closing_balance;
-                    $shortage = $bomObject->quantity * $order->quantity;
-    
+                    $balance = $bomObject->quantity * $order->quantity;
+                    if ($stock >= $balance) {
+                        $shortage = 0;
+                    } else {
+                        $shortage = abs($stock - $balance);
+                    }
                     $data[] = [
                         'po_id' => $order->po_id,
                         'po_number' => $order->po_number,
@@ -760,6 +813,7 @@ class ProductionOrderController extends Controller
                         'quantity' => $quantity,
                         'stock' => $stock,
                         'shortage' => $shortage,
+                        'balance' => $balance,
                         'unit' => $bomObject->material->uom->uom_shortcode,
                         'status' => "Shortage",
                     ];

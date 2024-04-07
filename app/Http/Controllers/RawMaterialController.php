@@ -11,6 +11,7 @@ use App\Models\Material;
 use App\Models\UomUnit;
 use App\Models\Vendor;
 use App\Models\Stock;
+use App\Models\DependentMaterial;
 
 use App\Imports\ExcelImportClass;
 use Illuminate\Support\Str;
@@ -43,11 +44,15 @@ class RawMaterialController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $rawmaterials = RawMaterial::with('uom', 'commodity', 'category')->where('type', 'raw');
+        $rawmaterials = RawMaterial::with('uom', 'commodity', 'category', 'dependant')->where('type', 'raw');
 
         if (!empty ($search)) {
             $rawmaterials->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('make', 'like', '%' . $search . '%')
+                    ->orWhere('mpn', 'like', '%' . $search . '%')
+                    ->orWhere('re_order', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
@@ -56,6 +61,10 @@ class RawMaterialController extends Controller
                     ->orWhereHas('commodity', function ($query) use ($search) {
                         $query->where('commodity_name', 'like', '%' . $search . '%');
                         $query->orWhere('commodity_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('dependent_materials', function ($query) use ($search) {
+                        $query->where('description', 'like', '%' . $search . '%');
+                        $query->orWhere('frequency', 'like', '%' . $search . '%');
                     })
                     ->orWhereHas('uom', function ($query) use ($search) {
                         $query->where('uom_shortcode', 'like', '%' . $search . '%');
@@ -76,6 +85,12 @@ class RawMaterialController extends Controller
             } else if ($columnName === 'category_name') {
                 $rawmaterials->join('categories', 'materials.category_id', '=', 'categories.category_id')
                     ->orderBy('categories.category_name', $columnSortOrder);
+            } else if ($columnName === 'dependent') {
+                $rawmaterials->leftJoin('dependent_materials', 'materials.dm_id', '=', 'dependent_materials.dm_id')
+                    ->orderBy('dependent_materials.description', $columnSortOrder);
+            } else if ($columnName === 'frequency') {
+                $rawmaterials->leftJoin('dependent_materials', 'materials.dm_id', '=', 'dependent_materials.dm_id')
+                    ->orderBy('dependent_materials.frequency', $columnSortOrder);
             } else {
                 $rawmaterials->orderBy($columnName, $columnSortOrder);
             }
@@ -113,6 +128,11 @@ class RawMaterialController extends Controller
                 'unit' => $material->uom?->uom_shortcode,
                 'commodity_name' => $material->commodity->commodity_name,
                 'category_name' => $material->category->category_name,
+                'make' => $material->make,
+                'mpn' => $material->mpn,
+                're_order' => $material->re_order,
+                'dependent' => $material->dependant?->description,
+                'frequency' => $material->dependant?->frequency,
                 'actions' => $actions,
             ];
         }
@@ -132,7 +152,8 @@ class RawMaterialController extends Controller
         $uom = UomUnit::all();
         $category = Category::all();
         $commodity = Commodity::all();
-        return view('new-raw-material', compact('uom', 'category', 'commodity'));
+        $dependents = DependentMaterial::all();
+        return view('new-raw-material', compact('uom', 'category', 'commodity', 'dependents'));
     }
 
     public function bulk()
@@ -163,6 +184,7 @@ class RawMaterialController extends Controller
             'uom_id' => 'required|exists:uom_units,uom_id',
             'commodity_id' => 'required|exists:commodities,commodity_id',
             'category_id' => 'required|exists:categories,category_id',
+            'dm_id' => 'required|exists:dependent_materials,dm_id',
             'additional_notes' => 'nullable|string',
             'opening_balance' => 'required',
             'mpn' => 'nullable',
@@ -270,12 +292,14 @@ class RawMaterialController extends Controller
         $uoms = UomUnit::all();
         $categories = Category::all();
         $commodities = Commodity::all();
+        $dependents = DependentMaterial::all();
 
         $material = $material->fresh();
         $attachments = $material->attachments()->get();
         $uom = $material->uom()->first();
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
+        $dependent = $material->dependant()->first();
         $purchases = $material->purchases()->with('vendor')->get();
 
         $stock = Stock::where('material_id', $material->material_id)->first();
@@ -285,10 +309,12 @@ class RawMaterialController extends Controller
             'attachments' => $attachments,
             'commodity' => $commodity,
             'category' => $category,
+            'dependent' => $dependent,
             'uom' => $uom,
             'uoms' => $uoms,
             'categories' => $categories,
             'commodities' => $commodities,
+            'dependents' => $dependents,
             'purchases' => $purchases,
             'stock' => $stock,
         ];
@@ -309,6 +335,7 @@ class RawMaterialController extends Controller
         $commodity = $material->commodity()->first();
         $category = $material->category()->first();
         $purchases = $material->purchases()->with('vendor')->get();
+        $dm = $material->dependant()->first();
 
         $context = [
             'material' => $material,
@@ -320,6 +347,7 @@ class RawMaterialController extends Controller
             'categories' => $categories,
             'commodities' => $commodities,
             'purchases' => $purchases,
+            'dm' => $dm
         ];
 
         $returnHTML = view('view-raw-material', $context)->render();
@@ -337,6 +365,7 @@ class RawMaterialController extends Controller
             'opening_balance' => 'required',
             'mpn' => 'nullable',
             'make' => 'nullable',
+            'dm_id' => 'nullable',
             're_order' => 'nullable',
             'vendor' => 'nullable|array',
             'vendor.*' => 'nullable|string',
@@ -926,4 +955,6 @@ class RawMaterialController extends Controller
         }
         return true;
     }
+
+
 }

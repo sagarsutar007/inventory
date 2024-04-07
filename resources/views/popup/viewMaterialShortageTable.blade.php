@@ -9,6 +9,7 @@
             <th>MPN</th>
             <th>PO Qty</th>
             <th>Stock Qty</th>
+            <th><div title="Balance to Issue">BTI Qty</div></th>
             <th>Shortage Qty</th>
             <th>Unit</th>
         </tr>
@@ -24,9 +25,13 @@
             <td>{{ $record['mpn'] }}</td>
             <td>{{ $record['quantity'] }}</td>
             <td>{{ $record['stock'] }}</td>
+            <td>{{ $record['balance'] }}</td>
             <td>{{ $record['shortage'] }}</td>
             <td>{{ $record['unit'] }}</td>
         </tr>
         @endforeach
     </tbody>
+    {{-- <tfoot>
+
+    </tfoot> --}}
 </table>

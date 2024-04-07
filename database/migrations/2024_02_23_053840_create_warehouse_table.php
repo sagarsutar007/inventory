@@ -17,12 +17,12 @@ return new class extends Migration {
             $table->enum('type', ['issue', 'receive', 'reversal', 'none'])->default('none')->nullable();
             $table->enum('po_kitting', ['true', 'false'])->nullable();
             $table->enum('kitting_reversal', ['true', 'false'])->nullable();
-            $table->uuid('po_id')->nullable();
+            // $table->uuid('po_id')->nullable();
             $table->uuid('vendor_id')->nullable();
             $table->date('date')->nullable();
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
-            $table->foreign('po_id')->references('po_id')->on('production_orders')->onDelete('set null');
+            // $table->foreign('po_id')->references('po_id')->on('production_orders')->onDelete('set null');
             $table->foreign('vendor_id')->references('vendor_id')->on('vendors')->onDelete('set null');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');

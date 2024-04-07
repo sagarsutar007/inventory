@@ -277,19 +277,36 @@ class BOMController extends Controller
                 foreach ($records as $record) {
                     $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
-                    $priceStats = MaterialPurchase::where('material_id', $record->material->material_id)
-                        ->groupBy('material_id')
-                        ->select([
-                            DB::raw('MAX(price) as max_price'),
-                            DB::raw('MIN(price) as min_price'),
-                            DB::raw('AVG(price) as avg_price'),
-                        ])
-                        ->first();
                     $quantity = $record->quantity * $quantities[$key];
+
+                    // $priceStats = MaterialPurchase::where('material_id', $record->material->material_id)
+                    //     ->groupBy('material_id')
+                    //     ->select([
+                    //         DB::raw('MAX(price) as max_price'),
+                    //         DB::raw('MIN(price) as min_price'),
+                    //         DB::raw('AVG(price) as avg_price'),
+                    //     ])
+                    //     ->first();
+                        
+                    
+                    
                     if (isset ($bomRecords[$record->material->description])) {
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
                     } else {
 
+                        if ($record->material->type === "semi-finished"){
+                            $prices = $this->calcPrices($record->material->material_id);
+
+                            $avg_price =  number_format($prices['avg'], 2);
+                            $min_price = number_format($prices['low'], 2);
+                            $max_price = number_format($prices['high'], 2);
+                        } else {
+                            $avg_price = number_format($record->material->avg_price ?? null, 2);
+                            $min_price = number_format($record->material->min_price ?? null, 2);
+                            $max_price = number_format($record->material->max_price ?? null, 2);
+                        }
+                        
+                        
                         $bomRecords[$record->material->description] = [
                             'material_id' => $record->material->material_id,
                             'part_code' => $record->material->part_code,
@@ -302,9 +319,9 @@ class BOMController extends Controller
                             'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
                             'closing_balance' => $closingBalance,
-                            'avg_price' => number_format($priceStats->avg_price ?? null, 2),
-                            'min_price' => number_format($priceStats->min_price ?? null, 2),
-                            'max_price' => number_format($priceStats->max_price ?? null, 2),
+                            'avg_price' => $avg_price,
+                            'min_price' => $min_price,
+                            'max_price' => $max_price,
                         ];
                     }
                 }
@@ -390,14 +407,7 @@ class BOMController extends Controller
                 $avg = 0;
                 $high = 0;
 
-                if ($bomRecords) {
-                    foreach ($bomRecords as $records => $rec) {
-                        $brMaterial = $rec->material;
-                        $low = $brMaterial->min_price * $rec->quantity;
-                        $avg = $brMaterial->avg_price * $rec->quantity;
-                        $high = $brMaterial->max_price * $rec->quantity;
-                    }
-                }
+                $prices = $this->calcPrices($material->material_id);
 
                 $data[] = [
                     'serial' => $index + $start + 1,
@@ -406,9 +416,9 @@ class BOMController extends Controller
                     'unit' => $material->uom->uom_text,
                     'commodity' => $material->commodity->commodity_name,
                     'category' => $material->category->category_name,
-                    'lowest' => $low,
-                    'average' => $avg,
-                    'highest' => $high,
+                    'lowest' => $prices['low'],
+                    'average' => $prices['avg'],
+                    'highest' => $prices['high'],
                 ];
             }
         }
@@ -422,4 +432,40 @@ class BOMController extends Controller
 
         return response()->json($response);
     }
+
+    protected function calcPrices($material_id="")
+    {
+        $prices = [
+            'low' => 0,
+            'avg' => 0,
+            'high' => 0
+        ]; 
+
+        if ($material_id) {
+            $material = Material::with('bom.bomRecords')->find($material_id);
+            if ($material) {
+                $bomRecords = $material->bom->bomRecords;
+                foreach ($bomRecords as $bomRecord) {
+                    $brMaterial = $bomRecord->material;
+                    $quantity = $bomRecord->quantity;
+                    if ($brMaterial->type === "raw") {
+                        $prices['low'] += $brMaterial->min_price * $quantity;
+                        $prices['avg'] += $brMaterial->avg_price * $quantity;
+                        $prices['high'] += $brMaterial->max_price * $quantity;
+                    } else if ($brMaterial->type === "semi-finished") {
+                        
+                        $semiFinishedPrices = $this->calcPrices($brMaterial->id);
+                        $prices['low'] += array_sum(array_column($semiFinishedPrices, 'low')) * $quantity;
+                        $prices['avg'] += array_sum(array_column($semiFinishedPrices, 'avg')) * $quantity;
+                        $prices['high'] += array_sum(array_column($semiFinishedPrices, 'high')) * $quantity;
+                    }
+                }
+            }
+        }
+        return $prices;
+    }
+
+
+
+
 }

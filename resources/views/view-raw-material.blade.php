@@ -36,6 +36,10 @@
                     <hr class="my-2">
                     <p class="text-muted mb-0"><strong class="text-dark">Measurement Unit</strong> : {{ $uom->uom_text }}</p>
                     <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Dependent Material</strong> : {{ $dm?->description }}</p>
+                    <hr class="my-2">
+                    <p class="text-muted mb-0"><strong class="text-dark">Frequency</strong> : {{ $dm?->frequency }}</p>
+                    <hr class="my-2">
                     <p class="text-muted mb-0"><strong class="text-dark">Additional Notes</strong> : {{ $material->additional_notes }}</p>
                 </div>
             </div>

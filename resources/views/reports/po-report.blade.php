@@ -25,6 +25,7 @@
                                 <option value="Pending">Pending</option>
                                 <option value="Completed">Completed</option>
                                 <option value="Partially Issued">Partially Issued</option>
+                                <option value="Partially + Pending" selected>Pending + Partially Issued</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -89,6 +90,7 @@
             $('#daterange').daterangepicker({
                 timePicker: false,
                 showDropdowns: true,
+                startDate: moment().subtract(10, 'years'),
                 locale: {
                     format: 'DD/MM/YYYY'
                 }
@@ -135,8 +137,8 @@
                     "type": "POST",
                     "data": function ( d ) {
                         d._token = '{{ csrf_token() }}';
-                        d.startDate = ""; // $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD')
-                        d.endDate = ""; // $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD')
+                        d.startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                        d.endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD'); 
                         d.searchTerm = $('#term').val();
                         d.status = $("#status").val();
                     }

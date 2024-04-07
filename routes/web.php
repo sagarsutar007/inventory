@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductionOrderController;
 use App\Http\Controllers\KittingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DependentMaterialController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,6 +81,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{category}/update', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         Route::post('/search', [CategoryController::class, 'search'])->name('categories.search');
+    });
+
+    // Dependent Materials
+    Route::prefix('/app/dependent-materials')->group(function () {
+        Route::get('', [DependentMaterialController::class, 'index'])->name('dm.index');
+        Route::get('/add', [DependentMaterialController::class, 'add'])->name('dm.add');
+        Route::post('/store', [DependentMaterialController::class, 'store'])->name('dm.store');
+        Route::get('/{material}/edit', [CategoryController::class, 'edit'])->name('dm.edit');
+        Route::post('/search', [DependentMaterialController::class, 'search'])->name('dm.search');
+        Route::delete('/{material}', [DependentMaterialController::class, 'destroy'])->name('dm.destroy');
+        Route::post('/{material}/update', [DependentMaterialController::class, 'update'])->name('dm.update');
+        Route::post('/save', [DependentMaterialController::class, 'save'])->name('dm.save');
     });
 
     // Raw Material Routes

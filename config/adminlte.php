@@ -366,6 +366,20 @@ return [
             ],
         ],
         [
+            'text' => 'Dependent Materials',
+            'icon' => 'fas fa-fw fa-archive',
+            'submenu' => [
+                [
+                    'text' => 'Add New',
+                    'url' => 'app/dependent-materials/add',
+                ],
+                [
+                    'text' => 'View All',
+                    'url' => 'app/dependent-materials',
+                ],
+            ],
+        ],
+        [
             'text' => 'Bill Of Materials',
             'url' => 'app/bill-of-materials',
             'icon' => 'fas fa-fw fa-file-invoice',

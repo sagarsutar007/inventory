@@ -25,15 +25,15 @@
                     <td>{{ $record['part_code'] }}</td>
                     <td>{{ $record['material_description'] }}</td>
                     <td>{{ $record['uom_shortcode'] }}</td>
-                    <td>{{ $record['bom_qty'] }}</td>
-                    <td>{{ $record['quantity'] }}</td>
-                    <td>{{ $record['issued'] }}</td>
-                    <td>{{ $record['balance'] }}</td>
-                    <td>{{ $record['closing_balance'] }}</td>
+                    <td>{{ number_format($record['bom_qty'], 3) }}</td>
+                    <td>{{ number_format($record['quantity'], 3) }}</td>
+                    <td>{{ number_format($record['issued'], 3) }}</td>
+                    <td>{{ number_format($record['balance'], 3) }}</td>
+                    <td>{{ number_format($record['closing_balance'], 3) }}</td>
                     {{-- <td></td> --}}
                     <td style="width: 10%;">
                         @if ( $record['balance'] != 0)
-                        <input type="number" name="issue[]" max="{{ $record['balance'] }}" class="form-control" placeholder="Issue Quantity">
+                        <input type="number" name="issue[]" max="{{ number_format($record['balance'], 3) }}" class="form-control" placeholder="Issue Quantity">
                         @else
                         <input type="number" name="issue[]" class="form-control" readonly placeholder="Issue Completed">
                         @endif

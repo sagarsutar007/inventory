@@ -5,7 +5,7 @@
 @section('content')
     <div class="container-fluid">
         <!-- <h2 class="text-center display-4">Select Material and Daterange</h2> -->
-        <div class="row">
+        {{-- <div class="row">
             <div class="col-md-8 offset-md-2 mt-3">
                 <form action="" id="material-search" method="post">
                     <div class="row">
@@ -24,15 +24,14 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- <div class="col-md-3">
+                        <div class="col-md-3">
                             <select name="status" id="status" class="form-control form-control-lg">
                                 <option value="">All</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Completed">Completed</option>
                                 <option value="Partially Issued">Partially Issued</option>
                             </select>
-                        </div> -->
-                        <!-- <div class="col-md-8">
+                        </div><div class="col-md-8">
                             <div class="input-group">
                                 <input type="search" id="term" class="form-control form-control-lg" placeholder="Type Production Order Number">
                                 <div class="input-group-append">
@@ -41,11 +40,11 @@
                                     </button>
                                 </div>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
                 </form>
             </div>
-        </div>
+        </div> --}}
     </div>
     <div class="row">
         <div class="col-md-12">
@@ -171,7 +170,15 @@
                     { "data": "quantity", "name": "quantity" },
                     { "data": "stock", "name": "stock" },
                     { "data": "balance", "name": "balance" },
-                    { "data": "shortage", "name": "shortage" },
+                    { "data": "shortage", "name": "shortage",
+                        "render": function(data, type, row, meta) {
+                            if (row.stock >= row.balance) {
+                                return "0.000";
+                            } else {
+                                return Math.abs(row.stock - row.balance);
+                            }
+                        }
+                    },
                     { "data": "unit", "name": "unit" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
@@ -207,8 +214,8 @@
                 var button = $(event.relatedTarget);
                 var partcode = button.data('partcode');
                 var description = button.data('description');
-                var startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
-                var endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
+                // var startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
+                // var endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
 
                 var modal = $(this);
                 modal.find('.modal-title').text('View: #' + partcode + ' - ' + description);
@@ -219,8 +226,8 @@
                     dataType: 'json',
                     data: {
                         partcode: partcode,
-                        startDate: startDate,
-                        endDate: endDate,
+                        // startDate: startDate,
+                        // endDate: endDate,
                         _token: '{{ csrf_token() }}',
                     },
                     success: function(response) {
