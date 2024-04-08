@@ -9,34 +9,32 @@
                 <div class="card-header">
                     <h3 class="card-title">Semi Finished Materials</h3>
                     <div class="card-tools">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" role="menu">
-                                <a class="dropdown-item" href="{{ route('semi.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
-                            </div>
-                        </div>
+                        <a class="btn btn-light btn-sm" href="{{ route('semi.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="materials" class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th width="5%">Sno.</th>
-                                <th class="text-center">Image</th>
-                                <th width="10%">Code</th>
-                                <th>Material Name</th>
-                                <th>Unit</th>
-                                <th>Commodity</th>
-                                <th>Category</th>
-                                <th width="15%">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="materials" class="table table-bordered table-striped" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th width="5%">Sno.</th>
+                                    <th class="text-center">Image</th>
+                                    <th width="10%">Code</th>
+                                    <th>Material Name</th>
+                                    <th>Unit</th>
+                                    <th>Commodity</th>
+                                    <th>Category</th>
+                                    <th>Make</th>
+                                    <th>MPN</th>
+                                    <th>Re Order</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -111,6 +109,7 @@
             </button>
         </x-slot>
     </x-adminlte-modal>
+
 @stop
 
 
@@ -148,8 +147,8 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "440px",
-                "scrollCollapse": true,
+                // "scrollY": "440px",
+                // "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('semi.fetchRawMaterials') }}",
                     "type": "POST",
@@ -166,6 +165,9 @@
                     { "data": "unit", "name": "uom_shortcode" },
                     { "data": "commodity_name", "name": "commodity_name" },
                     { "data": "category_name", "name": "category_name" },
+                    { "data": "make", "name": "make" },
+                    { "data": "mpn", "name": "mpn" },
+                    { "data": "re_order", "name": "re_order" },
                     { "data": "actions", "name": "actions" },
                 ],
                 "lengthMenu": [10, 25, 50, 75, 100],
@@ -173,7 +175,7 @@
                 "ordering": true,
                 "columnDefs": [
                     {
-                        "targets": [0, 1, 7],
+                        "targets": [0, 1, 10],
                         "orderable": false,
                     }
                 ],

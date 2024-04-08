@@ -47,7 +47,7 @@
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">
-                    <a href="#">Planned Order Shortage Report</a>
+                    <a href="{{ route('reports.ploShortageReport') }}">Planned Order Shortage Report</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
                   <li class="list-group-item d-flex align-items-center justify-content-between">

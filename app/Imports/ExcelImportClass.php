@@ -161,34 +161,35 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
     protected function addRawMaterial($data, $user)
     {
         if (count($data)) {
-            if (!empty($data[2]) && !empty($data[4]) && !empty($data[5])) {
-                $commodity = Commodity::where('commodity_name', '=', $data[4])->first();
-                $category = Category::where('category_name', '=', $data[5])->first();
-                if ($data[3]) {
-                    $uom = UomUnit::where('uom_shortcode', '=', $data[3])->orWhere('uom_text', '=', $data[3])->first();
+            if (!empty($data[0]) && !empty($data[2]) && !empty($data[3])) {
+                $commodity = Commodity::where('commodity_name', '=', $data[2])->first();
+                $category = Category::where('category_name', '=', $data[3])->first();
+                if ($data[1]) {
+                    $uom = UomUnit::where('uom_shortcode', '=', $data[1])->orWhere('uom_text', '=', $data[1])->first();
                 }
-                if ($data[8]) {
-                    $dm = DependentMaterial::where('description', '=', $data[8])->first();
+                if ($data[6]) {
+                    $dm = DependentMaterial::where('description', '=', $data[6])->first();
                 }
                 if ($commodity && $category) {
                     try {
                         RawMaterial::firstOrCreate(
                             [
-                                'description' => $data[2],
+                                'description' => $data[0],
                                 'type' => 'raw',
                             ],
                             [
                                 'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number),
-                                'description' => $data[2],
+                                'description' => $data[0],
                                 'uom_id' => $uom->uom_id ?? '',
                                 // 'opening_balance' => 0,
                                 'additional_notes' => '',
                                 'type' => 'raw',
-                                'mpn' => $data[7],
-                                'make' => $data[6],
+                                'mpn' => $data[5],
+                                'make' => $data[4],
                                 'category_id' => $category->category_id,
                                 'commodity_id' => $commodity->commodity_id,
-                                'dm_id' => $dm->dm_id,
+                                'dm_id' => $dm->dm_id??'',
+                                're_order' => $data[7],
                                 'created_by' => $user
                             ]
                         );
@@ -280,12 +281,8 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
             try {
                 \DB::beginTransaction();
                 $lastMaterial = RawMaterial::where('type', 'raw')
-                    ->orderBy('created_at', 'desc')
-                    ->pluck('part_code')
-                    ->first();
-                    
-                    // ->where('commodity_id', $commodity_number)
-                    // ->where('category_id', $category_number)
+                ->latest('created_at')
+                ->value('part_code');
                 $lastPartCode = $lastMaterial ? substr($lastMaterial, -5) + 1 : 1;
 
                 do {
@@ -304,7 +301,6 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                 throw $th;
             }
         }
-
         return null;
     }
 

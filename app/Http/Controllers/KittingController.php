@@ -348,13 +348,13 @@ class KittingController extends Controller
                         if ($existingRecord->quantity + $quantity == $required_qty) {
                             return 'Completed';
                         } else if ($existingRecord->quantity + $quantity < $required_qty) {
-                            return 'Partially Issued';
+                            return 'Partial';
                         }
                     } else {
                         if ($quantity == $required_qty) {
                             return 'Completed';
                         } else if ($quantity < $required_qty) {
-                            return 'Partially Issued';
+                            return 'Partial';
                         }
                     }
                 }

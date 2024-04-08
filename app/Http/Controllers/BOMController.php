@@ -278,17 +278,6 @@ class BOMController extends Controller
                     $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
                     $quantity = $record->quantity * $quantities[$key];
-
-                    // $priceStats = MaterialPurchase::where('material_id', $record->material->material_id)
-                    //     ->groupBy('material_id')
-                    //     ->select([
-                    //         DB::raw('MAX(price) as max_price'),
-                    //         DB::raw('MIN(price) as min_price'),
-                    //         DB::raw('AVG(price) as avg_price'),
-                    //     ])
-                    //     ->first();
-                        
-                    
                     
                     if (isset ($bomRecords[$record->material->description])) {
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
@@ -297,13 +286,13 @@ class BOMController extends Controller
                         if ($record->material->type === "semi-finished"){
                             $prices = $this->calcPrices($record->material->material_id);
 
-                            $avg_price =  number_format($prices['avg'], 2);
-                            $min_price = number_format($prices['low'], 2);
-                            $max_price = number_format($prices['high'], 2);
+                            $avg_price = number_format($prices['avg'], 2) * $record->quantity;
+                            $min_price = number_format($prices['low'], 2) * $record->quantity;
+                            $max_price = number_format($prices['high'], 2) * $record->quantity;
                         } else {
-                            $avg_price = number_format($record->material->avg_price ?? null, 2);
-                            $min_price = number_format($record->material->min_price ?? null, 2);
-                            $max_price = number_format($record->material->max_price ?? null, 2);
+                            $avg_price = number_format($record->material->avg_price ?? null, 2) * $record->quantity;
+                            $min_price = number_format($record->material->min_price ?? null, 2) * $record->quantity;
+                            $max_price = number_format($record->material->max_price ?? null, 2) * $record->quantity;
                         }
                         
                         

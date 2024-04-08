@@ -43,7 +43,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="7"></td>
+                <td colspan="7" class="text-right"><strong>Cost</strong></td>
                 <td>{{ number_format($total_avg, 2) }}</td>
                 <td>{{ number_format($total_min, 2) }}</td>
                 <td>{{ number_format($total_max, 2) }}</td>

@@ -486,9 +486,7 @@ class FinishedMaterialController extends Controller
 
         return response()->json($materials);
     }
-
-
-
+    
     private function generatePartCode($commodity_id = '', $category_id = '')
     {
         if ($commodity_id && $category_id) {

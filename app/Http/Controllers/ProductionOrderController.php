@@ -10,6 +10,7 @@ use Carbon\Carbon;
 
 
 use App\Models\Material;
+use App\Models\Bom;
 use App\Models\BomRecord;
 use App\Models\Stock;
 use App\Models\ProductionOrder;
@@ -827,5 +828,137 @@ class ProductionOrderController extends Controller
 
         $returnHTML = view('popup.viewMaterialShortageTable', $context)->render();
         return response()->json(array('status' => true, 'html' => $returnHTML));
+    }
+
+    public function ploShortageReport()
+    {
+        return view('reports.planned-shortage-report');
+    }
+
+    public function fetchPlannedShortage(Request $request)
+    {
+        $partcodes = $request->input('part_code');
+        $quantities = $request->input('quantity');
+        $materialsArr = [];
+        
+        $combinedQuantities = [];
+        $allMaterials = [];
+
+        foreach ($partcodes as $index => $partcode) {
+            $material = Material::where('part_code', 'like', $partcode)->first();
+            $quantity = $quantities[$index];
+            $materials = $this->getPlannedStats($partcode, $quantity);
+            $combinedMaterials = [];
+
+            foreach ($materials as $record) {
+                $partCode = $record['part_code'];
+                $reqQty = $record['req_qty'];
+                if (!isset($combinedQuantities[$partCode])) {
+                    $combinedQuantities[$partCode]['req_qty'] = $reqQty;
+                } else {
+                    $combinedQuantities[$partCode]['req_qty'] = $reqQty;
+                }
+                $combinedMaterials[] = $record;
+            }
+            
+            foreach ($materials as $record) {
+                $partCode = $record['part_code'];
+                $record['req_qty'] = $combinedQuantities[$partCode]['req_qty'];
+                $record['short_qty'] = ($record['stock_qty'] < ($record['req_qty'] + $record['reserved_qty'] ))?abs($record['stock_qty'] - ($record['req_qty'] + $record['reserved_qty'] )):0;
+                $record['status'] = ($record['short_qty'] === 0)?"":"Shortage";
+                
+                $allMaterials[] = $record;
+            }
+
+            $materialsArr[] = [
+                'fg_partcode' => $partcode,
+                'description' => $material->description,
+                'quantity' => $quantity,
+                'unit' => $material->uom->uom_shortcode,
+                'records' => $combinedMaterials
+            ];
+        }
+
+        $aggMaterials = [];
+
+        foreach ($allMaterials as $key => $obj) {
+            if (isset($aggMaterials[$obj['part_code']])) {
+                $aggMaterials[$obj['part_code']]['bom_qty'] += $obj['bom_qty'];
+                $aggMaterials[$obj['part_code']]['req_qty'] += $obj['req_qty'];
+                // $aggMaterials[$obj['part_code']]['reserved_qty'] += $obj['reserved_qty'];
+                $aggMaterials[$obj['part_code']]['short_qty'] += $obj['short_qty'];
+
+
+            } else {
+                $aggMaterials[$obj['part_code']] = $obj;
+            }
+
+            $aggMaterials[$obj['part_code']]['short_qty'] = ($aggMaterials[$obj['part_code']]['stock_qty'] < ($aggMaterials[$obj['part_code']]['req_qty'] + $aggMaterials[$obj['part_code']]['reserved_qty'] ))?abs($aggMaterials[$obj['part_code']]['stock_qty'] - ($aggMaterials[$obj['part_code']]['req_qty'] + $aggMaterials[$obj['part_code']]['reserved_qty'] )):0;
+            $aggMaterials[$obj['part_code']]['status'] = ($aggMaterials[$obj['part_code']]['short_qty'] === 0)?"":"Shortage";
+        }
+
+        $context = [
+            'materials' => $materialsArr, 
+            'combinedMaterials' => $aggMaterials
+        ];
+
+        $returnHTML = view('popup.viewPlannedShortageTable', $context)->render();
+        return response()->json(array('status' => true, 'html' => $returnHTML));
+    }
+
+    protected function getPlannedStats($partcode="", $quantity=1)
+    {
+        $material = Material::with('bom.bomRecords')->where('part_code', 'like', $partcode)->first();
+        $bomRecords = $material->bom->bomRecords;
+        $data = [];
+        foreach ($bomRecords as $records => $record) {
+
+            $bomQty = $record->quantity;
+            $reqQty = $bomQty * $quantity;
+            $reservedQty = $this->countReservedQty($record->material_id); 
+
+            $stockQty = (float)$record->material->stock->closing_balance;
+            $shortQty = ($stockQty < ($reqQty + $reservedQty) )?abs($stockQty - ($reqQty + $reservedQty)):0;
+
+            $status = ($stockQty < ($reqQty + $reservedQty) )?"Shortage":"";
+                       
+            $data[] = [
+                'part_code' => $record->material->part_code,
+                'description' => $record->material->description,
+                'category' => $record->material->category->category_name,
+                'commodity' => $record->material->commodity->commodity_name,
+                'make' => $record->material->make,
+                'mpn' => $record->material->mpn,
+                'unit' => $record->material->uom->uom_shortcode,
+                'bom_qty' => $bomQty,
+                'req_qty' => $reqQty,
+                'stock_qty' => $stockQty,
+                'reserved_qty' => $reservedQty,
+                'short_qty' => $shortQty,
+                'status' => $status,
+            ];
+        }
+
+        return $data;
+    }
+
+    protected function countReservedQty($material_id=""){
+        $reservedQty = 0;
+        $productionOrders = ProductionOrder::with('material','prod_order_materials')->whereNot('status', 'Completed')->get();
+        foreach ($productionOrders as $prodOrders => $order) {
+            $prodMaterial = $order->material;
+            $bomRecords = $prodMaterial->bom->bomRecords;
+            foreach ($bomRecords as $records => $record) {
+                $prodOrderMaterial = ProdOrdersMaterial::where('po_id', 'like', $order->po_id)->where('material_id', $record->material_id)->first();
+                if ($prodOrderMaterial && $prodOrderMaterial->material_id == $material_id) {
+                    $reservedQty = ($order->quantity * $record->quantity) - $prodOrderMaterial->quantity;
+                    return $reservedQty;
+                } else if ($record->material_id == $material_id) {
+                    $reservedQty = $order->quantity * $record->quantity;
+                    return $reservedQty;
+                }
+            }
+        }
+        return NULL;
     }
 }

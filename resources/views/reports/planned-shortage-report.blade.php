@@ -1,13 +1,14 @@
 @extends('adminlte::page')
 
-@section('title', 'Bill of Material Cost View')
+@section('title', 'Planned Order Shortage Report')
 
 @section('content')
+<div class="container-fluid">
     <div class="row">
-        <div class="col-10 mx-auto">
+        <div class="col-12">
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Bill of Material Cost View</h3>
+                    <h3 class="card-title">Planned Order Shortage Report</h3>
                 </div>
                 <div class="card-body">
                     <form action="" id="get-bom-form" action="post">
@@ -18,13 +19,13 @@
                                     <div class="col-md-3 mb-3">
                                         <input type="text" name="part_code[]" class="form-control suggest-goods" placeholder="Part code">
                                     </div>
-                                    <div class="col-md-7 mb-3">
+                                    <div class="col-md-5 mb-3">
                                         <input type="text" class="form-control material-description" placeholder="Description" readonly>
                                     </div>
-                                    <div class="col-md-2 mb-3">
+                                    <div class="col-md-1 mb-3">
                                         <input type="text" class="form-control material-unit" placeholder="UOM" readonly>
                                     </div>
-                                    <div class="col-md-2 mb-3 d-none">
+                                    <div class="col-md-3 mb-3">
                                         <div class="input-group">
                                             <input type="number" name="quantity[]" class="form-control quantity" step="0.001" placeholder="Quantity">
                                             <div class="input-group-append">
@@ -37,8 +38,8 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12 text-right">
-                                <!-- <button type="button" class="btn btn-secondary" id="add-finished-goods">Add Item</button> -->
-                                <button type="button" class="btn btn-primary" id="fetch-bom">Get BOM</button>
+                                <button type="button" class="btn btn-outline-secondary" id="add-finished-goods">Add Item</button>
+                                <button type="button" class="btn btn-primary" id="fetch-report">Get Shortage Report</button>
                             </div>
                         </div>
                     </form>
@@ -47,31 +48,45 @@
 
             <div id="bom" style="display: none;">
                 <div class="bom-section mt-3 d-flex align-items-center justify-content-between">
-                    <h5 class="text-secondary">Required Materials</h5>
-                    <div class="btn-group">
-                        {{-- <button class="btn btn-sm btn-primary btn-combined">
-                            <i class="fas fa-table"></i>
-                        </button>
-                        <button class="btn btn-sm btn-default btn-individual">
-                            <i class="fas fa-list"></i>
-                        </button> --}}
-                    </div>
+                    <h5 class="text-secondary">Consolidated Materials</h5>
                 </div>
-                <div class="card mt-3">
-                    <div class="card-body" id="table-section">
+                <div id="table-section">
 
-                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 @stop
 
 @section('js')
     <script>
         $(function(){
             $("#add-finished-goods").on('click', function(){
-                var newItem = `<div class="goods-item"><div class="row"><div class="col-md-2 mb-3"><input type="text" name="part_code[]" class="form-control suggest-goods" placeholder="Part code"></div><div class="col-md-6 mb-3"><input type="text" class="form-control material-description" placeholder="Description" readonly></div><div class="col-md-2 mb-3"><input type="text" class="form-control material-unit" placeholder="UOM" readonly></div><div class="col-md-2 mb-3"><div class="input-group"><input type="number" name="quantity[]" class="form-control quantity" step="0.001" placeholder="Quantity"><div class="input-group-append"><span class="input-group-text"><i class="fas fa-times remove-finished-goods"></i></span></div></div></div></div></div>`;
+                var newItem = `
+                <div class="goods-item">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <input type="text" name="part_code[]" class="form-control suggest-goods" placeholder="Part code">
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <input type="text" class="form-control material-description" placeholder="Description" readonly>
+                        </div>
+                        <div class="col-md-1 mb-3">
+                            <input type="text" class="form-control material-unit" placeholder="UOM" readonly>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="input-group">
+                                <input type="number" name="quantity[]" class="form-control quantity" step="0.001" placeholder="Quantity">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-times remove-finished-goods"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
 
                 var $newItem = $(newItem);
 
@@ -133,7 +148,7 @@
 
             initializeAutocomplete($(".suggest-goods"));
 
-            $("#fetch-bom").on('click', function(){
+            $("#fetch-report").on('click', function(){
 
                 $('.validation-error').remove();
                 var isValid = true;
@@ -156,11 +171,11 @@
                 .html('<div class="spinner-grow text-light spinner-grow-sm" role="status"><span class="sr-only">Loading...</span></div> Loading...')
                 .attr('disabled', true);
 
-                var formData = $("#get-bom-form").serialize() + "&report=true";
+                var formData = $("#get-bom-form").serialize();
 
                 $.ajax({
                     type: "POST",
-                    url: "{{ route('bom.getBomRecords') }}", 
+                    url: "{{ route('po.fetchPlannedShortage') }}", 
                     data: formData,
                     success: function(response){
                         if (response.status) {
@@ -175,8 +190,8 @@
                         $("#table-section").html('<p>Error fetching BOM records.</p>');
                     },
                     complete: function(){
-                        $("#fetch-bom")
-                        .html("Get BOM")
+                        $("#fetch-report")
+                        .html("Get Shortage Report")
                         .removeAttr('disabled');
 
                         $("#minimize-bom-card").trigger('click');
@@ -186,46 +201,46 @@
             });
 
             function initializeBomTable() {
-
-                var partcode = $(".suggest-goods").val();
-
-                $('#bom-table').DataTable({
+                $("table").DataTable({
                     "responsive": true,
-                    "lengthChange": false,
-                    "paging": false,
+                    "lengthChange": true,
+                    "autoWidth": true,
+                    "paging": true,
                     "info": false,
-                    "footer": true,
                     "buttons": [
                         {
                             extend: 'excel',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            },
-                            title: "BOM of " + partcode,
+                            }
                         },
                         {
                             extend: 'pdf',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            },
-                            title: "BOM of " + partcode,
+                            }
                         },
                         {
                             extend: 'print',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            },
-                            title: "BOM of " + partcode,
+                            }
                         },
                         'colvis',
                     ],
                     "processing": true,
                     "scrollY": "320px",
                     "scrollCollapse": true,
-                    "searching": false,
+                    "searching": true,
                     "ordering": true,
-                    "dom": 'Bfrtip',
-                    "autoWidth": true,
+                    "dom": 'lBfrtip',
+                    "language": {
+                        "lengthMenu": "_MENU_"
+                    },
+                    "lengthMenu": [
+                        [ -1, 10, 25, 50, 100],
+                        ['All', 10, 25, 50, 100]
+                    ]
                 });
             }
 
@@ -286,6 +301,69 @@
                     });
                 }
             });
+
+            // $(document).on('click', "#create-prod-order", function () {
+
+            //     $(this)
+            //     .html('<div class="spinner-grow text-light spinner-grow-sm" role="status"><span class="sr-only">Loading...</span></div> Loading...')
+            //     .attr('disabled', true);
+
+
+            //     $('.validation-error').remove();
+            //     var isValid = true;
+            //     $('.suggest-goods').each(function() {
+            //         if ($(this).val() === '') {
+            //             $(this).after('<span class="text-danger validation-error">Partcode is required.</span>');
+            //             isValid = false;
+            //         }
+            //     });
+
+            //     $('.quantity').each(function() {
+            //         if ($(this).val() === '') {
+            //             $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity is required.</span>');
+            //             isValid = false;
+            //         }
+
+            //         let val = parseFloat($(this).val());
+            //         let max = parseFloat($(this).attr('max'));
+
+            //         if (val > max) {
+            //             $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity can\'t exceed more than '+$(this).attr('max')+'. </span>');
+            //             isValid = false;
+            //         }
+            //     });
+
+            //     if (!isValid) return;
+
+            //     var formData = $("#get-bom-form").serialize();
+
+            //     $.ajax({
+            //         type: "POST",
+            //         url: "{{ route('po.createOrder') }}", 
+            //         data: formData,
+            //         success: function(response){
+            //             if (response.status) {
+            //                 toastr.success(response.message);
+            //                 //reload after 2 seconds
+            //                 setTimeout(() => { window.location.reload() }, 1500);
+            //             } else {
+            //                 toastr.error(response.message);
+            //                 $("#create-prod-order")
+            //                 .html("Create Order")
+            //                 .removeAttr('disabled');
+            //             }
+            //         },
+            //         error: function(xhr, status, error){
+            //             var jsonResponse = JSON.parse(xhr.responseText);
+            //             toastr.error(jsonResponse.message);
+            //             console.error(jsonResponse.error);
+            //             $("#create-prod-order")
+            //             .html("Create Order")
+            //             .removeAttr('disabled');
+            //         }
+            //     });
+
+            // });
         })
     </script>
 @stop

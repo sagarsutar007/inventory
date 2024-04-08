@@ -528,9 +528,8 @@ class SemiFinishedMaterialController extends Controller
             }
 
             $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
-                <a href="#" role="button" data-matid="' . $material->material_id . '"  class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> /
-                <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>
-                / <form action="' . route('semi.destroy', $material->material_id) . '" method="post" style="display: inline;">
+                <a href="#" role="button" data-matid="' . $material->material_id . '"  class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / 
+                <form action="' . route('semi.destroy', $material->material_id) . '" method="post" style="display: inline;">
                     ' . csrf_field() . '
                     ' . method_field('DELETE') . '
                     <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this record?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
@@ -543,6 +542,9 @@ class SemiFinishedMaterialController extends Controller
                 'part_code' => $material->part_code,
                 'description' => $material->description,
                 'unit' => $material->uom->uom_shortcode,
+                'make' => $material->make,
+                'mpn' => $material->mpn,
+                're_order' => $material->re_order,
                 'commodity_name' => $material->commodity->commodity_name,
                 'category_name' => $material->category->category_name,
                 'actions' => $actions,

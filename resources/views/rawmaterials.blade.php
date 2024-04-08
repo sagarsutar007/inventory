@@ -14,27 +14,29 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <table id="rawmaterials" class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th width="5%">Sno.</th>
-                                <th class="text-center">Image</th>
-                                <th width="10%">Partcode</th>
-                                <th>Raw Material Name</th>
-                                <th>Unit</th>
-                                <th>Commodity</th>
-                                <th>Category</th>
-                                <th>Make</th>
-                                <th>MPN</th>
-                                <th>Dependent Material</th>
-                                <th>Frequency</th>
-                                <th>Re Order</th>
-                                <th width="13%">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table id="rawmaterials" class="table table-bordered table-striped" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th width="5%">Sno.</th>
+                                    <th class="text-center">Image</th>
+                                    <th width="10%">Partcode</th>
+                                    <th>Raw Material Name</th>
+                                    <th>Unit</th>
+                                    <th>Commodity</th>
+                                    <th>Category</th>
+                                    <th>Make</th>
+                                    <th>MPN</th>
+                                    <th>Dependent Material</th>
+                                    <th>Frequency</th>
+                                    <th>Re Order</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -135,8 +137,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "440px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('raw.fetchRawMaterials') }}",
                     "type": "POST",

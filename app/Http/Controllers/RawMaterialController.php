@@ -106,19 +106,19 @@ class RawMaterialController extends Controller
 
             $imageAttachment = $material->attachments()->where('type', 'image')->first();
             if ($imageAttachment) {
-                $image = '<div class="text-center"><img src="' . asset('assets/uploads/materials/' . $imageAttachment->path) . '" class="mt-2" width="30px" height="30px"></div>';
+                $image = '<div class="text-center"><img src="' . asset('assets/uploads/materials/' . $imageAttachment->path) . '" class="mt-2" width="15px" height="15px"></div>';
             } else {
-                $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="30px" height="30px"></div>';
+                $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="15px" height="15px"></div>';
             }
 
-            $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
+            $actions = '<div class="text-center"><a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
                 <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> /
                 <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>
                 / <form action="' . route('raw.destroy', $material->material_id) . '" method="post" style="display: inline;">
                     ' . csrf_field() . '
                     ' . method_field('DELETE') . '
                     <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this record?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
-                </form>';
+                </form></div>';
 
             $data[] = [
                 'serial' => $serial,
@@ -531,10 +531,8 @@ class RawMaterialController extends Controller
             $commodityCode = str_pad(Commodity::find($commodity_id)->commodity_number, 2, '0', STR_PAD_LEFT);
             $categoryCode = str_pad(Category::find($category_id)->category_number, 3, '0', STR_PAD_LEFT);
             $lastMaterial = RawMaterial::where('type', 'raw')
-                ->orderBy('created_at', 'desc')
+                ->latest('created_at')
                 ->first();
-                // ->where('commodity_id', $commodity_id)
-                // ->where('category_id', $category_id)
             $lastPartCode = $lastMaterial ? substr($lastMaterial->part_code, -5) + 1 : 1;
             do {
                 $newPartCode = $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);

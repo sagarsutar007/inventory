@@ -185,7 +185,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/order-report', [ProductionOrderController::class, 'fetchPoReport'])->name('po.fetchPoReport');
         Route::post('/shortage-order-report', [ProductionOrderController::class, 'fetchPoShortageReport'])->name('po.fetchPoShortageReport');
         Route::post('/consolidated-shortage-order-report', [ProductionOrderController::class, 'fetchPoConsolidatedShortageReport'])->name('po.fetchPoConsolidatedShortageReport');
-
+        Route::post('/planned-shortage-order-report', [ProductionOrderController::class, 'fetchPlannedShortage'])->name('po.fetchPlannedShortage');
         Route::post('/material-shortage-consolidated', [ProductionOrderController::class, 'fetchMaterialShortageConsolidated'])->name('po.fetchMaterialShortageConsolidated');
     });
 

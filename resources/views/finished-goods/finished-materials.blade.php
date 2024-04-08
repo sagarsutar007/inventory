@@ -9,14 +9,7 @@
                 <div class="card-header">
                     <h3 class="card-title">Finished Materials</h3>
                     <div class="card-tools">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" role="menu">
-                                <a class="dropdown-item" href="{{ route('finished.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
-                            </div>
-                        </div>
+                        <a class="btn btn-light btn-sm" href="{{ route('finished.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -29,6 +22,7 @@
                                 <th>Unit</th>
                                 <th>Commodity</th>
                                 <th>Category</th>
+                                <th>Re Order</th>
                                 <th width="10%">Action</th>
                             </tr>
                         </thead>
@@ -41,6 +35,7 @@
                                 <td>{{ $material->uom->uom_text }}</td>
                                 <td>{{ $material->commodity->commodity_name }}</td>
                                 <td>{{ $material->category->category_name }}</td>
+                                <td>{{ $material->re_order }}</td>
                                 <td width="15%">
                                     <a href="#" role="button" data-partcode="{{ $material->part_code }}" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
                                         <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
@@ -147,8 +142,8 @@
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
-                "scrollY": "320px",
-                "scrollCollapse": true,
+                // "scrollY": "320px",
+                // "scrollCollapse": true,
                 "buttons": [
                     {
                         extend: 'excel',
