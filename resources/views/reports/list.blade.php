@@ -50,10 +50,10 @@
                     <a href="{{ route('reports.ploShortageReport') }}">Planned Order Shortage Report</a>
                     <i class="fas fa-chevron-right"></i>
                   </li>
-                  <li class="list-group-item d-flex align-items-center justify-content-between">
+                  {{-- <li class="list-group-item d-flex align-items-center justify-content-between">
                     <a href="#">Planned Order Shortage Report Consolidated</a>
                     <i class="fas fa-chevron-right"></i>
-                  </li>
+                  </li> --}}
                   <li class="list-group-item d-flex align-items-center justify-content-between">
                     <a href="{{ route('reports.rmPurchaseReport') }}">Raw Material Purchase Report</a>
                     <i class="fas fa-chevron-right"></i>

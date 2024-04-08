@@ -286,13 +286,13 @@ class BOMController extends Controller
                         if ($record->material->type === "semi-finished"){
                             $prices = $this->calcPrices($record->material->material_id);
 
-                            $avg_price = number_format($prices['avg'], 2) * $record->quantity;
-                            $min_price = number_format($prices['low'], 2) * $record->quantity;
-                            $max_price = number_format($prices['high'], 2) * $record->quantity;
+                            $avg_price = $prices['avg']* $record->quantity;
+                            $min_price = $prices['low']* $record->quantity;
+                            $max_price = $prices['high']* $record->quantity;
                         } else {
-                            $avg_price = number_format($record->material->avg_price ?? null, 2) * $record->quantity;
-                            $min_price = number_format($record->material->min_price ?? null, 2) * $record->quantity;
-                            $max_price = number_format($record->material->max_price ?? null, 2) * $record->quantity;
+                            $avg_price = $record->material->avg_price * $record->quantity;
+                            $min_price = $record->material->min_price * $record->quantity;
+                            $max_price = $record->material->max_price * $record->quantity;
                         }
                         
                         

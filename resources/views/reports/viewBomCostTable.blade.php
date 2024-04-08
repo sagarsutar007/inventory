@@ -30,9 +30,9 @@
                 <td>{{ $record['commodity'] }}</td>
                 <td width="10%">{{ $record['bom_qty'] }}</td>
                 <td width="8%">{{ $record['uom_shortcode'] }}</td>
-                <td width="10%">{{ $record['avg_price'] }}</td>
-                <td width="10%">{{ $record['min_price'] }}</td>
-                <td width="10%">{{ $record['max_price'] }}</td>
+                <td width="10%">{{ number_format($record['avg_price'], 2) }}</td>
+                <td width="10%">{{ number_format($record['min_price'], 2) }}</td>
+                <td width="10%">{{ number_format($record['max_price'], 2) }}</td>
             </tr>
             @php
                 $total_avg += $record['avg_price'];
