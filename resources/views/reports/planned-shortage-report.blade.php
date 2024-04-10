@@ -57,6 +57,28 @@
         </div>
     </div>
 </div>
+
+<x-adminlte-modal id="view-modal" title="View Reserved Quantity" icon="fas fa-box" size='lg' scrollable>
+    <div class="row" id="view-modal-section">
+        <div class="col-12">
+            <h4 class="text-secondary text-center">Loading...</h4>
+        </div>
+    </div>
+    <x-slot name="footerSlot">
+        <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+    </x-slot>
+</x-adminlte-modal>
+
+<x-adminlte-modal id="view-stock" title="View Stock Quantity" icon="fas fa-box" size='xl' scrollable>
+    <div class="row">
+        <div class="col-12" id="view-stock-section">
+            <h4 class="text-secondary text-center">Loading...</h4>
+        </div>
+    </div>
+    <x-slot name="footerSlot">
+        <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+    </x-slot>
+</x-adminlte-modal>
 @stop
 
 @section('js')
@@ -302,68 +324,136 @@
                 }
             });
 
-            // $(document).on('click', "#create-prod-order", function () {
+            $('#view-modal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var partcode = button.data('partcode');
+                var modal = $(this)
+                $.ajax({
+                    url: '/app/production-orders/calculate-reserved-quantity',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        partcode: partcode
+                    },
+                    success: function(response) {
+                        if (response.status) {
+                            $("#view-modal-section").html(response.html);
 
-            //     $(this)
-            //     .html('<div class="spinner-grow text-light spinner-grow-sm" role="status"><span class="sr-only">Loading...</span></div> Loading...')
-            //     .attr('disabled', true);
+                            $("#view-shortage-qty").DataTable({
+                                "responsive": true,
+                                "lengthChange": true,
+                                "autoWidth": true,
+                                "paging": false,
+                                "info": false,
+                                "buttons": [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    'colvis',
+                                ],
+                                "processing": false,
+                                "searching": false,
+                                "ordering": false,
+                                "dom": 'lBfrtip',
+                                "language": {
+                                    "lengthMenu": "_MENU_"
+                                },
+                                "lengthMenu": [
+                                    [ -1, 10, 25, 50, 100],
+                                    ['All', 10, 25, 50, 100]
+                                ]
+                            });
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
 
+            $('#view-stock').on('hide.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                $("#view-stock-section").html(`
+                    <h4 class="text-secondary text-center">Loading...</h4>
+                `);
+            });
 
-            //     $('.validation-error').remove();
-            //     var isValid = true;
-            //     $('.suggest-goods').each(function() {
-            //         if ($(this).val() === '') {
-            //             $(this).after('<span class="text-danger validation-error">Partcode is required.</span>');
-            //             isValid = false;
-            //         }
-            //     });
-
-            //     $('.quantity').each(function() {
-            //         if ($(this).val() === '') {
-            //             $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity is required.</span>');
-            //             isValid = false;
-            //         }
-
-            //         let val = parseFloat($(this).val());
-            //         let max = parseFloat($(this).attr('max'));
-
-            //         if (val > max) {
-            //             $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity can\'t exceed more than '+$(this).attr('max')+'. </span>');
-            //             isValid = false;
-            //         }
-            //     });
-
-            //     if (!isValid) return;
-
-            //     var formData = $("#get-bom-form").serialize();
-
-            //     $.ajax({
-            //         type: "POST",
-            //         url: "{{ route('po.createOrder') }}", 
-            //         data: formData,
-            //         success: function(response){
-            //             if (response.status) {
-            //                 toastr.success(response.message);
-            //                 //reload after 2 seconds
-            //                 setTimeout(() => { window.location.reload() }, 1500);
-            //             } else {
-            //                 toastr.error(response.message);
-            //                 $("#create-prod-order")
-            //                 .html("Create Order")
-            //                 .removeAttr('disabled');
-            //             }
-            //         },
-            //         error: function(xhr, status, error){
-            //             var jsonResponse = JSON.parse(xhr.responseText);
-            //             toastr.error(jsonResponse.message);
-            //             console.error(jsonResponse.error);
-            //             $("#create-prod-order")
-            //             .html("Create Order")
-            //             .removeAttr('disabled');
-            //         }
-            //     });
-
-            // });
+            $(document).on('click', '.view-stock', function(e){
+                e.preventDefault();
+                var partcode = $(this).data('partcode');
+                $.ajax({
+                    url: '/app/production-orders/show-stock-transactions',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        partcode: partcode
+                    },
+                    success: function(response) {
+                        if (response.status) {
+                            var cleanedHtml = response.html.replace(/\\/g, '');
+                            $("#view-stock-section").html(cleanedHtml);
+                            $("#view-stock-qty").DataTable({
+                                "responsive": true,
+                                "lengthChange": false,
+                                "autoWidth": true,
+                                "paging": false,
+                                "info": false,
+                                "buttons": [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    'colvis',
+                                ],
+                                "processing": false,
+                                "searching": false,
+                                "ordering": true,
+                                "dom": 'Brt',
+                                "language": {
+                                    "lengthMenu": "_MENU_"
+                                },
+                                "lengthMenu": [
+                                    [ -1, 10, 25, 50, 100],
+                                    ['All', 10, 25, 50, 100]
+                                ]
+                            });
+                            $("#view-stock").modal('show');
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
         })
     </script>
 @stop

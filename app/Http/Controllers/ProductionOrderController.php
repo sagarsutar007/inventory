@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Models\Material;
 use App\Models\Bom;
 use App\Models\BomRecord;
+use App\Models\WarehouseRecord;
 use App\Models\Stock;
 use App\Models\ProductionOrder;
 use App\Models\ProdOrdersMaterial;
@@ -942,7 +943,7 @@ class ProductionOrderController extends Controller
         return $data;
     }
 
-    protected function countReservedQty($material_id=""){
+    protected function countReservedQty($material_id="", $data=false){
         $reservedQty = 0;
         $productionOrders = ProductionOrder::with('material','prod_order_materials')->whereNot('status', 'Completed')->get();
         foreach ($productionOrders as $prodOrders => $order) {
@@ -952,13 +953,80 @@ class ProductionOrderController extends Controller
                 $prodOrderMaterial = ProdOrdersMaterial::where('po_id', 'like', $order->po_id)->where('material_id', $record->material_id)->first();
                 if ($prodOrderMaterial && $prodOrderMaterial->material_id == $material_id) {
                     $reservedQty = ($order->quantity * $record->quantity) - $prodOrderMaterial->quantity;
-                    return $reservedQty;
+                    if ($data) {
+                        $material = Material::with('category', 'commodity', 'uom')->find($material_id);
+                        $data = [
+                            'partcode'=>$material->part_code,
+                            'description'=>$material->description,
+                            'make'=>$material->make,
+                            'mpn'=>$material->mpn,
+                            'commodity'=>$material->commodity->commodity_name,
+                            'category'=>$material->category->category_name,
+                            'unit'=>$material->uom->uom_shortcode,
+                            'type'=> 'Production Order',
+                            'quantity'=> $reservedQty
+                        ];
+
+                        return $data;
+                    } else {
+                        return $reservedQty;
+                    }
+                    
                 } else if ($record->material_id == $material_id) {
                     $reservedQty = $order->quantity * $record->quantity;
-                    return $reservedQty;
+                    if ($data) {
+                        $material = Material::with('category', 'commodity')->find($material_id);
+                        $data = [
+                            'partcode'=>$material->part_code,
+                            'description'=>$material->description,
+                            'make'=>$material->make,
+                            'mpn'=>$material->mpn,
+                            'commodity'=>$material->commodity->commodity_name,
+                            'category'=>$material->category->category_name,
+                            'unit'=>$material->uom->uom_shortcode,
+                            'type'=> 'Bill of Material',
+                            'quantity'=> $reservedQty
+                        ];
+
+                        return $data;
+                    } else {
+                        return $reservedQty;
+                    }
                 }
             }
         }
         return NULL;
+    }
+
+    public function calcReservedQty(Request $request)
+    {
+        $partcode = $request->input('partcode');
+        $material = Material::where('part_code', $partcode)->first();
+        $record = $this->countReservedQty($material->material_id, TRUE);
+
+        $context=[
+            'record' => $record
+        ];
+
+        $returnHTML = view('popup.viewReservedQuantity', $context)->render();
+        return response()->json(array('status' => true, 'html' => $returnHTML));
+
+    }
+
+    public function showStockTrans(Request $request) {
+        $partcode = $request->input('partcode');
+        $material = Material::where('part_code', $partcode)->first();
+
+        $transactions = WarehouseRecord::with('warehouse', 'material')
+        ->where('material_id', $material->material_id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        $context=[
+            'transactions' => $transactions
+        ];
+
+        $returnHTML = view('popup.viewStockTransactions', $context)->render();
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 }

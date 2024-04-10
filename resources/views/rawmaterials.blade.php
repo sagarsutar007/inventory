@@ -327,6 +327,7 @@
                         if (response.status) {
                             $('#modalEdit').modal('hide');
                             toastr.success(response.message);
+                            $('#rawmaterials').DataTable().ajax.reload();
                         }
                     },
                     error: function (xhr, status, error) {

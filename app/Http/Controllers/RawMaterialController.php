@@ -53,7 +53,6 @@ class RawMaterialController extends Controller
                     ->orWhere('make', 'like', '%' . $search . '%')
                     ->orWhere('mpn', 'like', '%' . $search . '%')
                     ->orWhere('re_order', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
                         $query->orWhere('category_number', 'like', '%' . $search . '%');
@@ -62,7 +61,7 @@ class RawMaterialController extends Controller
                         $query->where('commodity_name', 'like', '%' . $search . '%');
                         $query->orWhere('commodity_number', 'like', '%' . $search . '%');
                     })
-                    ->orWhereHas('dependent_materials', function ($query) use ($search) {
+                    ->orWhereHas('dependant', function ($query) use ($search) {
                         $query->where('description', 'like', '%' . $search . '%');
                         $query->orWhere('frequency', 'like', '%' . $search . '%');
                     })
@@ -365,7 +364,7 @@ class RawMaterialController extends Controller
             'opening_balance' => 'required',
             'mpn' => 'nullable',
             'make' => 'nullable',
-            'dm_id' => 'nullable',
+            'dm_id' => 'required',
             're_order' => 'nullable',
             'vendor' => 'nullable|array',
             'vendor.*' => 'nullable|string',
@@ -953,6 +952,5 @@ class RawMaterialController extends Controller
         }
         return true;
     }
-
 
 }

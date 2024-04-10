@@ -187,6 +187,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/consolidated-shortage-order-report', [ProductionOrderController::class, 'fetchPoConsolidatedShortageReport'])->name('po.fetchPoConsolidatedShortageReport');
         Route::post('/planned-shortage-order-report', [ProductionOrderController::class, 'fetchPlannedShortage'])->name('po.fetchPlannedShortage');
         Route::post('/material-shortage-consolidated', [ProductionOrderController::class, 'fetchMaterialShortageConsolidated'])->name('po.fetchMaterialShortageConsolidated');
+        Route::post('/calculate-reserved-quantity', [ProductionOrderController::class, 'calcReservedQty'])->name('po.calcReservedQty');
+        Route::post('/show-stock-transactions', [ProductionOrderController::class, 'showStockTrans'])->name('po.showStockTrans');
     });
 
     // Production Orders Routes

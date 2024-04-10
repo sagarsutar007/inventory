@@ -45,3 +45,18 @@ function showKittingStatus(po_status){
       return `<span class="text-warning">${po_status}</span>`;
   }
 }
+
+$('.modal-dialog').draggable({
+  handle: ".modal-header"
+});
+
+function resetModalPosition() {
+  $('.modal-dialog').css({
+    top: 0,
+    left: 0
+  });
+}
+
+$('.modal').on('hidden.bs.modal', function () {
+  resetModalPosition();
+});
