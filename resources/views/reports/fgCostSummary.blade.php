@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Bill of Material Cost View')
+@section('title', 'Finished Good Cost Summary')
 
 @section('content')
     <div class="row">
@@ -38,6 +38,10 @@
 @section('js')
     <script>
         $(function(){
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
+
             $('#fg-cost-tbl').DataTable({
                 "responsive": true,
                 "lengthChange": true,
@@ -49,27 +53,28 @@
                         extend: 'excel',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
-                        }
+                        },
+                        messageBottom: safeStamp,
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
-                        }
+                        },
+                        messageBottom: safeStamp,
                     },
                     {
                         extend: 'print',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
-                        }
+                        },
+                        messageBottom: safeStamp,
                     },
                     'colvis',
                 ],
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('bom.fetchFgCostSummary') }}",
                     "type": "POST",
@@ -88,13 +93,13 @@
                     { "data": "average", "name": "average" },
                     { "data": "highest", "name": "highest" }
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
-                "order": [[0, 'desc']],
+                // "order": [[0, 'desc']],
                 "columnDefs": [
                     {
-                        "targets": [6,7,8],
+                        "targets": [0],
                         "orderable": false
                     }
                 ],

@@ -97,27 +97,8 @@
                 "autoWidth": true,
                 "paging": true,
                 "info": true,
-                "buttons": [
-                    {
-                        extend: 'excel',
-                        exportOptions: {
-                            columns: ':visible:not(.exclude)'
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        exportOptions: {
-                            columns: ':visible:not(.exclude)'
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        exportOptions: {
-                            columns: ':visible:not(.exclude)'
-                        }
-                    },
-                    'colvis',
-                ],
+                "buttons": datatableButtons,
+                "lengthMenu": datatableLength,
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
@@ -146,7 +127,6 @@
                     { "data": "price_3", "name": "price_3" },
                     { "data": "amount", "name": "amount" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
                 "searching": true,
                 "ordering": true,
                 // "order": [[0, 'desc']],

@@ -42,6 +42,7 @@
         $(function () {
             var currentUserName = "{{ auth()->user()->name }}";
             var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
 
             $('#material-master-tbl').DataTable({
                 "responsive": true,
@@ -55,14 +56,14 @@
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        messageBottom: userStamp,
+                        messageBottom: safeStamp,
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        messageBottom: userStamp,
+                        messageBottom: safeStamp,
                     },
                     {
                         extend: 'print',
@@ -76,8 +77,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('raw.fetchMaterialList') }}",
                     "type": "POST",
@@ -98,7 +97,7 @@
                     { "data": "vendor_2", "name": "vendor_2" },
                     { "data": "vendor_3", "name": "vendor_3" }
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 // "order": [[0, 'desc']],

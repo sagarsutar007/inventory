@@ -70,6 +70,11 @@
 @section('js')
     <script>
         $(function(){
+
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
+
             $("#add-finished-goods").on('click', function(){
                 var newItem = `<div class="goods-item"><div class="row"><div class="col-md-2 mb-3"><input type="text" name="part_code[]" class="form-control suggest-goods" placeholder="Part code"></div><div class="col-md-6 mb-3"><input type="text" class="form-control material-description" placeholder="Description" readonly></div><div class="col-md-2 mb-3"><input type="text" class="form-control material-unit" placeholder="UOM" readonly></div><div class="col-md-2 mb-3"><div class="input-group"><input type="number" name="quantity[]" class="form-control quantity" step="0.001" placeholder="Quantity"><div class="input-group-append"><span class="input-group-text"><i class="fas fa-times remove-finished-goods"></i></span></div></div></div></div></div>`;
 
@@ -188,6 +193,8 @@
             function initializeBomTable() {
 
                 var partcode = $(".suggest-goods").val();
+                var description = $(".material-description").val();
+                var unit = "(" + $(".material-unit").val() + ")";
 
                 $('#bom-table').DataTable({
                     "responsive": true,
@@ -201,21 +208,24 @@
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
                             },
-                            title: "BOM of " + partcode,
+                            title: "BOM of " + partcode + " - " + description + unit,
+                            messageBottom: safeStamp,
                         },
                         {
                             extend: 'pdf',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
                             },
-                            title: "BOM of " + partcode,
+                            title: "BOM of " + partcode + " - " + description + unit,
+                            messageBottom: safeStamp,
                         },
                         {
                             extend: 'print',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
                             },
-                            title: "BOM of " + partcode,
+                            title: "BOM of " + partcode + " - " + description + unit,
+                            messageBottom: userStamp,
                         },
                         'colvis',
                     ],

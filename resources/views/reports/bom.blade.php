@@ -72,6 +72,7 @@
         $(function(){
             var currentUserName = "{{ auth()->user()->name }}";
             var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
 
             $("#add-finished-goods").on('click', function(){
                 var newItem = `<div class="goods-item"><div class="row"><div class="col-md-2 mb-3"><input type="text" name="part_code[]" class="form-control suggest-goods" placeholder="Part code"></div><div class="col-md-6 mb-3"><input type="text" class="form-control material-description" placeholder="Description" readonly></div><div class="col-md-2 mb-3"><input type="text" class="form-control material-unit" placeholder="UOM" readonly></div><div class="col-md-2 mb-3"><div class="input-group"><input type="number" name="quantity[]" class="form-control quantity" step="0.001" placeholder="Quantity"><div class="input-group-append"><span class="input-group-text"><i class="fas fa-times remove-finished-goods"></i></span></div></div></div></div></div>`;
@@ -196,7 +197,7 @@
             });
 
             function initializeBomTable(titleData=[]) {
-                var title = titleData['code'] + " - " + titleData['desc'] + "("+ titleData['unit'] +")";
+                var title = "BOM View:"+ titleData['code'] + " - " + titleData['desc'] + "("+ titleData['unit'] +")";
                 $('#bom-table').DataTable({
                     "responsive": true,
                     "lengthChange": true,
@@ -210,7 +211,7 @@
                                 columns: ':visible:not(.exclude)'
                             },
                             title: title,
-                            messageBottom: userStamp,
+                            messageBottom: safeStamp,
                         },
                         {
                             extend: 'pdf',
@@ -218,7 +219,7 @@
                                 columns: ':visible:not(.exclude)'
                             },
                             title: title,
-                            messageBottom: userStamp,
+                            messageBottom: safeStamp,
                         },
                         {
                             extend: 'print',
@@ -238,8 +239,8 @@
                         "lengthMenu": "_MENU_"
                     },
                     "lengthMenu": [
-                        [ -1, 10, 25, 50, 100],
-                        ['All', 10, 25, 50, 100]
+                        [ -1, 10, 25, 50, 100, 500, 1000],
+                        ['All', 10, 25, 50, 100, 500, 1000]
                     ]
                 });
             }

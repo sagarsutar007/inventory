@@ -108,6 +108,9 @@
     <script>
         var dataTable;
         $(function(){
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+
             $('#daterange').daterangepicker({
                 timePicker: false,
                 showDropdowns: true,
@@ -127,29 +130,27 @@
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        "messageBottom": datetime,
+                        "messageBottom": userStamp,
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        "messageBottom": datetime,
+                        "messageBottom": userStamp,
                     },
                     {
                         extend: 'print',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        "messageBottom": datetime,
+                        "messageBottom": userStamp,
                     },
                     'colvis',
                 ],
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('po.fetchPoShortageReport') }}",
                     "type": "POST",
@@ -161,7 +162,17 @@
                     }
                 },
                 "columns": [
-                    { "data": "serial", "name": "serial" },
+                    { 
+                        "data": null, 
+                        "name": "serial",
+                        "render": function(data, type, row, meta) {
+                            // Calculate serial number based on page number, start, and row index
+                            var start = meta.settings._iDisplayStart;
+                            var currentPage = (start / meta.settings._iDisplayLength) + 1;
+                            var serial = (currentPage - 1) * meta.settings._iDisplayLength + meta.row + 1;
+                            return serial;
+                        }
+                    },
                     { 
                         "data": "po_number", 
                         "name": "po_number",
@@ -190,9 +201,16 @@
                     
                     // { "data": "status", "name": "status" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
+                // "order": [[0, 'desc']],
+                "columnDefs": [
+                    {
+                        "targets": [0],
+                        "orderable": false
+                    }
+                ],
                 "dom": 'lBfrtip',
                 "language": {
                     "lengthMenu": "_MENU_"

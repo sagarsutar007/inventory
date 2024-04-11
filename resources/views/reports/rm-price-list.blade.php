@@ -42,6 +42,7 @@
         $(function () {
             var currentUserName = "{{ auth()->user()->name }}";
             var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
 
             $('#rm-price-tbl').DataTable({
                 "responsive": true,
@@ -55,14 +56,14 @@
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        messageBottom: userStamp,
+                        messageBottom: safeStamp,
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        messageBottom: userStamp,
+                        messageBottom: safeStamp,
                     },
                     {
                         extend: 'print',
@@ -73,6 +74,7 @@
                     },
                     'colvis',
                 ],
+                "lengthMenu": datatableLength,
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
@@ -96,7 +98,7 @@
                     { "data": "price_2", "name": "avg_price" },
                     { "data": "price_3", "name": "max_price" }
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                
                 "searching": true,
                 "ordering": true,
                 // "order": [[0, 'desc']],

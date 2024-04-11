@@ -436,7 +436,7 @@
                                 ],
                                 "processing": false,
                                 "searching": false,
-                                "ordering": true,
+                                "ordering": false,
                                 "dom": 'Brt',
                                 "language": {
                                     "lengthMenu": "_MENU_"

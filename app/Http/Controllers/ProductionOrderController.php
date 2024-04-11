@@ -451,7 +451,8 @@ class ProductionOrderController extends Controller
 
         if(!empty($searchTerm)){
             $query->whereHas('material', function ($q) use ($searchTerm) {
-                $q->where('description', 'like', '%' . $searchTerm . '%');
+                $q->where('description', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
             });
         }
 
@@ -573,9 +574,7 @@ class ProductionOrderController extends Controller
             ->orWhere('quantity', 'like', '%' . $search . '%')
             ->orWhere('record_date', 'like', '%' . $search . '%');
         }
-
-        $totalRecords = $query->count();
-
+        
         if ($columnName === 'po_number') {
             $query->orderBy('po_number', $columnSortOrder);
         } elseif ($columnName === 'po_date') {
@@ -585,9 +584,14 @@ class ProductionOrderController extends Controller
         } 
 
         // Paginate the query
-        $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $productionOrders = $poQuery->items();
+        // $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        // $productionOrders = $poQuery->items();
+        $productionOrders = $query->get();
+
         $data = [];
+        $currentPage = ($start / $length) + 1;
+        // $serial = ($currentPage - 1) * $length + 1;
+
         foreach ($productionOrders as $index => $order) {
             $bomRecords = $order->material?->bom?->bomRecords;
             if ($bomRecords) {
@@ -597,14 +601,11 @@ class ProductionOrderController extends Controller
                     ->first();
 
                     if ($pomRecord == null || $pomRecord->status == "Partial") {
-                        $currentPage = ($start / $length) + 1;
-                        $serial = ($currentPage - 1) * $length + $index + 1;
 
                         $stock = $bomRecord->material->stock?->closing_balance;
                         $balance = $bomRecord->quantity * $order->quantity - $pomRecord?->quantity;
 
                         $data[] = [
-                            'serial' => $serial,
                             'po_id' => $order->po_id,
                             'po_number' => $order->po_number,
                             'po_date' => $order->record_date,
@@ -626,17 +627,36 @@ class ProductionOrderController extends Controller
                 }
             }
         }
+        
+        usort($data, function ($a, $b) use ($columnName, $columnSortOrder) {
+            if (in_array($columnName, ['quantity', 'issued', 'balance', 'stock', 'shortage'])) {
+                $valueA = floatval($a[$columnName]);
+                $valueB = floatval($b[$columnName]);
+                
+                // Perform numeric comparison
+                if ($columnSortOrder === 'asc') {
+                    return $valueA - $valueB;
+                } else {
+                    return $valueB - $valueA;
+                }
+            } else {
+                if ($columnSortOrder === 'asc') {
+                    return strcmp($a[$columnName], $b[$columnName]);
+                } else {
+                    return strcmp($b[$columnName], $a[$columnName]);
+                }
+            }
+            
+        });
 
-        if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'shortage', 'unit'])) {
-            usort($data, function ($a, $b) use ($columnName) {
-                return strcmp($a[$columnName], $b[$columnName]);
-            });
-        }
+        $totalRecords = count($data);
+
+        $data = array_slice($data, $start, $length);
 
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $poQuery->total(),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 
@@ -1013,15 +1033,19 @@ class ProductionOrderController extends Controller
 
     public function showStockTrans(Request $request) {
         $partcode = $request->input('partcode');
-        $material = Material::where('part_code', $partcode)->first();
+        $material = Material::with('stock')->where('part_code', $partcode)->first();
 
         $transactions = WarehouseRecord::with('warehouse', 'material')
         ->where('material_id', $material->material_id)
-        ->orderBy('created_at', 'desc')
+        ->whereHas('warehouse', function ($q) {
+            $q->orderBy('transaction_id', 'asc');
+        })
+        ->orderBy('created_at', 'asc')
         ->get();
 
         $context=[
-            'transactions' => $transactions
+            'transactions' => $transactions,
+            'opening' => $material->stock->opening_balance
         ];
 
         $returnHTML = view('popup.viewStockTransactions', $context)->render();

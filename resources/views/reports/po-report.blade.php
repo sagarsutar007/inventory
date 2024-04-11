@@ -77,15 +77,9 @@
     <script>
         var dataTable 
         $(function(){
-
-            var currentdate = new Date();
-            var datetime = "Generated on: " + currentdate.getDate() + "-"
-                        + (currentdate.getMonth()+1)  + "-"
-                        + currentdate.getFullYear() + " " 
-                        + currentdate.getHours() + ":" 
-                        + currentdate.getMinutes() + ":"
-                        + currentdate.getSeconds();
-
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
 
             $('#daterange').daterangepicker({
                 timePicker: false,
@@ -108,21 +102,21 @@
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        "messageBottom": datetime,
+                        "messageBottom": safeStamp,
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        "messageBottom": datetime,
+                        "messageBottom": safeStamp,
                     },
                     {
                         extend: 'print',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
                         },
-                        "messageBottom": datetime,
+                        "messageBottom": userStamp,
                     },
                     'colvis',
                 ],
@@ -130,8 +124,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('po.fetchPoReport') }}",
                     "type": "POST",
@@ -152,7 +144,7 @@
                     { "data": "unit", "name": "unit" },
                     { "data": "status", "name": "status" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "dom": 'lBfrtip',
@@ -175,6 +167,7 @@
                     d.startDate = startDate;
                     d.endDate = endDate;
                     d.searchTerm = searchTerm;
+                    d.status = status;
                     d._token = '{{ csrf_token() }}';
                 };
                 

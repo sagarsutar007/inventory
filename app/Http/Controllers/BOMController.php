@@ -308,9 +308,9 @@ class BOMController extends Controller
                             'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
                             'closing_balance' => $closingBalance,
-                            'avg_price' => number_format($avg_price, 2),
-                            'min_price' => number_format($min_price, 2),
-                            'max_price' => number_format($max_price, 2),
+                            'avg_price' => $avg_price,
+                            'min_price' => $min_price,
+                            'max_price' => $max_price,
                         ];
                     }
                 }
@@ -367,7 +367,7 @@ class BOMController extends Controller
                 ->orderBy('materials.description', $columnSortOrder);
         } elseif ($columnName === 'uom_text') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
-                ->join('uom_units', 'uom_units.id', '=', 'materials.uom_id')
+                ->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
                 ->orderBy('uom_units.uom_text', $columnSortOrder);
         } elseif ($columnName === 'commodity_name') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
@@ -381,9 +381,17 @@ class BOMController extends Controller
             // $query->orderBy($columnName, $columnSortOrder);
         }
 
+        if (in_array($columnName, ['lowest', 'average', 'highest'])) {
+            $boms = $query->get();
+        } else {
+        $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
         $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
 
-        $boms = $bomsQuery->items();
+            $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+
+            $boms = $bomsQuery->items();
+        }
+
         $data = [];
 
         foreach ($boms as $index => $bom) {
@@ -402,7 +410,7 @@ class BOMController extends Controller
                     'serial' => $index + $start + 1,
                     'code' => $material->part_code,
                     'material_name' => $material->description,
-                    'unit' => $material->uom->uom_text,
+                    'unit' => $material->uom->uom_shortcode,
                     'commodity' => $material->commodity->commodity_name,
                     'category' => $material->category->category_name,
                     'lowest' => number_format($prices['low'], 2),
@@ -412,10 +420,27 @@ class BOMController extends Controller
             }
         }
 
+        if (in_array($columnName, ['lowest', 'average', 'highest'])) {
+            usort($data, function($a, $b) use ($columnName, $columnSortOrder) {
+                if ($columnSortOrder === 'asc') {
+                    return $a[$columnName] <=> $b[$columnName];
+                } else {
+                    return $b[$columnName] <=> $a[$columnName];
+                }
+            });
+
+            $totalRecords = count($data);
+            $data = array_slice($data, $start, $length);
+        } else {
+            $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $boms = $bomsQuery->items();
+            $totalRecords = $bomsQuery->total();
+        }
+        
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $bomsQuery->total(),
+            "recordsFiltered" => isset($bomsQuery) ? $bomsQuery->total() : $totalRecords,
             "data" => $data,
         ];
 

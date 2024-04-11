@@ -617,18 +617,18 @@ class RawMaterialController extends Controller
             }
         }
 
-        $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        if ($length == -1) {
+            $items = $query->get();
+            $total = count($items);
+        } else {
+            $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $items = $materials->items();
+            $total = $materials->total();
+        }
+        
         $data = [];
 
-        foreach ($materials->items() as $index => $item) {
-            // $priceStats = MaterialPurchase::where('material_id', $item->material_id)
-            //     ->groupBy('material_id')
-            //     ->select([
-            //         DB::raw('MAX(price) as max_price'),
-            //         DB::raw('MIN(price) as min_price'),
-            //         DB::raw('AVG(price) as avg_price'),
-            //     ])
-            //     ->first();
+        foreach ($items as $index => $item) {
 
             $data[] = [
                 'serial' => $index + 1,
@@ -648,7 +648,7 @@ class RawMaterialController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $materials->total(),
+            "recordsFiltered" => $total,
             "data" => $data,
         ];
 
