@@ -582,33 +582,53 @@ class RawMaterialController extends Controller
             $query->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('min_price', 'like', '%' . $search . '%')
+                    ->orWhere('avg_price', 'like', '%' . $search . '%')
+                    ->orWhere('max_price', 'like', '%' . $search . '%')
+                    ->orWhere('make', 'like', '%' . $search . '%')
+                    ->orWhere('mpn', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
                     })
                     ->orWhereHas('commodity', function ($query) use ($search) {
                         $query->where('commodity_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($query) use ($search) {
+                        $query->where('uom_shortcode', 'like', '%' . $search . '%');
                     });
             });
         }
 
         $totalRecords = $query->count();
 
-        if (!in_array($columnName, ['serial', 'price_1', 'price_2', 'price_3'])) {
-            $query->orderBy($columnName, $columnSortOrder);
+        if (!in_array($columnName, ['serial',])) {
+
+            if ($columnName === 'uom_shortcode') {
+                $query->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } elseif ($columnName === 'commodity_name') {
+                $query->join('commodities', 'commodities.commodity_id', '=', 'materials.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } elseif ($columnName === 'category_name') {
+                $query->join('categories', 'categories.category_id', '=', 'materials.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else {
+                $query->orderBy($columnName, $columnSortOrder);
+            }
         }
 
         $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
         $data = [];
 
         foreach ($materials->items() as $index => $item) {
-            $priceStats = MaterialPurchase::where('material_id', $item->material_id)
-                ->groupBy('material_id')
-                ->select([
-                    DB::raw('MAX(price) as max_price'),
-                    DB::raw('MIN(price) as min_price'),
-                    DB::raw('AVG(price) as avg_price'),
-                ])
-                ->first();
+            // $priceStats = MaterialPurchase::where('material_id', $item->material_id)
+            //     ->groupBy('material_id')
+            //     ->select([
+            //         DB::raw('MAX(price) as max_price'),
+            //         DB::raw('MIN(price) as min_price'),
+            //         DB::raw('AVG(price) as avg_price'),
+            //     ])
+            //     ->first();
 
             $data[] = [
                 'serial' => $index + 1,
@@ -616,10 +636,12 @@ class RawMaterialController extends Controller
                 'description' => $item->description,
                 'commodity' => $item->commodity->commodity_name,
                 'category' => $item->category->category_name,
+                'make' => $item->make,
+                'mpn' => $item->mpn,
                 'uom_shortcode' => $item->uom->uom_shortcode,
-                'price_1' => number_format($priceStats?->min_price??0, 2),
-                'price_2' => number_format($priceStats?->avg_price??0, 2),
-                'price_3' => number_format($priceStats?->max_price??0, 2),
+                'price_1' => number_format($item->min_price, 2),
+                'price_2' => number_format($item->avg_price, 2),
+                'price_3' => number_format($item->max_price, 2),
             ];
         }
 
@@ -668,13 +690,33 @@ class RawMaterialController extends Controller
                         $query->where('uom_text', 'like', '%' . $search . '%');
                         $query->orWhere('uom_shortcode', 'like', '%' . $search . '%');
                     });
+
+                $query->orWhere(function ($query) use ($search) {
+                    $query->whereHas('purchases', function ($query) use ($search) {
+                        $query->whereHas('vendor', function ($query) use ($search) {
+                            $query->where('vendor_name', 'like', '%' . $search . '%');
+                        });
+                    });
+                });
             });
         }
 
         $totalRecords = $query->count();
 
         if (!in_array($columnName, ['serial', 'vendor_1', 'vendor_2', 'vendor_3'])) {
-            $query->orderBy($columnName, $columnSortOrder);
+            if ($columnName === 'uom_shortcode') {
+                $material->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } else if ($columnName === 'commodity') {
+                $material->join('commodities', 'materials.commodity_id', '=', 'commodities.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } else if ($columnName === 'category') {
+                $material->join('categories', 'materials.category_id', '=', 'categories.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else {
+                $query->orderBy($columnName, $columnSortOrder);
+            }
+            
         }
 
         $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
@@ -705,6 +747,16 @@ class RawMaterialController extends Controller
             ];
 
             $data[] = array_merge($dummy, ...$vendorArr);
+        }
+
+        if (in_array($columnName, ['vendor_1', 'vendor_2', 'vendor_3'])) {
+            usort($data, function($a, $b) use ($columnName, $columnSortOrder) {
+                if ($columnSortOrder === 'asc') {
+                    return strcmp($a[$columnName], $b[$columnName]);
+                } else {
+                    return strcmp($b[$columnName], $a[$columnName]);
+                }
+            });
         }
 
         $response = [

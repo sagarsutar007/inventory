@@ -60,3 +60,22 @@ function resetModalPosition() {
 $('.modal').on('hidden.bs.modal', function () {
   resetModalPosition();
 });
+
+
+var currentdate = new Date();
+var hours = currentdate.getHours();
+var minutes = currentdate.getMinutes();
+var ampm = hours >= 12 ? 'pm' : 'am';
+hours = hours % 12;
+hours = hours ? hours : 12;
+minutes = minutes < 10 ? '0' + minutes : minutes;
+var datetime = "Generated on: " + currentdate.getDate() + "-"
+              + (currentdate.getMonth()+1) + "-"
+              + currentdate.getFullYear() + " "
+              + hours + ":"
+              + minutes + " "
+              + ampm;
+
+function userTimeStamp(user="") {
+  return datetime + ", By: " + user;
+}

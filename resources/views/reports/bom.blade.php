@@ -16,13 +16,13 @@
                             <div class="goods-item">
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
-                                        <input type="text" name="part_code[]" class="form-control suggest-goods" placeholder="Part code">
+                                        <input type="text" id="part_code" name="part_code[]" class="form-control suggest-goods" placeholder="Part code">
                                     </div>
                                     <div class="col-md-7 mb-3">
-                                        <input type="text" class="form-control material-description" placeholder="Description" readonly>
+                                        <input type="text" id="description" class="form-control material-description" placeholder="Description" readonly>
                                     </div>
                                     <div class="col-md-2 mb-3">
-                                        <input type="text" class="form-control material-unit" placeholder="UOM" readonly>
+                                        <input type="text" id="unit" class="form-control material-unit" placeholder="UOM" readonly>
                                     </div>
                                     <div class="col-md-2 mb-3 d-none">
                                         <div class="input-group">
@@ -70,6 +70,9 @@
 @section('js')
     <script>
         $(function(){
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+
             $("#add-finished-goods").on('click', function(){
                 var newItem = `<div class="goods-item"><div class="row"><div class="col-md-2 mb-3"><input type="text" name="part_code[]" class="form-control suggest-goods" placeholder="Part code"></div><div class="col-md-6 mb-3"><input type="text" class="form-control material-description" placeholder="Description" readonly></div><div class="col-md-2 mb-3"><input type="text" class="form-control material-unit" placeholder="UOM" readonly></div><div class="col-md-2 mb-3"><div class="input-group"><input type="number" name="quantity[]" class="form-control quantity" step="0.001" placeholder="Quantity"><div class="input-group-append"><span class="input-group-text"><i class="fas fa-times remove-finished-goods"></i></span></div></div></div></div></div>`;
 
@@ -166,7 +169,14 @@
                         if (response.status) {
                             $("#bom").show();
                             $("#table-section").html(response.html);
-                            initializeBomTable();
+
+                            var tData = {
+                                'code': $("#part_code").val(),
+                                'desc': $("#description").val(),
+                                'unit': $("#unit").val(),
+                            };
+
+                            initializeBomTable(tData);
                         } else {
                             $("#table-section").html('<p>No BOM records found.</p>');
                         }
@@ -185,7 +195,8 @@
 
             });
 
-            function initializeBomTable() {
+            function initializeBomTable(titleData=[]) {
+                var title = titleData['code'] + " - " + titleData['desc'] + "("+ titleData['unit'] +")";
                 $('#bom-table').DataTable({
                     "responsive": true,
                     "lengthChange": true,
@@ -197,25 +208,29 @@
                             extend: 'excel',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            }
+                            },
+                            title: title,
+                            messageBottom: userStamp,
                         },
                         {
                             extend: 'pdf',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            }
+                            },
+                            title: title,
+                            messageBottom: userStamp,
                         },
                         {
                             extend: 'print',
                             exportOptions: {
                                 columns: ':visible:not(.exclude)'
-                            }
+                            },
+                            title: title,
+                            messageBottom: userStamp,
                         },
                         'colvis',
                     ],
                     "processing": true,
-                    "scrollY": "320px",
-                    "scrollCollapse": true,
                     "searching": true,
                     "ordering": true,
                     "dom": 'lBfrtip',

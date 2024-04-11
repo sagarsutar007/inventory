@@ -40,6 +40,9 @@
 @section('js')
     <script>
         $(function () {
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+
             $('#material-master-tbl').DataTable({
                 "responsive": true,
                 "lengthChange": true,
@@ -51,19 +54,22 @@
                         extend: 'excel',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
-                        }
+                        },
+                        messageBottom: userStamp,
                     },
                     {
                         extend: 'pdf',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
-                        }
+                        },
+                        messageBottom: userStamp,
                     },
                     {
                         extend: 'print',
                         exportOptions: {
                             columns: ':visible:not(.exclude)'
-                        }
+                        },
+                        messageBottom: userStamp,
                     },
                     'colvis',
                 ],
@@ -87,7 +93,7 @@
                     { "data": "category", "name": "category" },
                     { "data": "make", "name": "make" },
                     { "data": "mpn", "name": "mpn" },
-                    { "data": "uom", "name": "uom" },
+                    { "data": "uom", "name": "uom_shortcode" },
                     { "data": "vendor_1", "name": "vendor_1" },
                     { "data": "vendor_2", "name": "vendor_2" },
                     { "data": "vendor_3", "name": "vendor_3" }
@@ -98,7 +104,7 @@
                 // "order": [[0, 'desc']],
                 "columnDefs": [
                     {
-                        "targets": [0, 5, 6, 7],
+                        "targets": [0],
                         "orderable": false
                     }
                 ],

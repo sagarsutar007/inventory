@@ -73,8 +73,6 @@
                                 <th><div title="Balance to Issue Quantity">BTI Qty</div></th>
                                 <th>Stock Qty</th>
                                 <th>Shortage Qty</th>
-                                
-                                <!-- <th>Status</th> -->
                             </tr>
                         </thead>
                         <tbody>
@@ -110,16 +108,6 @@
     <script>
         var dataTable;
         $(function(){
-
-            var currentdate = new Date();
-            var datetime = "Generated on: " + currentdate.getDate() + "-"
-                        + (currentdate.getMonth()+1)  + "-"
-                        + currentdate.getFullYear() + " " 
-                        + currentdate.getHours() + ":" 
-                        + currentdate.getMinutes() + ":"
-                        + currentdate.getSeconds();
-
-
             $('#daterange').daterangepicker({
                 timePicker: false,
                 showDropdowns: true,
@@ -127,7 +115,6 @@
                     format: 'DD/MM/YYYY'
                 }
             });
-
             dataTable = $('#po-report-tbl').DataTable({
                 "responsive": true,
                 "lengthChange": true,
