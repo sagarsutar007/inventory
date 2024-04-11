@@ -59,8 +59,8 @@
 </div>
 
 <x-adminlte-modal id="view-modal" title="View Reserved Quantity" icon="fas fa-box" size='lg' scrollable>
-    <div class="row" id="view-modal-section">
-        <div class="col-12">
+    <div class="row">
+        <div class="col-12" id="view-modal-section">
             <h4 class="text-secondary text-center">Loading...</h4>
         </div>
     </div>

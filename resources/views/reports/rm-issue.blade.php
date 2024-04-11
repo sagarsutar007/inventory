@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Raw Material Purchase Report')
+@section('title', 'Raw Material Issuance Report')
 
 @section('content')
     <div class="container-fluid">
@@ -39,7 +39,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <h3 class="card-title">
-                        <i class="fas fa-clipboard-list"></i>&nbsp;Raw Material Purchase Report
+                        <i class="fas fa-clipboard-list"></i>&nbsp;Raw Material Issuance Report
                     </h3> 
                 </div>
                 <div class="card-body">

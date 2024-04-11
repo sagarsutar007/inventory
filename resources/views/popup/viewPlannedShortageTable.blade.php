@@ -28,8 +28,8 @@
                         <td>{{ $record['unit'] }}</td>
                         <td>{{ number_format($record['bom_qty'], 3) }}</td>
                         <td>{{ number_format($record['req_qty'], 3) }}</td>
-                        <td>{{ number_format($record['reserved_qty'], 3) }}</td>
-                        <td>{{ number_format($record['stock_qty'], 3) }}</td>
+                        <td><a href="#view-modal" data-toggle="modal" data-partcode="{{ $record['part_code'] }}">{{ number_format($record['reserved_qty'], 3) }}</a></td>
+                        <td><button class="view-stock btn btn-link p-0" data-partcode="{{ $record['part_code'] }}">{{ number_format($record['stock_qty'], 3) }}</button></td>
                         <td>{{ number_format($record['short_qty'], 3) }}</td>
                         <td class="text-danger">{{ $record['status'] }}</td>
                     </tr>
@@ -43,7 +43,7 @@
 
 @if ($materials)
     @foreach ($materials as $index => $material)
-        <h5>FG Partcode: {{ $material['fg_partcode'] . " - " . $material['description'] . " - " . $material['quantity'] ." ". $material['unit']}}</h5>
+        <h5 id="ms-head-{{ $index + 1 }}">FG Partcode: {{ $material['fg_partcode'] . " - " . $material['description'] . " - " . $material['quantity'] ." ". $material['unit']}}</h5>
         <div class="card mt-3">
             <div class="card-body">
                 <table id="material-shortage-tbl-{{ $index + 1 }}" class="table table-bordered table-striped" style="width: 100%;">

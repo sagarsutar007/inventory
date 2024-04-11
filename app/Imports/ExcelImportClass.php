@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Commodity;
 use App\Models\Category;
 use App\Models\RawMaterial;
+use App\Models\MaterialPurchase;
+use App\Models\Vendor;
 use App\Models\Material;
 use App\Models\UomUnit;
 use App\Models\Bom;
@@ -164,15 +166,15 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
             if (!empty($data[0]) && !empty($data[2]) && !empty($data[3])) {
                 $commodity = Commodity::where('commodity_name', '=', $data[2])->first();
                 $category = Category::where('category_name', '=', $data[3])->first();
-                if ($data[1]) {
+                if (!empty($data[1])) {
                     $uom = UomUnit::where('uom_shortcode', '=', $data[1])->orWhere('uom_text', '=', $data[1])->first();
                 }
-                if ($data[6]) {
-                    $dm = DependentMaterial::where('description', '=', $data[6])->first();
+                if (!empty($data[6]) && !empty($data[7])) {
+                    $dm = DependentMaterial::where('description', '=', $data[6])->where('frequency', '=', $data[7])->first();
                 }
                 if ($commodity && $category) {
                     try {
-                        RawMaterial::firstOrCreate(
+                        $rawMaterial = RawMaterial::firstOrCreate(
                             [
                                 'description' => $data[0],
                                 'type' => 'raw',
@@ -181,18 +183,20 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                                 'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number),
                                 'description' => $data[0],
                                 'uom_id' => $uom->uom_id ?? '',
-                                // 'opening_balance' => 0,
-                                'additional_notes' => '',
                                 'type' => 'raw',
                                 'mpn' => $data[5],
                                 'make' => $data[4],
                                 'category_id' => $category->category_id,
                                 'commodity_id' => $commodity->commodity_id,
                                 'dm_id' => $dm->dm_id??'',
-                                're_order' => $data[7],
+                                're_order' => $data[8],
+                                'additional_notes' => $data[15],
                                 'created_by' => $user
                             ]
                         );
+                        $this->enterPurchase($rawMaterial->material_id, $data[9], $data[10]);
+                        $this->enterPurchase($rawMaterial->material_id, $data[11], $data[12]);
+                        $this->enterPurchase($rawMaterial->material_id, $data[13], $data[14]);
                     } catch (\Throwable $th) {
                         throw $th;
                     }
@@ -344,4 +348,23 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         return $errors;
     }
 
+    protected function enterPurchase($material_id="", $vendor="", $price="")
+    {
+        if (!empty($material_id) && !empty($vendor) && !empty($price)) {
+
+            $vendorInfo = Vendor::where('vendor_name', 'like', $vendor)->first();
+
+            if ($vendorInfo === null) {
+                $vendorInfo = Vendor::create([
+                    'vendor_name' => $vendor,
+                ]);
+            }
+
+            MaterialPurchase::create([
+                'material_id' => $material_id,
+                'vendor_id' => $vendorInfo->vendor_id,
+                'price' => $price
+            ]);
+        }
+    }
 }

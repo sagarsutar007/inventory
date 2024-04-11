@@ -286,9 +286,9 @@ class BOMController extends Controller
                         if ($record->material->type === "semi-finished"){
                             $prices = $this->calcPrices($record->material->material_id);
 
-                            $avg_price = $prices['avg']* $record->quantity;
-                            $min_price = $prices['low']* $record->quantity;
-                            $max_price = $prices['high']* $record->quantity;
+                            $avg_price = $prices['avg'] * $record->quantity;
+                            $min_price = $prices['low'] * $record->quantity;
+                            $max_price = $prices['high'] * $record->quantity;
                         } else {
                             $avg_price = $record->material->avg_price * $record->quantity;
                             $min_price = $record->material->min_price * $record->quantity;
@@ -308,9 +308,9 @@ class BOMController extends Controller
                             'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
                             'closing_balance' => $closingBalance,
-                            'avg_price' => $avg_price,
-                            'min_price' => $min_price,
-                            'max_price' => $max_price,
+                            'avg_price' => number_format($avg_price, 2),
+                            'min_price' => number_format($min_price, 2),
+                            'max_price' => number_format($max_price, 2),
                         ];
                     }
                 }
@@ -405,9 +405,9 @@ class BOMController extends Controller
                     'unit' => $material->uom->uom_text,
                     'commodity' => $material->commodity->commodity_name,
                     'category' => $material->category->category_name,
-                    'lowest' => $prices['low'],
-                    'average' => $prices['avg'],
-                    'highest' => $prices['high'],
+                    'lowest' => number_format($prices['low'], 2),
+                    'average' => number_format($prices['avg'], 2),
+                    'highest' => number_format($prices['high'], 2),
                 ];
             }
         }

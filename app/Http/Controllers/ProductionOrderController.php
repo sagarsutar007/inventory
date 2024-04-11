@@ -613,13 +613,13 @@ class ProductionOrderController extends Controller
                             'description' => $bomRecord->material->description,
                             'make' => $bomRecord->material->make,
                             'mpn' => $bomRecord->material->mpn,
-                            'quantity' => $order->quantity * $bomRecord->quantity,
-                            'stock' => $stock,
-                            'balance' => $balance,
-                            'shortage' => abs($stock - $balance),
+                            'quantity' => number_format($order->quantity * $bomRecord->quantity, 3),
+                            'stock' => number_format($stock, 3),
+                            'balance' => number_format($balance, 3),
+                            'shortage' => number_format(abs($stock - $balance), 3),
                             'unit' => $bomRecord->material->uom->uom_shortcode,
                             'status' => $pomRecord->status??'',
-                            'issued' => $pomRecord->quantity??0,
+                            'issued' => number_format($pomRecord->quantity??0, 3),
                         ];
 
                     }
@@ -956,15 +956,14 @@ class ProductionOrderController extends Controller
                     if ($data) {
                         $material = Material::with('category', 'commodity', 'uom')->find($material_id);
                         $data = [
-                            'partcode'=>$material->part_code,
-                            'description'=>$material->description,
-                            'make'=>$material->make,
-                            'mpn'=>$material->mpn,
-                            'commodity'=>$material->commodity->commodity_name,
-                            'category'=>$material->category->category_name,
-                            'unit'=>$material->uom->uom_shortcode,
+                            'po_number'=>$order->po_number,
+                            'po_status'=>$order->status,
+                            'po_qty'=>$order->quantity,
+                            'partcode'=>$order->material->part_code,
+                            'description'=>$order->material->description,
                             'type'=> 'Production Order',
-                            'quantity'=> $reservedQty
+                            'quantity'=> $reservedQty,
+                            'unit'=>$material->uom->uom_shortcode,
                         ];
 
                         return $data;
@@ -977,15 +976,14 @@ class ProductionOrderController extends Controller
                     if ($data) {
                         $material = Material::with('category', 'commodity')->find($material_id);
                         $data = [
-                            'partcode'=>$material->part_code,
-                            'description'=>$material->description,
-                            'make'=>$material->make,
-                            'mpn'=>$material->mpn,
-                            'commodity'=>$material->commodity->commodity_name,
-                            'category'=>$material->category->category_name,
-                            'unit'=>$material->uom->uom_shortcode,
+                            'po_number'=>$order->po_number,
+                            'po_status'=>$order->status,
+                            'po_qty'=>$order->quantity,
+                            'partcode'=>$order->material->part_code,
+                            'description'=>$order->material->description,
                             'type'=> 'Bill of Material',
-                            'quantity'=> $reservedQty
+                            'quantity'=> $reservedQty,
+                            'unit'=>$material->uom->uom_shortcode,
                         ];
 
                         return $data;
