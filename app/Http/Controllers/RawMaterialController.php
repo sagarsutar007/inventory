@@ -899,9 +899,13 @@ class RawMaterialController extends Controller
         $columnIndex = $order[0]['column'];
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
+
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+        $searchTerm = $request->input('term');
         
-        $material = Material::query()->where('type', 'raw')->with(['category', 'commodity', 'uom']);
-        $material->join('stocks', 'materials.material_id', '=', 'stocks.material_id');
+        $material = Material::query()->where('type', 'raw')->with(['category', 'commodity', 'uom'])
+            ->leftJoin('stocks', 'materials.material_id', '=', 'stocks.material_id');
 
         if (!empty ($search)) {
             $material->where(function ($query) use ($search) {
@@ -941,7 +945,6 @@ class RawMaterialController extends Controller
             } else {
                 $material->orderBy($columnName, $columnSortOrder);
             }
-            
         }
 
         if ($length == -1) {
@@ -961,6 +964,8 @@ class RawMaterialController extends Controller
                 $rostatus = "";
             }
 
+            $calcBals = $this->calcBalances($item->material_id, $startDate, $endDate);
+
             $data[] = [
                 'serial' => $index + 1,
                 'part_code' => $item->part_code,
@@ -970,7 +975,10 @@ class RawMaterialController extends Controller
                 'make' => $item->make,
                 'mpn' => $item->mpn,
                 'uom' => $item->uom?->uom_shortcode,
-                'stock' => $item->stock?->closing_balance,
+                'opening' => $calcBals['computedOP'] + $item->stock?->opening_balance,
+                'issued' => $calcBals['issued'],
+                'receipt' => $calcBals['receipt'],
+                'stock' => $calcBals['computedOP'] + $item->stock?->opening_balance - $calcBals['issued'] + $calcBals['receipt'],
                 'reorder_qty' => $item->re_order,
                 'reorder' => $rostatus,
             ];
@@ -984,6 +992,49 @@ class RawMaterialController extends Controller
         ];
 
         return response()->json($response);
+    }
+
+    private function calcBalances($material_id, $startDate, $endDate)
+    {
+        $result = DB::select("
+            SELECT
+                    (
+                        SELECT SUM(CASE WHEN warehouse_type = 'issued' THEN quantity * -1 ELSE quantity END)
+                        FROM warehouse_records
+                        WHERE material_id = m.material_id AND record_date < '".$startDate."'
+                    ) AS computedOP,
+                    (
+                        SELECT SUM(CASE WHEN warehouse_type = 'issued' THEN quantity ELSE 0 END)
+                        FROM warehouse_records
+                        WHERE material_id = m.material_id AND record_date BETWEEN '".$startDate."' AND '".$endDate."'
+                    ) AS issued,
+                    (
+                        SELECT SUM(CASE WHEN warehouse_type != 'issued' THEN quantity ELSE 0 END)
+                        FROM warehouse_records
+                        WHERE material_id = m.material_id AND record_date BETWEEN '".$startDate."' AND '".$endDate."'
+                    ) AS receipt
+                FROM
+                    materials m 
+                LEFT OUTER JOIN
+                    stocks o ON o.material_id = m.material_id
+            WHERE m.material_id = '".$material_id."';
+        ");
+
+        $firstResult = $result[0] ?? null;
+
+        if ($firstResult) {
+            return [
+                'computedOP' => $firstResult->computedOP,
+                'issued' => $firstResult->issued,
+                'receipt' => $firstResult->receipt,
+            ];
+        } else {
+            return [
+                'computedOP' => 0,
+                'issued' => 0,
+                'receipt' => 0,
+            ];
+        }
     }
 
     private function updatePrices($material_id='')

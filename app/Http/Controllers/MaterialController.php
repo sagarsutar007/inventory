@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\BomRecordExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Material;
+use App\Models\WarehouseRecord;
 use App\Imports\ExcelImportClass;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -108,6 +109,47 @@ class MaterialController extends Controller
             \Log::error('Material not found for part code: ' . $searchTerm);
             return response()->json(['success' => false, 'error' => 'Material not found'], 404);
         }
+    }
+
+    public function stockDetail(Request $request) {
+        $partcode = $request->input('partcode');
+        $startDate = $request->input('startDate');
+        $endDate = $request->input('endDate');
+
+        $material = Material::with('stock')->where('part_code', $partcode)->first();
+
+        $result = DB::select("
+            SELECT
+                    (
+                        SELECT SUM(CASE WHEN warehouse_type = 'issued' THEN quantity * -1 ELSE quantity END)
+                        FROM warehouse_records
+                        WHERE material_id = m.material_id AND record_date < '".$startDate."'
+                    ) AS computedOP
+                FROM
+                    materials m 
+                LEFT OUTER JOIN
+                    stocks o ON o.material_id = m.material_id
+            WHERE m.material_id = '".$material->material_id."';
+        ");
+
+        $firstResult = $result[0] ?? null;
+
+        $transactions = WarehouseRecord::with('warehouse', 'material')
+        ->where('material_id', $material->material_id)
+        ->whereHas('warehouse', function ($q) {
+            $q->orderBy('transaction_id', 'asc');
+        })
+        ->whereBetween('record_date', [$startDate, $endDate])
+        ->orderBy('created_at', 'asc')
+        ->get();
+        
+        $context=[
+            'transactions' => $transactions,
+            'opening' => $material->stock->opening_balance + $firstResult?->computedOP,
+        ];
+
+        $returnHTML = view('popup.viewStockTransactions', $context)->render();
+        return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
 }

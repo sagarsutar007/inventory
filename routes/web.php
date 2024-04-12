@@ -55,6 +55,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('app/material/get-details', [MaterialController::class, 'getMaterialDetails'])->name('material.getDetails');
     Route::post('app/material/get-finished-goods', [ProductionOrderController::class, 'getFinishedGoods'])->name('material.getFinishedGoods');
 
+    Route::post('app/material/get-stock-detail/', [MaterialController::class, 'stockDetail'])->name('material.stockDetail');
+
     // Commodity Routes
     Route::prefix('/app/commodities')->group(function () {
         Route::get('', [CommodityController::class, 'index'])->name('commodities');
