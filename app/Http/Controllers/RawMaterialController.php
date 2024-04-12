@@ -173,10 +173,10 @@ class RawMaterialController extends Controller
 
         $importedRows = $import->getImportedCount();
 
-        $errors = $import->getErrorMessages();
+        $warnings = $import->getErrorMessages();
 
-        if ( $errors ) {
-            return redirect()->back()->with('warning', 'Either Category or Commodity field does not exists.');
+        if ( $warnings ) {
+            return redirect()->back()->with('warnings', $warnings);
         }
 
         return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
@@ -644,7 +644,7 @@ class RawMaterialController extends Controller
                 'category' => $item->category->category_name,
                 'make' => $item->make,
                 'mpn' => $item->mpn,
-                'uom_shortcode' => $item->uom->uom_shortcode,
+                'uom_shortcode' => $item->uom?->uom_shortcode,
                 'price_1' => number_format($item->min_price, 2),
                 'price_2' => number_format($item->avg_price, 2),
                 'price_3' => number_format($item->max_price, 2),

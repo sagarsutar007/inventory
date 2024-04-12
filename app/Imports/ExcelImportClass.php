@@ -60,8 +60,10 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                 return true;
             } elseif ($this->type === "raw-material") {
                 $this->importedCount--;
+                $rowCount = 3;
                 foreach ($rows->slice(2) as $row) {
-                    $this->addRawMaterial($row, $this->user);
+                    $this->addRawMaterial($row, $this->user, $rowCount);
+                    $rowCount++;
                 }
             } elseif ($this->type === "bom") {
                 
@@ -96,10 +98,15 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                     throw new \Exception(implode("\n", $errors));
                 }
             }
+            
+            if (count($this->errors)) {
+                throw new \Exception("Error occured while parsing the rows.");
+            }
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            throw $e;
+            // throw $e;
         }
     }
 
@@ -172,7 +179,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         return $this->errors;
     }
 
-    protected function addRawMaterial($data, $user)
+    protected function addRawMaterial($data, $user, $rowCount)
     {
         if (count($data)) {
             if (!empty($data[0]) && !empty($data[2]) && !empty($data[3])) {
@@ -181,48 +188,77 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
 
                 if (!empty($data[1])) {
                     $uom = UomUnit::where('uom_shortcode', '=', $data[1])->orWhere('uom_text', '=', $data[1])->first();
+                } else {
+                    $this->setErrorMessages(['status'=>'error', 'message' => 'Unit is empty. You can set it by editing material', 'row' => $rowCount]);
                 }
 
                 if (!empty($data[6]) && !empty($data[7])) {
                     $dm = DependentMaterial::where('description', 'like', $data[6])->where('frequency', 'like', $data[7])->first();
+                } else {
+                    if (empty($data[6])) {
+                        $this->setErrorMessages(['status'=>'warning', 'message' => 'Dependent material is empty. You can set it later.', 'row' => $rowCount]);
+                    } else {
+                        $this->setErrorMessages(['status'=>'warning', 'message' => 'Dependent material frequency is blank', 'row' => $rowCount]);
+                    }
                 }
 
                 if ($commodity && $category) {
                     try {
-                        $rawMaterial = RawMaterial::firstOrCreate(
-                            [
-                                'description' => $data[0],
-                                'type' => 'raw',
-                            ],
-                            [
-                                'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number),
-                                'description' => $data[0],
-                                'uom_id' => $uom->uom_id ?? '',
-                                'type' => 'raw',
-                                'make' => $data[4],
-                                'mpn' => $data[5],
-                                'category_id' => $category->category_id,
-                                'commodity_id' => $commodity->commodity_id,
-                                'dm_id' => $dm->dm_id ?? '',
-                                're_order' => $data[8],
-                                'additional_notes' => $data[15],
-                                'created_by' => $user
-                            ]
-                        );
+                        $material = RawMaterial::where('description', 'like', $data[0])->first();
+                        if (!$material) {
+                            $rawMaterial = RawMaterial::firstOrCreate(
+                                [
+                                    'description' => $data[0],
+                                    'type' => 'raw',
+                                ],
+                                [
+                                    'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number),
+                                    'description' => $data[0],
+                                    'uom_id' => $uom->uom_id ?? '',
+                                    'type' => 'raw',
+                                    'make' => $data[4],
+                                    'mpn' => $data[5],
+                                    'category_id' => $category->category_id,
+                                    'commodity_id' => $commodity->commodity_id,
+                                    'dm_id' => $dm->dm_id ?? '',
+                                    're_order' => $data[8],
+                                    'additional_notes' => $data[15],
+                                    'created_by' => $user
+                                ]
+                            );
+                            
+                            $this->enterPurchase($rawMaterial->material_id, $data[9], $data[10]);
+                            $this->enterPurchase($rawMaterial->material_id, $data[11], $data[12]);
+                            $this->enterPurchase($rawMaterial->material_id, $data[13], $data[14]);
+                        } else {
+                            $this->setErrorMessages(['status'=>'error', 'message' => $data[0] . ' already exists in the master with partcode ' . $material->part_code, 'row' => $rowCount]);
+                        }
                         
-                        $this->enterPurchase($rawMaterial->material_id, $data[9], $data[10]);
-                        $this->enterPurchase($rawMaterial->material_id, $data[11], $data[12]);
-                        $this->enterPurchase($rawMaterial->material_id, $data[13], $data[14]);
                     } catch (\Throwable $th) {
                         throw $th;
                     }
                 } else {
-                    if ($commodity) {
-                        $this->setErrorMessages(['message' => 'Commodity does not exists in our records']);
-                    } else {
-                        return ['status'=>'error', 'message' => 'Category does not exists in our records'];
+                    if ($commodity == null) {
+                        $this->setErrorMessages(['status'=>'error', 'message' => 'Commodity does not exists in our records', 'row' => $rowCount]);
+                    } 
+                    
+                    if ($category == null) {
+                        $this->setErrorMessages(['status'=>'error', 'message' => 'Category does not exists in our records', 'row' => $rowCount]);
                     }
                 }
+            }else {
+                if (empty($data[2])) {
+                    $this->setErrorMessages(['status'=>'error', 'message' => 'Commodity is empty. It is required.', 'row' => $rowCount]);
+                }
+
+                if (empty($data[3])) {
+                    $this->setErrorMessages(['status'=>'error', 'message' => 'Category is empty. It is required.', 'row' => $rowCount]);
+                }
+
+                if (empty($data[0])) {
+                    $this->setErrorMessages(['status'=>'error', 'message' => 'Description is empty. It is required.', 'row' => $rowCount]);
+                }
+                
             }
         }
     }
@@ -373,20 +409,14 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
     protected function enterPurchase($material_id="", $vendor="", $price="")
     {
         if (!empty($material_id) && !empty($vendor) && !empty($price)) {
-
-            $vendorInfo = Vendor::where('vendor_name', 'like', $vendor)->first();
-
-            if ($vendorInfo === null) {
-                $vendorInfo = Vendor::create([
-                    'vendor_name' => $vendor,
-                ]);
-            }
-
-            MaterialPurchase::create([
-                'material_id' => $material_id,
-                'vendor_id' => $vendorInfo->vendor_id,
-                'price' => $price
+            $vendorInfo = Vendor::firstOrCreate([
+                'vendor_name' => $vendor,
             ]);
+
+            MaterialPurchase::firstOrCreate([
+                'material_id' => $material_id,
+                'vendor_id' => $vendorInfo->vendor_id
+            ],['price' => $price] );  
         }
     }
 }
