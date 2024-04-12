@@ -173,6 +173,12 @@ class RawMaterialController extends Controller
 
         $importedRows = $import->getImportedCount();
 
+        $errors = $import->getErrorMessages();
+
+        if ( $errors ) {
+            return redirect()->back()->with('warning', 'Either Category or Commodity field does not exists.');
+        }
+
         return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
     }
 

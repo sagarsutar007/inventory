@@ -70,13 +70,24 @@
 @section('js')
     <script>
         $(function () {
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
 
+            var currentDate = new Date();
+
+            var currentYear = currentDate.getFullYear();
+            var fiscalYearStartMonth = 4; 
+            var fiscalYearStartDate = new Date(currentYear, fiscalYearStartMonth - 1, 1);
+            
             $('#daterange').daterangepicker({
                 timePicker: false,
                 showDropdowns: true,
                 locale: {
                     format: 'DD/MM/YYYY'
-                }
+                },
+                startDate: fiscalYearStartDate,
+                endDate: currentDate
             });
 
             $('#material-search').submit(function(e) {
@@ -97,7 +108,30 @@
                 "autoWidth": true,
                 "paging": true,
                 "info": true,
-                "buttons": datatableButtons,
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        messageBottom: safeStamp,
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        messageBottom: safeStamp,
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        messageBottom: userStamp,
+                    },
+                    'colvis',
+                ],
                 "lengthMenu": datatableLength,
                 "processing": true,
                 "serverSide": true,

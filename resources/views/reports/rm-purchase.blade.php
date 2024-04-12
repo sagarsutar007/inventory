@@ -70,14 +70,29 @@
 @section('js')
     <script>
         $(function () {
+            var currentUserName = "{{ auth()->user()->name }}";
+            var userStamp = userTimeStamp(currentUserName);
+            var safeStamp = $(userStamp).text();
 
+            // Get current date
+            var currentDate = new Date();
+
+            // Calculate start date of current financial year
+            var currentYear = currentDate.getFullYear();
+            var fiscalYearStartMonth = 4; // Assuming April as the start month of the financial year
+            var fiscalYearStartDate = new Date(currentYear, fiscalYearStartMonth - 1, 1);
+
+            // Initialize date range picker
             $('#daterange').daterangepicker({
                 timePicker: false,
                 showDropdowns: true,
                 locale: {
                     format: 'DD/MM/YYYY'
-                }
+                },
+                startDate: fiscalYearStartDate,
+                endDate: currentDate
             });
+
 
             $('#material-search').submit(function(e) {
                 e.preventDefault(); // Prevent default form submission
@@ -97,13 +112,34 @@
                 "autoWidth": true,
                 "paging": true,
                 "info": true,
-                "buttons": datatableButtons,
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        messageBottom: safeStamp,
+                    },
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        messageBottom: safeStamp,
+                    },
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        messageBottom: userStamp,
+                    },
+                    'colvis',
+                ],
                 "lengthMenu": datatableLength,
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('raw.fetchPurchaseList') }}",
                     "type": "POST",

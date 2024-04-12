@@ -639,7 +639,7 @@ class ProductionOrderController extends Controller
                 } else {
                     return $valueB - $valueA;
                 }
-            } else {
+            } else if($columnName != "serial") {
                 if ($columnSortOrder === 'asc') {
                     return strcmp($a[$columnName], $b[$columnName]);
                 } else {
@@ -965,7 +965,7 @@ class ProductionOrderController extends Controller
 
     protected function countReservedQty($material_id="", $data=false){
         $reservedQty = 0;
-        $productionOrders = ProductionOrder::with('material','prod_order_materials')->whereNot('status', 'Completed')->get();
+        $productionOrders = ProductionOrder::with('material.uom','prod_order_materials')->whereNot('status', 'Completed')->get();
         foreach ($productionOrders as $prodOrders => $order) {
             $prodMaterial = $order->material;
             $bomRecords = $prodMaterial->bom->bomRecords;
@@ -981,6 +981,8 @@ class ProductionOrderController extends Controller
                             'po_qty'=>$order->quantity,
                             'partcode'=>$order->material->part_code,
                             'description'=>$order->material->description,
+                            'unit'=>$order->material->uom->uom_shortcode,
+                            'issued'=>$prodOrderMaterial->quantity,
                             'type'=> 'Production Order',
                             'quantity'=> $reservedQty,
                             'unit'=>$material->uom->uom_shortcode,
@@ -1001,6 +1003,8 @@ class ProductionOrderController extends Controller
                             'po_qty'=>$order->quantity,
                             'partcode'=>$order->material->part_code,
                             'description'=>$order->material->description,
+                            'unit'=>$order->material->uom->uom_shortcode,
+                            'issued'=>0,
                             'type'=> 'Bill of Material',
                             'quantity'=> $reservedQty,
                             'unit'=>$material->uom->uom_shortcode,
@@ -1033,7 +1037,19 @@ class ProductionOrderController extends Controller
 
     public function showStockTrans(Request $request) {
         $partcode = $request->input('partcode');
+        // $fromdate = date('');
+        // $todate = date('');
+
+
         $material = Material::with('stock')->where('part_code', $partcode)->first();
+
+        $openingTransactions = WarehouseRecord::with('warehouse', 'material')
+        ->where('material_id', $material->material_id)
+        ->whereHas('warehouse', function ($q) {
+            $q->orderBy('transaction_id', 'asc');
+        })
+        ->orderBy('created_at', 'asc')
+        ->get();
 
         $transactions = WarehouseRecord::with('warehouse', 'material')
         ->where('material_id', $material->material_id)

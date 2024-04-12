@@ -337,8 +337,8 @@ class BOMController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
         
-        $query = Bom::whereHas('material', function ($query) {
-            $query->where('type', 'finished');
+        $query = Bom::whereHas('material', function ($q) {
+            $q->where('type', 'finished');
         })->with(['bomRecords.material']);
 
         if (!empty ($search)) {
@@ -380,15 +380,11 @@ class BOMController extends Controller
         } else {
             // $query->orderBy($columnName, $columnSortOrder);
         }
-
-        if (in_array($columnName, ['lowest', 'average', 'highest'])) {
+        // print_r($length == -1); exit();
+        if (in_array($columnName, ['lowest', 'average', 'highest']) || $length == -1) {
             $boms = $query->get();
         } else {
-        $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-
             $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-
             $boms = $bomsQuery->items();
         }
 
@@ -399,13 +395,10 @@ class BOMController extends Controller
             $bomRecords = $bom->bomRecords;
 
             if ($material) {
-
                 $low = 0;
                 $avg = 0;
                 $high = 0;
-
                 $prices = $this->calcPrices($material->material_id);
-
                 $data[] = [
                     'serial' => $index + $start + 1,
                     'code' => $material->part_code,
@@ -420,7 +413,7 @@ class BOMController extends Controller
             }
         }
 
-        if (in_array($columnName, ['lowest', 'average', 'highest'])) {
+        if (in_array($columnName, ['lowest', 'average', 'highest']) || $length == -1) {
             usort($data, function($a, $b) use ($columnName, $columnSortOrder) {
                 if ($columnSortOrder === 'asc') {
                     return $a[$columnName] <=> $b[$columnName];
@@ -430,7 +423,10 @@ class BOMController extends Controller
             });
 
             $totalRecords = count($data);
-            $data = array_slice($data, $start, $length);
+            if ($length != -1) {
+                $data = array_slice($data, $start, $length);
+            }
+            
         } else {
             $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
             $boms = $bomsQuery->items();

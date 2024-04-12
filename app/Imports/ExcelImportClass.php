@@ -28,6 +28,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
     protected $user;
     protected $data;
     private $importedCount = 0;
+    private $errors=[];
 
     public function __construct($type, $user, $data = null)
     {
@@ -58,6 +59,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
 
                 return true;
             } elseif ($this->type === "raw-material") {
+                $this->importedCount--;
                 foreach ($rows->slice(2) as $row) {
                     $this->addRawMaterial($row, $this->user);
                 }
@@ -160,18 +162,31 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         }
     }
 
+    public function setErrorMessages($data)
+    {
+        $this->errors[] = $data;
+    }
+
+    public function getErrorMessages()
+    {
+        return $this->errors;
+    }
+
     protected function addRawMaterial($data, $user)
     {
         if (count($data)) {
             if (!empty($data[0]) && !empty($data[2]) && !empty($data[3])) {
                 $commodity = Commodity::where('commodity_name', '=', $data[2])->first();
                 $category = Category::where('category_name', '=', $data[3])->first();
+
                 if (!empty($data[1])) {
                     $uom = UomUnit::where('uom_shortcode', '=', $data[1])->orWhere('uom_text', '=', $data[1])->first();
                 }
+
                 if (!empty($data[6]) && !empty($data[7])) {
-                    $dm = DependentMaterial::where('description', '=', $data[6])->where('frequency', '=', $data[7])->first();
+                    $dm = DependentMaterial::where('description', 'like', $data[6])->where('frequency', 'like', $data[7])->first();
                 }
+
                 if ($commodity && $category) {
                     try {
                         $rawMaterial = RawMaterial::firstOrCreate(
@@ -184,21 +199,28 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                                 'description' => $data[0],
                                 'uom_id' => $uom->uom_id ?? '',
                                 'type' => 'raw',
-                                'mpn' => $data[5],
                                 'make' => $data[4],
+                                'mpn' => $data[5],
                                 'category_id' => $category->category_id,
                                 'commodity_id' => $commodity->commodity_id,
-                                'dm_id' => $dm->dm_id??'',
+                                'dm_id' => $dm->dm_id ?? '',
                                 're_order' => $data[8],
                                 'additional_notes' => $data[15],
                                 'created_by' => $user
                             ]
                         );
+                        
                         $this->enterPurchase($rawMaterial->material_id, $data[9], $data[10]);
                         $this->enterPurchase($rawMaterial->material_id, $data[11], $data[12]);
                         $this->enterPurchase($rawMaterial->material_id, $data[13], $data[14]);
                     } catch (\Throwable $th) {
                         throw $th;
+                    }
+                } else {
+                    if ($commodity) {
+                        $this->setErrorMessages(['message' => 'Commodity does not exists in our records']);
+                    } else {
+                        return ['status'=>'error', 'message' => 'Category does not exists in our records'];
                     }
                 }
             }

@@ -61,8 +61,8 @@ $('.modal').on('hidden.bs.modal', function () {
   resetModalPosition();
 });
 
-
 var currentdate = new Date();
+
 var hours = currentdate.getHours();
 var minutes = currentdate.getMinutes();
 var ampm = hours >= 12 ? 'PM' : 'AM';

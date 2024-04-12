@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Bulk Upload Raw Material')
+@section('title', 'Bulk Raw Material Upload ')
 
 @section('content')
     
@@ -11,7 +11,7 @@
             @csrf
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Bulk Upload Raw Material</h3>
+                    <h3 class="card-title">Bulk Raw Material Upload</h3>
                 </div>
                 <div class="card-body">
                     <div class="commodity-item-container">
@@ -54,6 +54,10 @@
             // Show Success Message
             @if(session('success'))
                 toastr.success('{{ session('success') }}');
+            @endif
+
+            @if(session('warning'))
+                toastr.warning('{{ session('warning') }}');
             @endif
         });
     </script>

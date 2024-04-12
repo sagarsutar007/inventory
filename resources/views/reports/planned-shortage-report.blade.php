@@ -58,7 +58,7 @@
     </div>
 </div>
 
-<x-adminlte-modal id="view-modal" title="View Reserved Quantity" icon="fas fa-box" size='lg' scrollable>
+<x-adminlte-modal id="view-modal" title="View Reserved Quantity" icon="fas fa-box" size='xl' scrollable>
     <div class="row">
         <div class="col-12" id="view-modal-section">
             <h4 class="text-secondary text-center">Loading...</h4>
@@ -384,6 +384,13 @@
                         console.error('Error:', error);
                     }
                 });
+            });
+
+            $('#view-modal').on('hide.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                $("#view-modal-section").html(`
+                    <h4 class="text-secondary text-center">Loading...</h4>
+                `);
             });
 
             $('#view-stock').on('hide.bs.modal', function (event) {
