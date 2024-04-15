@@ -13,28 +13,31 @@
                     <form action="{{ route('users.update', $user->id) }}" method="POST">
                         @csrf
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="empid">Employee ID</label>
+                                    <input type="text" name="empid" id="empid" class="form-control" value="{{ $user->employee_id }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="name">Name</label>
                                     <input type="text" name="name" id="name" class="form-control" value="{{ $user->name }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="email">Email</label>
                                     <input type="email" name="email" id="email" class="form-control" value="{{ $user->email }}" required>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="phone">Phone</label>
                                     <input type="text" name="phone" id="phone" class="form-control" value="{{ $user->phone }}">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label for="gender">Gender</label>
                                     <select name="gender" id="gender" class="form-control" required>
@@ -44,9 +47,20 @@
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="role">Department</label>
+                                    <select name="role" id="role" class="form-control" required>
+                                        <option hidden>Department</option>
+                                        @if ($roles)
+                                            @foreach ($roles as $role)
+                                                <option value="{{ $role->id }}" {{ $user->role->role_id === $role->id ? 'selected' : '' }} >{{ $role->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group mb-0">
                                     <label for="password">Password</label>
                                     <div class="input-group">
@@ -59,9 +73,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4 d-flex align-items-end justify-content-end">
-                                <button type="submit" class="btn btn-primary">Submit</button>
-                            </div>
+                        </div>
+                        <div class="d-flex align-items-end justify-content-end">
+                            <button type="submit" class="btn btn-primary">Submit</button>
                         </div>
                     </form>
                     

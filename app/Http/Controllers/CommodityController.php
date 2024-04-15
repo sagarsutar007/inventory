@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Imports\ExcelImportClass;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 use Excel;
 
@@ -16,18 +17,24 @@ class CommodityController extends Controller
 
     public function index()
     {
-        $commodities = Commodity::withCount([
-            'materials as raw_count' => function ($query) {
-                $query->where('type', 'raw');
-            },
-            'materials as semi_finished_count' => function ($query) {
-                $query->where('type', 'semi-finished');
-            },
-            'materials as finished_count' => function ($query) {
-                $query->where('type', 'finished');
-            }
-        ])->orderBy('commodity_number', 'desc')->get();
-        return view('commodities', compact('commodities'));
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-commodities', Auth::user())) {
+            $commodities = Commodity::withCount([
+                'materials as raw_count' => function ($query) {
+                    $query->where('type', 'raw');
+                },
+                'materials as semi_finished_count' => function ($query) {
+                    $query->where('type', 'semi-finished');
+                },
+                'materials as finished_count' => function ($query) {
+                    $query->where('type', 'finished');
+                }
+            ])->orderBy('commodity_number', 'desc')->get();
+            
+            return view('commodities', compact('commodities'));
+        } else {
+            abort(403);
+        }
+        
     }
 
     public function add()

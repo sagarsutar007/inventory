@@ -20,6 +20,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'employee_id',
         'name',
         'email',
         'phone',
@@ -50,5 +51,33 @@ class User extends Authenticatable
     public function roles()
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(UserRole::class, 'id', 'user_id');
+    }
+
+    public function permissions()
+    {
+        return $this->hasMany(UserPermissions::class, 'user_id');
+    }
+
+    /**
+     * Define a method to check if the user has a specific permission.
+     *
+     * @param string $permissionName The name of the permission to check.
+     * @return bool
+     */
+    public function hasPermission($permissionName)
+    {
+        $permission = Permission::where('name', $permissionName)->first();
+
+        if ($permission) {
+            $permissionId = $permission->id;
+            return $this->permissions->contains('permission_id', $permissionId);
+        }
+
+        return false;
     }
 }

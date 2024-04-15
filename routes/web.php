@@ -237,6 +237,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [UserController::class, 'store'])->name('users.store');
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::post('/{user}/update', [UserController::class, 'update'])->name('users.update');
+        Route::get('/{user}/permission', [UserController::class, 'permission'])->name('users.permission');
+        Route::post('/{user}/permission', [UserController::class, 'setPermission'])->name('users.setPermission');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('user.destroy');
     });
 

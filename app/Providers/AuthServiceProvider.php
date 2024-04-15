@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -22,5 +22,36 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+
+        Gate::define('admin', function($user){
+            $this->isAdmin($user);
+            return false;
+        });
+
+        Gate::define('view-commodities', function ($user) {
+            $this->isAdmin($user);
+            return $user->hasPermission('view-commodities');
+        });
+
+        Gate::define('add-commodity', function ($user) {
+            $this->isAdmin($user);
+            return $user->hasPermission('add-commodity');
+        });
+
+        Gate::define('edit-commodity', function ($user) {
+            $this->isAdmin($user);
+            return $user->hasPermission('edit-commodity');
+        });
+
+        Gate::define('delete-commodity', function ($user) {
+            $this->isAdmin($user);
+            return $user->hasPermission('delete-commodity');
+        });
+    }
+
+    protected function isAdmin($user){
+        if ($user->type === "superadmin") {
+            return true;
+        } 
     }
 }

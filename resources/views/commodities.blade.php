@@ -9,15 +9,10 @@
                 <div class="card-header">
                     <h3 class="card-title">Commodities</h3>
                     <div class="card-tools">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" role="menu">
-                                <a class="dropdown-item" href="{{ route('commodities.add') }}"><i class="fa fa-plus text-secondary"></i> Multiple Records</a>
-                                <a class="dropdown-item" href="{{ route('commodities.bulk') }}"><i class="fas fa-file-import text-secondary"></i> Bulk Upload</a>
-                            </div>
-                        </div>
+                        @can('add-commodity')
+                        <a class="btn btn-light btn-sm" href="{{ route('commodities.add') }}"><i class="fa fa-plus text-secondary"></i> Multiple Records</a>
+                        <a class="btn btn-light btn-sm" href="{{ route('commodities.bulk') }}"><i class="fas fa-file-import text-secondary"></i> Bulk Upload</a>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body">
@@ -114,8 +109,6 @@
                     'colvis',
                 ],
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true
             }).buttons().container().appendTo('#commodities_wrapper .col-md-6:eq(0)');
 
 
