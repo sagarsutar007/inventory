@@ -38,14 +38,17 @@
                                 <td>{{ $commodity->semi_finished_count }}</td>
                                 <td>{{ $commodity->finished_count }}</td>
                                 <td width="10%">
+                                    @can('edit-commodity')
                                     <a href="#" role="button" data-comid="{{ $commodity->commodity_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit" >
                                         <i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit Commodity"></i>
-                                    </a> / 
-                                    <form action="{{ route('commodities.destroy', $commodity->commodity_id) }}" method="post" style="display: inline;">
+                                    </a>
+                                    @endcan 
+                                    @can('delete-commodity') / <form action="{{ route('commodities.destroy', $commodity->commodity_id) }}" method="post" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this record?')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete Commodity"></i></button>
                                     </form>
+                                    @endcan 
                                 </td>
                             </tr>
                         @endforeach
@@ -87,6 +90,7 @@
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
+                "lengthMenu": datatableLength,
                 "buttons": [
                     {
                         extend: 'excel',

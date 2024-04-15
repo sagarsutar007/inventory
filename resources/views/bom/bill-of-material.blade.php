@@ -136,7 +136,7 @@
                     { "data": "category", "name": "category_name" },
                     { "data": "action" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 // "order": [[ 0, "asc" ]],

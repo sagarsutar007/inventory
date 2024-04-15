@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Imports\ExcelImportClass;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 use Excel;
 
@@ -14,28 +15,40 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::withCount([
-            'materials as raw_count' => function ($query) {
-                $query->where('type', 'raw');
-            },
-            'materials as semi_finished_count' => function ($query) {
-                $query->where('type', 'semi-finished');
-            },
-            'materials as finished_count' => function ($query) {
-                $query->where('type', 'finished');
-            }
-        ])->orderBy('category_number', 'desc')->get();
-        return view('categories', compact('categories'));
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-categories', Auth::user())) {
+            $categories = Category::withCount([
+                'materials as raw_count' => function ($query) {
+                    $query->where('type', 'raw');
+                },
+                'materials as semi_finished_count' => function ($query) {
+                    $query->where('type', 'semi-finished');
+                },
+                'materials as finished_count' => function ($query) {
+                    $query->where('type', 'finished');
+                }
+            ])->orderBy('category_number', 'desc')->get();
+            return view('categories', compact('categories'));
+        } else {
+            abort(403);
+        }
     }
 
     public function add()
     {
-        return view('new-category');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-category', Auth::user())) {
+            return view('new-category');
+        } else {
+            abort(403);
+        }
     }
 
     public function bulk()
     {
-        return view('bulk-category');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-category', Auth::user())) {
+            return view('bulk-category');
+        } else {
+            abort(403);
+        }
     }
 
     public function bulkStore(Request $request)
@@ -56,7 +69,6 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-
         $request->validate([
             'categories' => 'required|array',
             'categories.*' => 'required|string',
@@ -80,10 +92,14 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        if (!$category) {
-            return response()->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-category', Auth::user())) {
+            if (!$category) {
+                return response()->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
+            }
+            return response()->json(['category' => $category]);
+        } else {
+            abort(403);
         }
-        return response()->json(['category' => $category]);
     }
 
     public function update(Request $request, Category $category)
@@ -99,7 +115,6 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Category updated successfully']);
     }
 
-
     protected function getNextCategoryCode()
     {
         $category = Category::orderBy('category_number', 'desc')->first();
@@ -113,13 +128,17 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        if ($category->materials()->exists()) {
-            return redirect()->route('categories')->with('error', 'Category cannot be deleted because it is in use');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-category', Auth::user())) {
+            if ($category->materials()->exists()) {
+                return redirect()->route('categories')->with('error', 'Category cannot be deleted because it is in use');
+            }
+
+            $category->delete();
+
+            return redirect()->route('categories')->with('success', 'Category deleted successfully');
+        } else {
+            abort(403);
         }
-
-        $category->delete();
-
-        return redirect()->route('categories')->with('success', 'Category deleted successfully');
     }
 
     public function save(Request $request) 

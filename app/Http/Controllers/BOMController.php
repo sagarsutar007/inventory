@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 use App\Models\Bom;
 use App\Models\BomRecord;
@@ -17,7 +19,11 @@ class BOMController extends Controller
 {
     public function index()
     {
-        return view('bom.bill-of-material');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-bom', Auth::user())) {
+            return view('bom.bill-of-material');
+        } else {
+            abort(403);
+        }
     }
 
     public function getBom(Request $request)
@@ -79,9 +85,14 @@ class BOMController extends Controller
         }
 
         // Paginate the query
-        $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-
-        $boms = $bomsQuery->items();
+        if ($length == -1) {
+            $bomsQuery = $query->get();
+            $boms = $bomsQuery;
+        } else {
+            $bomsQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $boms = $bomsQuery->items();
+        }
+        
         $data = [];
 
         foreach ($boms as $index => $bom) {
@@ -114,7 +125,7 @@ class BOMController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $bomsQuery->total(),
+            "recordsFiltered" => count($bomsQuery),
             "data" => $data,
         ];
 

@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 use Excel;
 
@@ -29,7 +30,11 @@ class RawMaterialController extends Controller
 {
     public function index()
     {
-        return view('rawmaterials');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-materials', Auth::user())) {
+            return view('rawmaterials');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchRawMaterials(Request $request)
@@ -94,9 +99,13 @@ class RawMaterialController extends Controller
                 $rawmaterials->orderBy($columnName, $columnSortOrder);
             }
         }
-
-        $materials = $rawmaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-
+        
+        if ($length == -1) {
+            $materials = $rawmaterials->get();
+        } else {
+            $materials = $rawmaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        }
+        
         $data = [];
         foreach ($materials as $index => $material) {
 
@@ -110,14 +119,21 @@ class RawMaterialController extends Controller
                 $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="15px" height="15px"></div>';
             }
 
-            $actions = '<div class="text-center"><a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
-                <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> /
-                <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>
-                / <form action="' . route('raw.destroy', $material->material_id) . '" method="post" style="display: inline;">
+            $actions = '<div class="text-center"> <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>'; 
+            
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-raw-materials', Auth::user())) {
+                $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
+            }
+
+            $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>';
+
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-raw-materials', Auth::user())) {
+                $actions .= ' / <form action="' . route('raw.destroy', $material->material_id) . '" method="post" style="display: inline;">
                     ' . csrf_field() . '
                     ' . method_field('DELETE') . '
                     <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this record?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
                 </form></div>';
+            }
 
             $data[] = [
                 'serial' => $serial,
@@ -129,7 +145,7 @@ class RawMaterialController extends Controller
                 'category_name' => $material->category->category_name,
                 'make' => $material->make,
                 'mpn' => $material->mpn,
-                're_order' => $material->re_order,
+                're_order' => formatQuantity($material->re_order),
                 'dependent' => $material->dependant?->description,
                 'frequency' => $material->dependant?->frequency,
                 'actions' => $actions,
@@ -139,7 +155,7 @@ class RawMaterialController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $materials->total(),
+            "recordsFiltered" => count($materials),
             "data" => $data,
         ];
 
@@ -148,16 +164,24 @@ class RawMaterialController extends Controller
 
     public function add()
     {
-        $uom = UomUnit::all();
-        $category = Category::all();
-        $commodity = Commodity::all();
-        $dependents = DependentMaterial::all();
-        return view('new-raw-material', compact('uom', 'category', 'commodity', 'dependents'));
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-raw-material', Auth::user())) {
+            $uom = UomUnit::all();
+            $category = Category::all();
+            $commodity = Commodity::all();
+            $dependents = DependentMaterial::all();
+            return view('new-raw-material', compact('uom', 'category', 'commodity', 'dependents'));
+        } else {
+            abort(403);
+        }
     }
 
     public function bulk()
     {
-        return view('bulk-raw-material');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-raw-material', Auth::user())) {
+            return view('bulk-raw-material');
+        } else {
+            abort(403);
+        }
     }
 
     public function bulkStore(Request $request)
@@ -554,14 +578,18 @@ class RawMaterialController extends Controller
 
     public function destroy(RawMaterial $material)
     {
-        try {
-            $material->purchases()->delete();
-            $material->attachments()->delete();
-            $material->delete();
-            return redirect()->route('raw')->with('success', 'Raw Material deleted successfully');
-        } catch (\Exception $e) {
-            \Log::error('Error deleting raw material: ' . $e->getMessage());
-            return redirect()->route('raw')->with('error', 'An error occurred while deleting the Raw Material');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-raw-material', Auth::user())) {
+            try {
+                $material->purchases()->delete();
+                $material->attachments()->delete();
+                $material->delete();
+                return redirect()->route('raw')->with('success', 'Raw Material deleted successfully');
+            } catch (\Exception $e) {
+                \Log::error('Error deleting raw material: ' . $e->getMessage());
+                return redirect()->route('raw')->with('error', 'An error occurred while deleting the Raw Material');
+            }
+        } else {
+            abort(403);
         }
     }
 

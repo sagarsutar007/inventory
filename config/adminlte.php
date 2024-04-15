@@ -312,26 +312,31 @@ return [
             'text' => 'Commodities',
             'url' => 'app/commodities',
             'icon' => 'fas fa-fw fa-th-large',
+            'can' => 'view-commodities',
             'active' => []
         ],
         [
             'text' => 'Categories',
             'url' => 'app/categories',
             'icon' => 'fas fa-fw fa-th',
+            'can' => 'view-categories',
             'active' => []
         ],
         [
             'text' => 'Raw Materials',
             'icon' => 'fas fa-fw fa-boxes',
+            'can' => 'view-add-raw-materials',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/raw-materials/add',
+                    'can' => 'add-raw-material',
                     'active' => []
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/raw-materials',
+                    'can' => 'view-raw-materials',
                     'active' => []
                 ],
             ],
@@ -340,28 +345,34 @@ return [
         [
             'text' => 'Semi Finished Goods',
             'icon' => 'fas fa-fw fa-box',
+            'can' => 'view-add-semi-materials',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/semi-finished-materials/add',
+                    'can' => 'add-semi-material',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/semi-finished-materials',
+                    'can' => 'view-semi-material',
                 ],
             ],
         ],
         [
             'text' => 'Finished Goods',
             'icon' => 'fas fa-fw fa-archive',
+            'can' => 'view-add-finish-materials',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/finished-materials/add',
+                    'can' => 'add-finish-material',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/finished-materials',
+                    'can' => 'view-finish-material',
                 ],
             ],
         ],
@@ -383,6 +394,7 @@ return [
             'text' => 'Bill Of Materials',
             'url' => 'app/bill-of-materials',
             'icon' => 'fas fa-fw fa-file-invoice',
+            'can' => 'view-bom',
         ],
         [
             'text' => 'Warehouse',

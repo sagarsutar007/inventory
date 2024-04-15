@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 
 use App\Models\Category;
@@ -27,8 +28,12 @@ class SemiFinishedMaterialController extends Controller
      */
     public function index()
     {
-        $materials = Material::with('uom', 'commodity', 'category')->where('type', 'semi-finished')->orderBy('created_at', 'desc')->get();
-        return view('semi-finished-materials', compact('materials'));
+        // $materials = Material::with('uom', 'commodity', 'category')->where('type', 'semi-finished')->orderBy('created_at', 'desc')->get();
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-semi-material', Auth::user())) {
+            return view('semi-finished-materials');
+        } else {
+            abort(403);
+        }
     }
 
     /**
@@ -36,11 +41,15 @@ class SemiFinishedMaterialController extends Controller
      */
     public function create()
     {
-        $uom = UomUnit::all();
-        $category = Category::all();
-        $commodity = Commodity::all();
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-semi-material', Auth::user())) {
+            $uom = UomUnit::all();
+            $category = Category::all();
+            $commodity = Commodity::all();
 
-        return view('new-semi-material', compact('uom', 'category', 'commodity'));
+            return view('new-semi-material', compact('uom', 'category', 'commodity'));
+        } else {
+            abort(403);
+        }
     }
 
     /**
@@ -391,23 +400,27 @@ class SemiFinishedMaterialController extends Controller
      */
     public function destroy(Material $material)
     {
-        try {
-            // Delete related Bom and BomRecord entries
-            $material->bom?->bomRecords?->each(function ($bomRecord) {
-                $bomRecord->delete();
-            });
-            $material->bom?->delete();
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-semi-material', Auth::user())) {
+            try {
+                // Delete related Bom and BomRecord entries
+                $material->bom?->bomRecords?->each(function ($bomRecord) {
+                    $bomRecord->delete();
+                });
+                $material->bom?->delete();
 
-            $material->purchases()->delete();
-            $material->attachments()->delete();
-            $material->delete();
-            return redirect()->route('semi')->with('success', 'Material deleted successfully');
-        } catch (\Exception $e) {
-            // Log the exception
-            \Log::error('Error deleting material: ' . $e->getMessage());
+                $material->purchases()->delete();
+                $material->attachments()->delete();
+                $material->delete();
+                return redirect()->route('semi')->with('success', 'Material deleted successfully');
+            } catch (\Exception $e) {
+                // Log the exception
+                \Log::error('Error deleting material: ' . $e->getMessage());
 
-            // Add a flash message for the user (optional)
-            return redirect()->route('semi')->with('error', 'An error occurred while deleting the Material');
+                // Add a flash message for the user (optional)
+                return redirect()->route('semi')->with('error', 'An error occurred while deleting the Material');
+            }
+        } else {
+            abort(403);
         }
     }
 
@@ -447,7 +460,6 @@ class SemiFinishedMaterialController extends Controller
         return response()->json($materials);
     }
 
-
     private function generatePartCode($commodity_id = '', $category_id = '')
     {
         if ($commodity_id && $category_id) {
@@ -480,6 +492,7 @@ class SemiFinishedMaterialController extends Controller
             $semiMaterials->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('re_order', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
                         $query->orWhere('category_number', 'like', '%' . $search . '%');
@@ -527,14 +540,21 @@ class SemiFinishedMaterialController extends Controller
                 $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="30px" height="30px"></div>';
             }
 
-            $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a> / 
-                <a href="#" role="button" data-matid="' . $material->material_id . '"  class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / 
-                <form action="' . route('semi.destroy', $material->material_id) . '" method="post" style="display: inline;">
+            $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>'; 
+            
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-semi-material', Auth::user())) {
+                $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '"  class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
+            }
+
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-semi-material', Auth::user())) {
+                $actions .= ' / <form action="' . route('semi.destroy', $material->material_id) . '" method="post" style="display: inline;">
                     ' . csrf_field() . '
                     ' . method_field('DELETE') . '
                     <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this record?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
-                </form> / 
-                <button role="button" data-matid="'.$material->material_id.'" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / <button role="button" data-desc="'. $material->description .'" data-matid="'.$material->material_id.'" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
+                </form>';
+            }
+
+            $actions .= '/ <button role="button" data-matid="'.$material->material_id.'" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / <button role="button" data-desc="'. $material->description .'" data-matid="'.$material->material_id.'" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
 
             $data[] = [
                 'serial' => $serial,
@@ -544,7 +564,7 @@ class SemiFinishedMaterialController extends Controller
                 'unit' => $material->uom->uom_shortcode,
                 'make' => $material->make,
                 'mpn' => $material->mpn,
-                're_order' => $material->re_order,
+                're_order' => formatQuantity($material->re_order),
                 'commodity_name' => $material->commodity->commodity_name,
                 'category_name' => $material->category->category_name,
                 'actions' => $actions,

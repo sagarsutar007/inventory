@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 
 use App\Models\Category;
@@ -27,8 +28,12 @@ class FinishedMaterialController extends Controller
      */
     public function index()
     {
-        $materials = Material::with('uom', 'commodity', 'category')->where('type', 'finished')->orderBy('created_at', 'desc')->get();
-        return view('finished-goods.finished-materials', compact('materials'));
+        // $materials = Material::with('uom', 'commodity', 'category')->where('type', 'finished')->orderBy('created_at', 'desc')->get();
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-finish-material', Auth::user())) {
+            return view('finished-goods.finished-materials');
+        } else {
+            abort(403);
+        }
     }
 
     /**
@@ -36,11 +41,15 @@ class FinishedMaterialController extends Controller
      */
     public function create()
     {
-        $uom = UomUnit::all();
-        $category = Category::all();
-        $commodity = Commodity::all();
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-finish-material', Auth::user())) {
+            $uom = UomUnit::all();
+            $category = Category::all();
+            $commodity = Commodity::all();
 
-        return view('finished-goods.new-finished-material', compact('uom', 'category', 'commodity'));
+            return view('finished-goods.new-finished-material', compact('uom', 'category', 'commodity'));
+        } else {
+            abort(403);
+        }
     }
 
     /**
@@ -430,20 +439,24 @@ class FinishedMaterialController extends Controller
      */
     public function destroy(Material $material)
     {
-        try {
-            // Delete related Bom and BomRecord entries
-            $bom = $material->bom;
-            if ($bom) {
-                $bom->delete();
-            }
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-finish-material', Auth::user())) {
+            try {
+                // Delete related Bom and BomRecord entries
+                $bom = $material->bom;
+                if ($bom) {
+                    $bom->delete();
+                }
 
-            $material->purchases()->delete();
-            $material->attachments()->delete();
-            $material->delete();
-            return redirect()->route('finished')->with('success', 'Finished Material deleted successfully');
-        } catch (\Exception $e) {
-            \Log::error('Error deleting material: ' . $e->getMessage());
-            return redirect()->route('finished')->with('error', 'An error occurred while deleting the Material');
+                $material->purchases()->delete();
+                $material->attachments()->delete();
+                $material->delete();
+                return redirect()->route('finished')->with('success', 'Finished Material deleted successfully');
+            } catch (\Exception $e) {
+                \Log::error('Error deleting material: ' . $e->getMessage());
+                return redirect()->route('finished')->with('error', 'An error occurred while deleting the Material');
+            }
+        } else {
+            abort(403);
         }
     }
 
@@ -498,5 +511,112 @@ class FinishedMaterialController extends Controller
             return $newPartCode;
         }
         return null;
+    }
+
+    public function fetchFinishedMaterials(Request $request)
+    {
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
+
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
+
+        $semiMaterials = RawMaterial::with('uom', 'commodity', 'category')->where('type', 'finished');
+
+        if (!empty ($search)) {
+            $semiMaterials->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('re_order', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                        $query->orWhere('category_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                        $query->orWhere('commodity_number', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($query) use ($search) {
+                        $query->where('uom_shortcode', 'like', '%' . $search . '%');
+                        $query->orWhere('uom_text', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $semiMaterials->count();
+
+        if (!in_array($columnName, ['serial', 'image', 'actions'])) {
+            if ($columnName === 'uom_shortcode') {
+                $semiMaterials->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } else if ($columnName === 'commodity_name') {
+                $semiMaterials->join('commodities', 'materials.commodity_id', '=', 'commodities.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } else if ($columnName === 'category_name') {
+                $semiMaterials->join('categories', 'materials.category_id', '=', 'categories.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else {
+                $semiMaterials->orderBy($columnName, $columnSortOrder);
+            }
+        }
+
+        $materials = $semiMaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+
+        $data = [];
+        foreach ($materials as $index => $material) {
+
+            $currentPage = ($start / $length) + 1;
+            $serial = ($currentPage - 1) * $length + $index + 1;
+
+            $imageAttachment = $material->attachments()->where('type', 'image')->first();
+            if ($imageAttachment) {
+                $image = '<div class="text-center"><img src="' . asset('assets/uploads/materials/' . $imageAttachment->path) . '" class="mt-2" width="30px" height="30px"></div>';
+            } else {
+                $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="30px" height="30px"></div>';
+            }
+
+            $actions = '<a href="#" role="button" data-matid="' . $material->material_id . '" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>'; 
+            
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-finish-material', Auth::user())) {
+                $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '"  class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
+            }
+
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-finish-material', Auth::user())) {
+                $actions .= ' / <form action="' . route('finished.destroy', $material->material_id) . '" method="post" style="display: inline;">
+                    ' . csrf_field() . '
+                    ' . method_field('DELETE') . '
+                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this record?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
+                </form>';
+            }
+
+            $actions .= '/ <button role="button" data-matid="'.$material->material_id.'" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / <button role="button" data-desc="'. $material->description .'" data-matid="'.$material->material_id.'" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
+
+            $data[] = [
+                'serial' => $serial,
+                'image' => $image,
+                'part_code' => $material->part_code,
+                'description' => $material->description,
+                'unit' => $material->uom->uom_shortcode,
+                'make' => $material->make,
+                'mpn' => $material->mpn,
+                're_order' => formatQuantity($material->re_order),
+                'commodity_name' => $material->commodity->commodity_name,
+                'category_name' => $material->category->category_name,
+                'actions' => $actions,
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $materials->total(),
+            "data" => $data,
+        ];
+
+        return response()->json($response);
     }
 }

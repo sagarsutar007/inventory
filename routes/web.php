@@ -125,7 +125,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{material}/edit', [SemiFinishedMaterialController::class, 'edit'])->name('semi.edit');
         Route::post('/{material}/update', [SemiFinishedMaterialController::class, 'update'])->name('semi.update');
         Route::delete('/{material}', [SemiFinishedMaterialController::class, 'destroy'])->name('semi.destroy');
-        Route::post('/fetch-semi-materials', [SemiFinishedMaterialController::class, 'fetchSemiMaterials'])->name('semi.fetchRawMaterials');
+        Route::post('/fetch-semi-materials', [SemiFinishedMaterialController::class, 'fetchSemiMaterials'])->name('semi.fetchSemiMaterials');
     });
 
     // Finished Material Routes
@@ -140,6 +140,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{material}', [FinishedMaterialController::class, 'destroy'])->name('finished.destroy');
         Route::post('/check-partcode', [FinishedMaterialController::class, 'checkPartcode'])->name('finished.checkPartcode');
         Route::get('/suggest-partcode', [FinishedMaterialController::class, 'suggestPartcode'])->name('finished.suggest.partcode');
+        Route::post('/fetch-finished-materials', [FinishedMaterialController::class, 'fetchFinishedMaterials'])->name('finished.fetchFinishedMaterials');
     });
 
     // Bill of materials Routes

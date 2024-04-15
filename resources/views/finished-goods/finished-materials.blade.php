@@ -9,14 +9,15 @@
                 <div class="card-header">
                     <h3 class="card-title">Finished Materials</h3>
                     <div class="card-tools">
+                        @can('add-finish-material')
                         <a class="btn btn-light btn-sm" href="{{ route('finished.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body">
                     <table id="materials" class="table table-bordered table-striped">
                         <thead>
                             <tr>
-                                <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Code</th>
                                 <th>Material Name</th>
                                 <th>Unit</th>
@@ -27,30 +28,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @foreach($materials as $material)
-                            <tr>
-                                <!-- <td width="5%">{{ $loop->iteration }}</td> -->
-                                <td width="15%">{{ $material->part_code }}</td>
-                                <td>{{ $material->description }}</td>
-                                <td>{{ $material->uom->uom_text }}</td>
-                                <td>{{ $material->commodity->commodity_name }}</td>
-                                <td>{{ $material->category->category_name }}</td>
-                                <td>{{ $material->re_order }}</td>
-                                <td width="15%">
-                                    <a href="#" role="button" data-partcode="{{ $material->part_code }}" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView">
-                                        <i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i>
-                                    </a> / 
-                                    <a href="#" role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / 
-                                    <form action="{{ route('finished.destroy', $material->material_id) }}" method="post" style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm('Are you sure you want to delete this material?')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>
-                                    </form> / 
-                                    <button role="button" data-matid="{{ $material->material_id }}" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / 
-                                    <button role="button" data-desc="{{ $material->description }}" data-matid="{{ $material->material_id }}" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></button>
-                                </td>
-                            </tr>
-                        @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -139,11 +116,6 @@
                 "autoWidth": true,
                 "paging": true,
                 "info": true,
-                "language": {
-                    "lengthMenu": "_MENU_"
-                },
-                // "scrollY": "320px",
-                // "scrollCollapse": true,
                 "buttons": [
                     {
                         extend: 'excel',
@@ -165,8 +137,43 @@
                     },
                     'colvis',
                 ],
-                "stateSave": true // Add the saveState option here
-            }).buttons().container().appendTo('#materials_wrapper .col-md-6:eq(0)');
+                "processing": true,
+                "serverSide": true,
+                "stateSave": true,
+                "ajax": {
+                    "url": "{{ route('finished.fetchFinishedMaterials') }}",
+                    "type": "POST",
+                    "data": function ( d ) {
+                        d._token = '{{ csrf_token() }}';
+                        d.type = 'finished';
+                    }
+                },
+                "columns": [
+                    { "data": "part_code", "name": "part_code" },
+                    { "data": "description", "name": "description" },
+                    { "data": "unit", "name": "uom_shortcode" },
+                    { "data": "commodity_name", "name": "commodity_name" },
+                    { "data": "category_name", "name": "category_name" },
+                    { "data": "re_order", "name": "re_order" },
+                    { "data": "actions", "name": "actions" },
+                ],
+                "lengthMenu": datatableLength,
+                "searching": true,
+                "ordering": true,
+                "columnDefs": [
+                    {
+                        "targets": [6],
+                        "orderable": false,
+                    }
+                ],
+                "dom": 'lBfrtip',
+                "language": {
+                    "lengthMenu": "_MENU_"
+                },
+                "initComplete": function(settings, json) {
+                    $('[data-toggle="tooltip"]').tooltip();
+                }
+            });
 
             // Show Error Messages
             @if ($errors->any())

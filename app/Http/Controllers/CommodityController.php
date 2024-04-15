@@ -39,12 +39,20 @@ class CommodityController extends Controller
 
     public function add()
     {
-        return view('new-commodity');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-commodity', Auth::user())) {
+            return view('new-commodity');
+        } else {
+            abort(403);
+        }
     }
 
     public function bulk()
     {
-        return view('bulk-commodity');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-commodity', Auth::user())) {
+            return view('bulk-commodity');
+        } else {
+            abort(403);
+        }
     }
 
     public function bulkStore(Request $request)
@@ -109,7 +117,6 @@ class CommodityController extends Controller
         return response()->json(['message' => 'Commodity updated successfully']);
     }
 
-
     protected function getNextCommodityCode()
     {
         $commodity = Commodity::orderBy('commodity_number', 'desc')->first();
@@ -123,14 +130,17 @@ class CommodityController extends Controller
 
     public function destroy(Commodity $commodity)
     {
-        // Check if commodity is in use before deleting
-        if ($commodity->materials()->exists()) {
-            return redirect()->route('commodities')->with('error', 'Commodity cannot be deleted because it is in use');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-commodity', Auth::user())) {
+            if ($commodity->materials()->exists()) {
+                return redirect()->route('commodities')->with('error', 'Commodity cannot be deleted because it is in use');
+            }
+
+            $commodity->delete();
+
+            return redirect()->route('commodities')->with('success', 'Commodity deleted successfully');
+        } else {
+            abort(403);
         }
-
-        $commodity->delete();
-
-        return redirect()->route('commodities')->with('success', 'Commodity deleted successfully');
     }
 
     public function save(Request $request) 

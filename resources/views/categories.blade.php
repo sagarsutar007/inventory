@@ -9,19 +9,14 @@
                 <div class="card-header">
                     <h3 class="card-title">Categories</h3>
                     <div class="card-tools">
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right" role="menu">
-                                <a class="dropdown-item" href="{{ route('categories.add') }}">
-                                    <i class="fa fa-plus text-secondary"></i> Multiple Records
-                                </a>
-                                <a class="dropdown-item" href="{{ route('categories.bulk') }}">
-                                    <i class="fas fa-file-import text-secondary"></i> Bulk Upload
-                                </a>
-                            </div>
-                        </div>
+                        @can('add-category')
+                        <a class="btn btn-light btn-sm" href="{{ route('categories.add') }}">
+                            <i class="fa fa-plus text-secondary"></i> Multiple Records
+                        </a>
+                        <a class="btn btn-light btn-sm" href="{{ route('categories.bulk') }}">
+                            <i class="fas fa-file-import text-secondary"></i> Bulk Upload
+                        </a>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body">
@@ -47,15 +42,20 @@
                                 <td>{{ $category->semi_finished_count }}</td>
                                 <td>{{ $category->finished_count }}</td>
                                 <td width="10%">
+                                    @can('edit-category')
                                     <a href="#" role="button" data-comid="{{ $category->category_id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit">
                                         <i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i>
-                                    </a> /<form action="{{ route('categories.destroy', $category->category_id) }}" method="post" style="display: inline;">
+                                    </a>
+                                    @endcan
+                                    @can('delete-category')
+                                    /<form action="{{ route('categories.destroy', $category->category_id) }}" method="post" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-link p-0" onclick="return confirm('Are you sure you want to delete this record?')">
                                             <i class="fas fa-trash text-danger" data-toggle="tooltip" data-placement="top" title="Delete Category"></i>
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach
@@ -120,8 +120,7 @@
                     'colvis',
                 ],
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true
+                "lengthMenu": datatableLength,
             }).buttons().container().appendTo('#categories_wrapper .col-md-6:eq(0)');
 
             $('#modalEdit').on('show.bs.modal', function (event) {

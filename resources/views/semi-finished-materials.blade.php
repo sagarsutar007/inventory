@@ -9,7 +9,9 @@
                 <div class="card-header">
                     <h3 class="card-title">Semi Finished Materials</h3>
                     <div class="card-tools">
+                        @can('add-semi-material')
                         <a class="btn btn-light btn-sm" href="{{ route('semi.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body">
@@ -150,7 +152,7 @@
                 // "scrollY": "440px",
                 // "scrollCollapse": true,
                 "ajax": {
-                    "url": "{{ route('semi.fetchRawMaterials') }}",
+                    "url": "{{ route('semi.fetchSemiMaterials') }}",
                     "type": "POST",
                     "data": function ( d ) {
                         d._token = '{{ csrf_token() }}';
@@ -170,7 +172,7 @@
                     { "data": "re_order", "name": "re_order" },
                     { "data": "actions", "name": "actions" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "columnDefs": [

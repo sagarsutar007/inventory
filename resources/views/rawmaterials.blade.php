@@ -9,8 +9,10 @@
                 <div class="card-header">
                     <h3 class="card-title">Raw Materials</h3>
                     <div class="card-tools">
+                        @can('add-raw-material')
                         <a class="btn btn-light btn-sm" href="{{ route('raw.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
                         <a class="btn btn-light btn-sm" href="{{ route('raw.bulk') }}"><i class="fas fa-file-import text-secondary"></i> Bulk Upload</a>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body">
@@ -159,7 +161,7 @@
                     { "data": "re_order", "name": "re_order" },
                     { "data": "actions", "name": "actions" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "columnDefs": [
