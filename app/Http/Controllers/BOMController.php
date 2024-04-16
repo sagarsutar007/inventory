@@ -244,12 +244,20 @@ class BOMController extends Controller
 
     public function bomView()
     {
-        return view('reports.bom');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-bom-view', Auth::user())) {
+            return view('reports.bom');
+        } else {
+            abort(403);
+        }
     }
 
     public function bomCostView()
     {
-        return view('reports.bomCostView');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-bom-cost', Auth::user())) {
+            return view('reports.bomCostView');
+        } else {
+            abort(403);
+        }
     }
 
     public function getBomRecords(Request $request)
@@ -342,7 +350,11 @@ class BOMController extends Controller
     
     public function fgCostSummary()
     {
-        return view('reports.fgCostSummary');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-fg-cost', Auth::user())) {
+            return view('reports.fgCostSummary');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchFgCostSummary(Request $request)

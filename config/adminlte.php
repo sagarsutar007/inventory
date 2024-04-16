@@ -444,16 +444,80 @@ return [
             'text' => 'PO Kitting',
             'icon' => 'fas fa-fw fa-cart-plus',
             'url' => 'app/po-kitting',
+            'can' => 'view-kitting',
         ],
         [
             'text' => 'Vendors',
             'icon' => 'fas fa-fw fa-user-tag',
             'url' => 'app/vendors',
+            'can' => 'view-vendor',
         ],
         [
             'text' => 'Reports',
-            'url' => 'app/reports',
+            'url' => '#',
             'icon' => 'fas fa-fw fa-clipboard-list',
+            'submenu' => [
+                [
+                    'text' => 'RM Price List',
+                    'url' => 'app/reports/rm-price-list',
+                    'can' => 'view-rm-price',
+                ],
+                [
+                    'text' => 'Material Master List',
+                    'url' => 'app/reports/material-list',
+                    'can' => 'view-material-master',
+                ],
+                [
+                    'text' => 'BOM View',
+                    'url' => 'app/reports/bom-view',
+                    'can' => 'view-bom-view',
+                ],
+                [
+                    'text' => 'BOM Cost View',
+                    'url' => 'app/reports/bom-cost-view',
+                    'can' => 'view-bom-cost',
+                ],
+                [
+                    'text' => 'FG Cost Summary',
+                    'url' => 'app/reports/fg-cost-summary',
+                    'can' => 'view-fg-cost',
+                ],
+                [
+                    'text' => 'RM Stock',
+                    'url' => 'app/reports/rm-stock',
+                    'can' => 'view-raw-stock',
+                ],
+                [
+                    'text' => 'Production Order',
+                    'url' => 'app/reports/po-stock',
+                    'can' => 'view-po-report',
+                ],
+                [
+                    'text' => 'PO Shortage',
+                    'url' => 'app/reports/po-shortage-stock',
+                    'can' => 'view-po-shortage',
+                ],
+                [
+                    'text' => 'PO Shortage Consolidated',
+                    'url' => 'app/reports/po-shortage-consolidated-stock',
+                    'can' => 'view-po-short-cons',
+                ],
+                [
+                    'text' => 'Planned Order Shortage',
+                    'url' => 'app/reports/plo-shortage-report',
+                    'can' => 'view-plan-short',
+                ],
+                [
+                    'text' => 'RM Purchase',
+                    'url' => 'app/reports/rm-purchase-report',
+                    'can' => 'view-raw-pur',
+                ],
+                [
+                    'text' => 'RM Issuance',
+                    'url' => 'app/reports/rm-issuance-report',
+                    'can' => 'view-raw-issu',
+                ],
+            ],
         ],
         ['header' => 'account_settings'],
         [

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 use App\Models\Vendor;
 
@@ -14,7 +15,11 @@ class VendorController extends Controller
      */
     public function index()
     {
-        return view('supplier.list');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-vendor', Auth::user())) {
+            return view('supplier.list');
+        } else {
+            abort(403);
+        }
     }
 
     public function get(Request $request) 
@@ -41,13 +46,19 @@ class VendorController extends Controller
         $totalRecords = $query->count();
         
         $query->orderBy($columnName, $columnSortOrder);
-        $vendors = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+
+        if ($length == -1) {
+            $records = $query->get();
+        } else {
+            $vendors = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $records = $vendors->items();
+        }
 
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $vendors->total(),
-            "data" =>  $vendors->items(),
+            "recordsFiltered" => $totalRecords,
+            "data" => $records,
         ];
 
         return response()->json($response);

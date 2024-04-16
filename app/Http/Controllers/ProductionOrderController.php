@@ -441,7 +441,11 @@ class ProductionOrderController extends Controller
 
     public function poReport()
     {
-        return view('reports.po-report');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-po-report', Auth::user())) {
+            return view('reports.po-report');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchPoReport(Request $request)
@@ -548,7 +552,11 @@ class ProductionOrderController extends Controller
     
     public function poShortageReport()
     {
-        return view('reports.po-shortage-report');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-po-shortage', Auth::user())) {
+            return view('reports.po-shortage-report');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchPoShortageReport(Request $request)
@@ -679,7 +687,11 @@ class ProductionOrderController extends Controller
     
     public function poConsolidatedShortageReport()
     {
-        return view('reports.po-consolidated-shortage-report');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-po-short-cons', Auth::user())) {
+            return view('reports.po-consolidated-shortage-report');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchPoConsolidatedShortageReport(Request $request)
@@ -867,7 +879,11 @@ class ProductionOrderController extends Controller
 
     public function ploShortageReport()
     {
-        return view('reports.planned-shortage-report');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-plan-short', Auth::user())) {
+            return view('reports.planned-shortage-report');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchPlannedShortage(Request $request)

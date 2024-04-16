@@ -131,7 +131,7 @@
             @endforeach
         </div>
         <h6>Uploaded Documents</h6>
-        <p class="text-danger">Note: Deleting this picture will instatntly delete the document from your account. Please make sure you want to do that before proceeding.</p>
+        <p class="text-danger">Note: Deleting this picture will instantly delete the document from your account. Please make sure you want to do that before proceeding.</p>
         <div class="row">
             @foreach($attachments as $attachment)
                 @if($attachment->type === 'image')

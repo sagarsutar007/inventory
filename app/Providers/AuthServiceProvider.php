@@ -338,6 +338,138 @@ class AuthServiceProvider extends ServiceProvider
                 return false;
             }
         });
+
+        // Production Order Kitting Gates
+
+        Gate::define('view-kitting', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-kitting');
+        });
+
+        Gate::define('issue-kitting', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('issue-kitting');
+        });
+
+        // Bill of Materials Gates
+
+        Gate::define('view-vendor', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-vendor');
+        });
+
+        Gate::define('add-vendor', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('add-vendor');
+        });
+
+        Gate::define('edit-vendor', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('edit-vendor');
+        });
+
+        Gate::define('delete-vendor', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('delete-vendor');
+        });
+
+        //Reports Gate
+
+        Gate::define('view-rm-price', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-rm-price');
+        });
+
+        Gate::define('view-material-master', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-material-master');
+        });
+        
+        Gate::define('view-bom-view', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-bom-view');
+        });
+
+        Gate::define('view-bom-cost', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-bom-cost');
+        });
+
+        Gate::define('view-fg-cost', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-fg-cost');
+        });
+
+        Gate::define('view-raw-stock', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-raw-stock');
+        });
+        
+        Gate::define('view-po-report', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-po-report');
+        });
+
+        Gate::define('view-po-shortage', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-po-shortage');
+        });
+
+        Gate::define('view-po-short-cons', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-po-short-cons');
+        });
+        
+        Gate::define('view-plan-short', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-plan-short');
+        });
+
+        Gate::define('view-raw-pur', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-raw-pur');
+        });
+
+        Gate::define('view-raw-issu', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-raw-issu');
+        });
     }
 
     protected function isAdmin($user){

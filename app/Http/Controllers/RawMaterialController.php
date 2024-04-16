@@ -121,13 +121,13 @@ class RawMaterialController extends Controller
 
             $actions = '<div class="text-center"> <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>'; 
             
-            if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-raw-materials', Auth::user())) {
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-raw-material', Auth::user())) {
                 $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
             }
 
             $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>';
 
-            if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-raw-materials', Auth::user())) {
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-raw-material', Auth::user())) {
                 $actions .= ' / <form action="' . route('raw.destroy', $material->material_id) . '" method="post" style="display: inline;">
                     ' . csrf_field() . '
                     ' . method_field('DELETE') . '
@@ -595,7 +595,11 @@ class RawMaterialController extends Controller
 
     public function priceList()
     {
-        return view('reports.rm-price-list');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-rm-price', Auth::user())) {
+            return view('reports.rm-price-list');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchPriceList(Request $request)
@@ -691,7 +695,11 @@ class RawMaterialController extends Controller
 
     public function materialList()
     {
-        return view('reports.material-master-list');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-material-master', Auth::user())) {
+            return view('reports.material-master-list');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchMaterialList(Request $request)
@@ -805,12 +813,20 @@ class RawMaterialController extends Controller
 
     public function rmPurchaseReport()
     {
-        return view('reports.rm-purchase');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-pur', Auth::user())) {
+            return view('reports.rm-purchase');
+        } else {
+            abort(403);
+        }
     }
 
     public function rmIssuanceReport()
     {
-        return view('reports.rm-issue');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-issu', Auth::user())) {
+            return view('reports.rm-issue');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchPurchaseList(Request $request)
@@ -913,7 +929,11 @@ class RawMaterialController extends Controller
 
     public function stockReport()
     {
-        return view('reports.rm-stock');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-stock', Auth::user())) {
+            return view('reports.rm-stock');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchRmStockList(Request $request)

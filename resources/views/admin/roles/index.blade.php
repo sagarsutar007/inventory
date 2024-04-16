@@ -38,7 +38,7 @@
                                 <td width="15%">{{ $role->name }}</td>
                                 <td>
                                     @foreach($role->permissions as $permission)
-                                    <span class="badge badge-primary">{{ $permission->name }}</span>
+                                    <span class="badge badge-primary">{{ $permission->label }}</span>
                                     @endforeach
                                 </td>
                                 <td width="10%">
@@ -108,7 +108,7 @@
                             var permissionsDropdown = modal.find('#permissions');
                             permissionsDropdown.empty();
                             $.each(response.permissions, function(index, permission) {
-                                permissionsDropdown.append($('<option></option>').attr('value', permission.id).text(permission.name));
+                                permissionsDropdown.append($('<option></option>').attr('value', permission.id).text(permission.label));
                             });
                             permissionsDropdown.val(response.role.permissions.map(function(permission) {
                                 return permission.id;

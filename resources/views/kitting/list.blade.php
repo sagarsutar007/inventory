@@ -93,8 +93,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('po.get') }}",
                     "type": "POST",
@@ -116,23 +114,24 @@
                         "render": function ( data, type, row ) {
                             let info = ``;
                             if (row.status === "Completed") {
-                                info = `<button class="btn btn-link view-btn btn-sm p-0" data-pon="${row.po_number}" data-id="${row.po_id}" data-partcode="${row.part_code}" data-desc="${row.description}" data-qty="${row.quantity}" data-unit="${row.unit}" data-status="${row.status}"><i class="fas fa-info-circle text-primary"></i></button>`;
+                                info = `<button class="btn btn-link view-btn btn-sm p-0" data-pon="${row.po_number}" data-id="${row.po_id}" data-partcode="${row.part_code}" data-desc="${row.description}" data-qty="${row.quantity}" data-unit="${row.unit}" data-status="${row.status}"><i class="fas fa-info-circle text-primary"></i></button> / `;
                             } else {
-                                info = `<button class="btn btn-link kitting-btn btn-sm p-0" data-pon="${row.po_number}" data-id="${row.po_id}" data-partcode="${row.part_code}" data-desc="${row.description}" data-qty="${row.quantity}" data-unit="${row.unit}" data-status="${row.status}"><i class="fas fa-edit text-primary"></i></button>`;
+                                @can('issue-kitting')
+                                info = `<button class="btn btn-link kitting-btn btn-sm p-0" data-pon="${row.po_number}" data-id="${row.po_id}" data-partcode="${row.part_code}" data-desc="${row.description}" data-qty="${row.quantity}" data-unit="${row.unit}" data-status="${row.status}"><i class="fas fa-edit text-primary"></i></button> / `;
+                                @endcan
                             }
-                            return info + " / " +
-                            '<button class="btn btn-link records-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-partcode="'+ row.part_code +'" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-eye text-primary"></i></button>'
-                            ;
+                            return info +
+                                '<button class="btn btn-link records-btn btn-sm p-0" data-pon="' + row.po_number + '" data-id="' + row.po_id + '" data-partcode="'+ row.part_code +'" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-status="'+ row.status +'"><i class="fas fa-eye text-primary"></i></button>';
                         }
                     }
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "order": [[0, 'desc']],
                 "columnDefs": [
                     {
-                        "targets": [7],
+                        "targets": [8],
                         "orderable": false
                     }
                 ],

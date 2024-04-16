@@ -86,11 +86,13 @@
                                             <option value="{{$cmdty->commodity_id}}" {{ old('commodity_id') == $cmdty->commodity_id ? 'selected' : '' }}>{{$cmdty->commodity_name}}
                                             @endforeach 
                                         </select>
+                                        @can('add-commodity')
                                         <div class="input-group-append">
                                             <span class="input-group-text add-commodity">
                                                 <i class="fas fa-plus"></i>
                                             </span>
                                         </div>
+                                        @endcan
                                     </div>
                                 </div>
                             </div>
@@ -103,11 +105,13 @@
                                             <option value="{{$ctg->category_id}}" {{ old('category_id') == $ctg->category_id ? 'selected' : '' }}>{{$ctg->category_name}}
                                             @endforeach  
                                         </select>
+                                        @can('add-category')
                                         <div class="input-group-append">
                                             <span class="input-group-text add-category">
                                                 <i class="fas fa-plus"></i>
                                             </span>
                                         </div>
+                                        @endcan
                                     </div>
                                 </div>
                             </div>
@@ -166,6 +170,7 @@
                                 <textarea class="form-control" name="additional_notes" placeholder="Additional notes">{{ old('additional_notes') }}</textarea>
                             </div>
                         </div>
+                        @can('add-vendor')
                         <div class="vendor-price-container">
                             @if ($errors->any())
                                 @foreach(old('vendor', ['']) as $index => $vendor)
@@ -233,6 +238,7 @@
                             </div>
                             @endif
                         </div>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-footer text-right">

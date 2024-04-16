@@ -1,17 +1,17 @@
 @extends('adminlte::page')
 
-@section('title', 'Supplier')
+@section('title', 'Vendors')
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Supplier</h3>
+                    <h3 class="card-title">Vendors</h3>
                     <div class="card-tools">
-                        <div class="btn-group">
-                            <button data-toggle="modal" data-target="#manage-vendor-modal" class="btn btn-default btn-sm" id="add-vendor-btn">Add Vendor</Button>
-                        </div>
+                        @can('add-vendor')
+                        <button data-toggle="modal" data-target="#manage-vendor-modal" class="btn btn-default btn-sm" id="add-vendor-btn">Add Vendor</Button>
+                        @endcan
                     </div>
                 </div>
                 <div class="card-body">
@@ -98,8 +98,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('vendor.get') }}",
                     "type": "POST",
@@ -115,13 +113,18 @@
                     { 
                         "data": null,
                         "render": function (data, type, row) {
-                            return '<button class="btn btn-link view-vendor-btn btn-sm" data-id="' + row.vendor_id + '" data-toggle="modal" data-target="#manage-vendor-modal"><i class="fas fa-eye text-primary"></i></button>' +
-                            '<button class="btn btn-link edit-vendor-btn btn-sm" data-id="' + row.vendor_id + '" data-toggle="modal" data-target="#manage-vendor-modal"><i class="fas fa-edit text-primary"></i></button>' +
-                            '<button class="btn btn-link delete-vendor-btn btn-sm" data-id="' + row.vendor_id + '"><i class="fas fa-trash text-danger"></i></button>';
+                            return '<button class="btn btn-link view-vendor-btn btn-sm" data-id="' + row.vendor_id + '" data-toggle="modal" data-target="#manage-vendor-modal"><i class="fas fa-eye text-primary"></i></button>' 
+                            @can('edit-vendor')
+                            + '/ <button class="btn btn-link edit-vendor-btn btn-sm" data-id="' + row.vendor_id + '" data-toggle="modal" data-target="#manage-vendor-modal"><i class="fas fa-edit text-primary"></i></button>'
+                            @endcan 
+                            @can('delete-vendor')
+                            + '/ <button class="btn btn-link delete-vendor-btn btn-sm" data-id="' + row.vendor_id + '"><i class="fas fa-trash text-danger"></i></button>'
+                            @endcan 
+                            ;
                         }
                     }
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "order": [[0, 'asc']],

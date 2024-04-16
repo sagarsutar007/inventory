@@ -34,7 +34,7 @@
                         @foreach($permissions as $permission)
                             <tr>
                                 <td width="5%">{{ $loop->iteration }}</td>
-                                <td>{{ $permission->name }}</td>
+                                <td>{{ $permission->label }}</td>
                                 <td width="10%">
                                     {{-- <a href="#" permission="button" data-comid="{{ $permission->id }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit">
                                         <i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit Permission"></i>
