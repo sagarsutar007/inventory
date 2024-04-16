@@ -135,11 +135,15 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link view-btn btn-sm p-0" data-id="' + row.po_id + '"  data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-eye text-primary"></i></button>' + ' / <button class="btn btn-link delete-btn btn-sm p-0" data-id="' + row.po_id + '" data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-trash text-danger"></i></button>';
+                            return '<button class="btn btn-link view-btn btn-sm p-0" data-id="' + row.po_id + '"  data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-eye text-primary"></i></button>' 
+                            @can('delete-po')
+                            + ' / <button class="btn btn-link delete-btn btn-sm p-0" data-id="' + row.po_id + '" data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-trash text-danger"></i></button>'
+                            @endcan
+                            ;
                         }
                     }
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "order": [[0, 'desc']],

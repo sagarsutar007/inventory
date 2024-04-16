@@ -99,16 +99,25 @@ class BOMController extends Controller
             $material = $bom->material;
             if ($material) {
 
-                $actionHtml = '<a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a> / ' .
-                    '<a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a> / ' .
-                    '<form action="' . route("bom.destroy", ["bom" => $bom->bom_id]) . '" method="post" style="display: inline;">' .
+                $actionHtml = '<a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View Material"></i></a>';
+
+                if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-bom', Auth::user())) {
+                    $actionHtml .= ' / <a href="#" role="button" data-partcode="' . $material->part_code . '" data-desc="' . $material->description . '" data-bomid="' . $bom->bom_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
+                }
+
+                if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-bom', Auth::user())) {
+                    $actionHtml .= ' / <form action="' . route("bom.destroy", ["bom" => $bom->bom_id]) . '" method="post" style="display: inline;">' .
                     csrf_field() .
                     method_field('DELETE') .
                     '<button type="submit" class="btn btn-sm btn-link text-danger p-0" onclick="return confirm(\'Are you sure you want to delete this material?\')"><i class="fas fa-trash" data-toggle="tooltip" data-placement="top" title="Delete"></i></button>' .
-                    '</form> / ' .
-                    '<button role="button" data-desc="' . $material->description . '" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / ' .
-                    '<button role="button" data-desc="' . $material->description . '" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-import" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
+                    '</form>';
+                }
 
+                $actionHtml .= ' / <button role="button" data-desc="' . $material->description . '" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button>';
+
+                if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-bom', Auth::user())) {
+                    $actionHtml .= ' / <button role="button" data-desc="' . $material->description . '" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-import" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
+                }
 
                 $data[] = [
                     // 'sno' => $index + $start + 1,

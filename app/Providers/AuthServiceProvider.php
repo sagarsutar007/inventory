@@ -224,7 +224,7 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
 
-        // Finished Materials Gates
+        // Bill of Materials Gates
 
         Gate::define('view-bom', function ($user) {
             if ($this->isAdmin($user)) {
@@ -252,6 +252,91 @@ class AuthServiceProvider extends ServiceProvider
                 return true;
             }
             return $user->hasPermission('delete-bom');
+        });
+
+        // Bill of Materials Gates
+
+        Gate::define('view-stock', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-stock');
+        });
+
+        Gate::define('issue-warehouse', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('issue-warehouse');
+        });
+
+        Gate::define('receive-warehouse', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('receive-warehouse');
+        });
+
+        Gate::define('view-transaction', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-transaction');
+        });
+
+        Gate::define('view-warehouse', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+
+            $stats1 = $user->hasPermission('view-stock');
+            $stats2 = $user->hasPermission('issue-warehouse');
+            $stats3 = $user->hasPermission('receive-warehouse');
+            $stats4 = $user->hasPermission('view-transaction');
+
+            if ($stats1 || $stats2 || $stats3 || $stats4) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        // Production Order Gates
+
+        Gate::define('view-po', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-po');
+        });
+
+        Gate::define('add-po', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('add-po');
+        });
+
+        Gate::define('delete-po', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('delete-po');
+        });
+
+        Gate::define('view-po-menu', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+
+            $stats1 = $user->hasPermission('view-po');
+            $stats2 = $user->hasPermission('add-po');
+
+            if ($stats1 || $stats2) {
+                return true;
+            } else {
+                return false;
+            }
         });
     }
 

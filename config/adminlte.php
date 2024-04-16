@@ -399,36 +399,44 @@ return [
         [
             'text' => 'Warehouse',
             'icon' => 'fas fa-fw fa-people-carry',
+            'can' => 'view-warehouse',
             'submenu' => [
                 [
                     'text' => 'Issue',
                     'url' => 'app/warehouse/issue',
+                    'can' => 'issue-warehouse',
                 ],
                 [
                     'text' => 'Receive',
                     'url' => 'app/warehouse/receive',
+                    'can' => 'receive-warehouse',
                 ],
                 [
                     'text' => 'View Stock',
                     'url' => 'app/warehouse',
+                    'can' => 'view-stock',
                 ],
                 [
                     'text' => 'View Transactions',
                     'url' => 'app/warehouse/transactions',
+                    'can' => 'view-transaction',
                 ],
             ],
         ],
         [
             'text' => 'Production Orders',
             'icon' => 'fas fa-fw fa-cart-plus',
+            'can' => 'view-po-menu',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/production-orders/new',
+                    'can' => 'add-po',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/production-orders',
+                    'can' => 'view-po',
                 ],
             ],
         ],

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -25,7 +26,11 @@ class WarehouseController extends Controller
 
     public function transactions()
     {
-        return view('warehouse.transactions');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-transaction', Auth::user())) {
+            return view('warehouse.transactions');
+        } else {
+            abort(403);
+        }
     }
 
     public function fetchRecords(Request $request)
@@ -197,8 +202,12 @@ class WarehouseController extends Controller
      */
     public function transIssue()
     {
-        $vendors = Vendor::all();
-        return view('warehouse.issue', compact('vendors'));
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('issue-warehouse', Auth::user())) {
+            $vendors = Vendor::all();
+            return view('warehouse.issue', compact('vendors'));
+        } else {
+            abort(403);
+        }
     }
 
     /**
@@ -206,8 +215,12 @@ class WarehouseController extends Controller
      */
     public function transReceive()
     {
-        $vendors = Vendor::all();
-        return view('warehouse.receive', compact('vendors'));
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('receive-warehouse', Auth::user())) {
+            $vendors = Vendor::all();
+            return view('warehouse.receive', compact('vendors'));
+        } else {
+            abort(403);
+        }
     }
 
     public function receiveMultiple(Request $request)
@@ -408,6 +421,7 @@ class WarehouseController extends Controller
         ];
         $returnHTML = view('warehouse.viewModalForm', $context)->render();
         return response()->json(array('status' => true, 'html' => $returnHTML, 'quantity' => $quantity, 'material' => $finishedGood));
+        
     }
 
     /**
@@ -568,7 +582,6 @@ class WarehouseController extends Controller
 
         return $transactionId;
     }
-
 
     public function getMaterials(Request $request)
     {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -21,17 +22,25 @@ class ProductionOrderController extends Controller
 {
     public function index()
     {
-        return view('production-order.list');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-po', Auth::user())) {
+            return view('production-order.list');
+        } else {
+            abort(403);
+        }
     }
 
-    public function create()
-    {
-        return view('production-order.create');
-    }
+    // public function create()
+    // {
+    //     return view('production-order.create');
+    // }
 
     public function new()
     {
-        return view('production-order.new');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-po', Auth::user())) {
+            return view('production-order.new');
+        } else {
+            abort(403);
+        }
     }
 
     public function viewOrder(Request $request)
@@ -195,8 +204,13 @@ class ProductionOrderController extends Controller
         }
 
         // Paginate the query
-        $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $productionOrders = $poQuery->items();
+        if ($length == -1) {
+            $productionOrders = $query->get();
+        } else {
+            $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $productionOrders = $poQuery->items();
+        }
+        
         $data = [];
         foreach ($productionOrders as $index => $order) {
             $material = $order->material;
@@ -220,7 +234,7 @@ class ProductionOrderController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $poQuery->total(),
+            "recordsFiltered" => count($productionOrders),
             "data" => $data,
         ];
 
