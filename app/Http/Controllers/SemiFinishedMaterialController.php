@@ -554,7 +554,13 @@ class SemiFinishedMaterialController extends Controller
                 </form>';
             }
 
-            $actions .= '/ <button role="button" data-matid="'.$material->material_id.'" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button> / <button role="button" data-desc="'. $material->description .'" data-matid="'.$material->material_id.'" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('export-semi-material', Auth::user())) {
+                $actions .= ' / <button role="button" data-matid="'.$material->material_id.'" class="btn btn-sm btn-link text-success p-0 btn-export-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Export BOM"></i></button>';
+            }
+
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('import-semi-material', Auth::user())) {
+                $actions .= ' / <button role="button" data-desc="'. $material->description .'" data-matid="'.$material->material_id.'" data-toggle="modal" data-target="#modalUploadBOM" class="btn btn-sm btn-link text-warning p-0 btn-import-bom"><i class="fas fa-file-excel" data-toggle="tooltip" data-placement="top" title="Import BOM"></i></i></button>';
+            }
 
             $data[] = [
                 'serial' => $serial,

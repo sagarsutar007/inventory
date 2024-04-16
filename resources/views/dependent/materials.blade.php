@@ -31,15 +31,19 @@
                                 <td>{{ $dependent->frequency }}</td>
                                 <td>{{ $dependent->raw_count }}</td>
                                 <td width="10%">
+                                    @can('edit-dependent-material')
                                     <button data-dmid="{{ $dependent->dm_id }}" data-descr="{{ $dependent->description }}" data-freq="{{ $dependent->frequency }}" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit">
                                         <i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i>
-                                    </button> / <form action="{{ route('dm.destroy', $dependent->dm_id) }}" method="post" style="display: inline;">
+                                    </button> @endcan 
+                                    @can('edit-dependent-material') / 
+                                    <form action="{{ route('dm.destroy', $dependent->dm_id) }}" method="post" style="display: inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-link p-0" onclick="return confirm('Are you sure you want to delete this record?')">
                                             <i class="fas fa-trash text-danger" data-toggle="tooltip" data-placement="top" title="Delete Dependent Material"></i>
                                         </button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach

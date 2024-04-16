@@ -13,26 +13,33 @@ class DependentMaterialController extends Controller
 {
     public function index()
     {
-        $dependents = DependentMaterial::withCount([
-            'materials as raw_count' => function ($query) {
-                $query->where('type', 'raw');
-            },
-        ])->orderBy('created_at', 'desc')->get();
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-dependent-material', Auth::user())) {
+            $dependents = DependentMaterial::withCount([
+                'materials as raw_count' => function ($query) {
+                    $query->where('type', 'raw');
+                },
+            ])->orderBy('created_at', 'desc')->get();
 
-        return view('dependent.materials', compact('dependents'));
+            return view('dependent.materials', compact('dependents'));
+        } else {
+            abort(403);
+        }
     }
 
     public function add()
     {
-        return view('dependent.new');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-dependent-material', Auth::user())) {
+            return view('dependent.new');
+        } else {
+            abort(403);
+        }
     }
 
     public function store(Request $request)
     {
-
         $request->validate([
             'frequency' => 'required|array',
-            'description' => 'required|array|unique:dependent_materials,description',
+            'description' => 'required|array',
             'frequency.*' => 'required|string',
             'description.*' => 'required|string',
         ],[
@@ -121,9 +128,12 @@ class DependentMaterialController extends Controller
 
     public function destroy(DependentMaterial $record)
     {
-        $record->delete();
-
-        return redirect()->route('categories')->with('success', 'Record deleted successfully');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-semi-material', Auth::user())) {
+            $record->delete();
+            return redirect()->route('dm.index')->with('success', 'Record deleted successfully');
+        } else {
+            abort(403);
+        }
     }
 
     public function search(Request $request) 

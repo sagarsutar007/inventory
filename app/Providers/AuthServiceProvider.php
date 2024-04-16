@@ -179,6 +179,20 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
 
+        Gate::define('export-semi-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('export-semi-material');
+        });
+
+        Gate::define('import-semi-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('import-semi-material');
+        });
+
         // Finished Materials Gates
 
         Gate::define('view-finish-material', function ($user) {
@@ -207,6 +221,65 @@ class AuthServiceProvider extends ServiceProvider
                 return true;
             }
             return $user->hasPermission('delete-finish-material');
+        });
+
+        Gate::define('view-add-finish-materials', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+
+            $stats1 = $user->hasPermission('view-finish-material');
+            $stats2 = $user->hasPermission('add-finish-material');
+
+            if ($stats1 || $stats2) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        Gate::define('export-finish-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('export-finish-material');
+        });
+
+        Gate::define('import-finish-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('import-finish-material');
+        });
+
+        // Dependent Materials Gates
+
+        Gate::define('view-dependent-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-dependent-material');
+        });
+
+        Gate::define('add-dependent-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('add-dependent-material');
+        });
+
+        Gate::define('edit-dependent-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('edit-dependent-material');
+        });
+
+        Gate::define('delete-dependent-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('delete-dependent-material');
         });
 
         Gate::define('view-add-finish-materials', function ($user) {
@@ -254,7 +327,21 @@ class AuthServiceProvider extends ServiceProvider
             return $user->hasPermission('delete-bom');
         });
 
-        // Bill of Materials Gates
+        Gate::define('export-bom', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('export-bom');
+        });
+
+        Gate::define('import-bom', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('import-bom');
+        });
+
+        // Warehouse Gates
 
         Gate::define('view-stock', function ($user) {
             if ($this->isAdmin($user)) {
