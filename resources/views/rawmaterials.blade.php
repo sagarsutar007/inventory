@@ -411,6 +411,11 @@
             @if(session('success'))
                 toastr.success('{{ session('success') }}');
             @endif
+
+            // Show Notices Message
+            @if(session()->has('notice'))
+                toastr.warning({{ session('notice') }});
+            @endif
         });
     </script>
 @stop

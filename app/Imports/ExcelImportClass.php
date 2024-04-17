@@ -9,6 +9,8 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Events\AfterImport;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 use App\Models\Commodity;
 use App\Models\Category;
@@ -29,6 +31,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
     protected $data;
     private $importedCount = 0;
     private $errors=[];
+    private $notices=[];
 
     public function __construct($type, $user, $data = null)
     {
@@ -177,6 +180,16 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
     public function getErrorMessages()
     {
         return $this->errors;
+    }
+
+    public function setNotices($data)
+    {
+        $this->notices[] = $data;
+    }
+
+    public function getNotices()
+    {
+        return $this->notices;
     }
 
     protected function addRawMaterial($data, $user, $rowCount)
@@ -409,14 +422,32 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
     protected function enterPurchase($material_id="", $vendor="", $price="")
     {
         if (!empty($material_id) && !empty($vendor) && !empty($price)) {
-            $vendorInfo = Vendor::firstOrCreate([
-                'vendor_name' => $vendor,
-            ]);
 
-            MaterialPurchase::firstOrCreate([
-                'material_id' => $material_id,
-                'vendor_id' => $vendorInfo->vendor_id
-            ],['price' => $price] );  
+            $vendorInfo = Vendor::where('vendor_name', 'like', $vendor)->first();
+
+            if ($vendorInfo) {
+                MaterialPurchase::firstOrCreate([
+                    'material_id' => $material_id,
+                    'vendor_id' => $vendorInfo->vendor_id
+                ],['price' => $price] );
+            } else {
+                if (Gate::forUser(Auth::user())->allows('admin') || Gate::forUser(Auth::user())->allows('add-vendor')) {
+
+                    $vendor = Vendor::create([
+                        'vendor_name' => $vendor,
+                        'vendor_id' => Str::uuid(),
+                        'created_at' => Carbon::now()
+                    ]);
+
+                    MaterialPurchase::create([
+                        'material_id' => $material_id,
+                        'vendor_id' => $vendorInfo->vendor_id,
+                        'price' => $price,
+                    ]);
+                } else {
+                    $this->setNotices([ 'message' => $vendor . " couldn't be created due to insufficient permission."]);
+                }
+            } 
         }
     }
 }

@@ -155,7 +155,7 @@ class RawMaterialController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => count($materials),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 
@@ -191,7 +191,6 @@ class RawMaterialController extends Controller
         ]);
 
         $file = $request->file('file');
-
         $import = new ExcelImportClass('raw-material', Auth::id());
         Excel::import($import, $file);
 
@@ -201,6 +200,14 @@ class RawMaterialController extends Controller
 
         if ( $warnings ) {
             return redirect()->back()->with('warnings', $warnings);
+        }
+
+        $notices = $import->getNotices();
+
+        if (!empty($notices)) {
+            foreach ($notices as $notice) {
+                session()->flash('notice', $notice['message']);
+            }
         }
 
         return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
@@ -283,18 +290,37 @@ class RawMaterialController extends Controller
             ]);
         }
         $vendor_id = null;
+        $notices = [];
+
         for ($i = 0; $i < count($validatedData['vendor']); $i++) {
             if (!empty ($validatedData['vendor'][$i])) {
-                $vendor = Vendor::firstOrCreate(
-                    ['vendor_name' => $validatedData['vendor'][$i]],
-                    ['vendor_id' => Str::uuid(), 'created_at' => Carbon::now()]
-                );
 
-                MaterialPurchase::create([
-                    'material_id' => $rawMaterial->material_id,
-                    'vendor_id' => $vendor->vendor_id,
-                    'price' => $validatedData['price'][$i],
-                ]);
+                $vendor = Vendor::where('vendor_name', 'like', $validatedData['vendor'][$i])->first();
+
+                if ($vendor) {
+                    MaterialPurchase::create([
+                        'material_id' => $rawMaterial->material_id,
+                        'vendor_id' => $vendor->vendor_id,
+                        'price' => $validatedData['price'][$i],
+                    ]);
+                } else {
+                    if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-vendor', Auth::user()) ) {
+
+                        $vendor = Vendor::create([
+                            'vendor_name' => $validatedData['vendor'][$i],
+                            'vendor_id' => Str::uuid(), 
+                            'created_at' => Carbon::now()
+                        ]);
+    
+                        MaterialPurchase::create([
+                            'material_id' => $rawMaterial->material_id,
+                            'vendor_id' => $vendor->vendor_id,
+                            'price' => $validatedData['price'][$i],
+                        ]);
+                    } else {
+                        $notices[] = [ 'message' => $validatedData['vendor'][$i] . " couldn't be created due to insufficient permission."];
+                    }
+                }
             }
         }
 
@@ -310,9 +336,19 @@ class RawMaterialController extends Controller
         $stock->save();
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Raw material added successfully.'], 200);
+            $response = ['success' => true, 'message' => 'Raw material added successfully.'];
+            if (!empty($notices)) {
+                $response['notices'] = $notices;
+            }
+            return response()->json($response, 200);
         } else {
-            return redirect()->route('raw')->with('success', 'Raw material added successfully.');
+            $successMessage = 'Raw material added successfully.';
+            if (!empty($notices)) {
+                foreach ($notices as $notice) {
+                    session()->flash('notice', $notice['message']);
+                }
+            }
+            return redirect()->route('raw')->with('success', $successMessage);
         }
     }
 

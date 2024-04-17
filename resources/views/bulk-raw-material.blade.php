@@ -93,6 +93,11 @@
             @if (session('warnings'))
                 $("#warningModal").modal('show');
             @endif
+
+            // Show Notices Message
+            @if(session()->has('notice'))
+                toastr.warning('{{ session('notice') }}');
+            @endif
         });
     </script>
 @stop

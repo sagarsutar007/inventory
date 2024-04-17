@@ -8,7 +8,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <h3 class="card-title">{{ $user->employee_id . " - " . $user->name }}</h3> <br>
-                    <p class="text-sm text-secondary m-0">Edit Permissions</p>
+                    <p class="text-sm text-secondary m-0">Current Role: {{$user->role->role->name}}</p>
                 </div>
                 <div class="card-body">
                     <form action="{{ route('users.setPermission', $user->id) }}" method="POST">

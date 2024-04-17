@@ -170,7 +170,6 @@
                                 <textarea class="form-control" name="additional_notes" placeholder="Additional notes">{{ old('additional_notes') }}</textarea>
                             </div>
                         </div>
-                        @can('add-vendor')
                         <div class="vendor-price-container">
                             @if ($errors->any())
                                 @foreach(old('vendor', ['']) as $index => $vendor)
@@ -238,7 +237,6 @@
                             </div>
                             @endif
                         </div>
-                        @endcan
                     </div>
                 </div>
                 <div class="card-footer text-right">
