@@ -21,7 +21,11 @@ class WarehouseController extends Controller
      */
     public function index()
     {
-        return view('warehouse.list');
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-stock', Auth::user())) {
+            return view('warehouse.list');
+        } else {
+            abort(403);
+        }
     }
 
     public function transactions()

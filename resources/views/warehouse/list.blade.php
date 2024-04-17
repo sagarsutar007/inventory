@@ -1,13 +1,13 @@
 @extends('adminlte::page')
 
-@section('title', 'Warehouse')
+@section('title', 'Realtime Stock')
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Warehouse</h3>
+                    <h3 class="card-title">Realtime Stock</h3>
                     <div class="card-tools">
                         <div class="btn-group">
                             <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">
@@ -78,8 +78,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('wh.getWarehouseRecords') }}",
                     "type": "POST",

@@ -51,7 +51,7 @@
                                 <th>Description</th>
                                 <th>Commodity</th>
                                 <th>Category</th>
-                                <th>Reciept Date</th>
+                                <th>Issue Date</th>
                                 <th>Quantity</th>
                                 <th>Unit</th>
                                 <th>Price 3</th>
