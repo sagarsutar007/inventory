@@ -9,7 +9,9 @@ use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
+use App\Imports\ExcelImportClass;
 use Carbon\Carbon;
+use Excel;
 
 use App\Models\Category;
 use App\Models\Commodity;
@@ -156,6 +158,44 @@ class FinishedMaterialController extends Controller
         $stock->save();
 
         return redirect()->route('finished')->with('success', 'Material added successfully.');
+    }
+
+    public function bulk()
+    {
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-finish-material', Auth::user())) {
+            return view('finished-goods.bulk-finish-material');
+        } else {
+            abort(403);
+        }
+    }
+
+    public function bulkStore(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+        $import = new ExcelImportClass('finished-material', Auth::id());
+        Excel::import($import, $file);
+
+        $importedRows = $import->getImportedCount();
+
+        $warnings = $import->getErrorMessages();
+
+        if ( $warnings ) {
+            return redirect()->back()->with('warnings', $warnings);
+        }
+
+        $notices = $import->getNotices();
+
+        if (!empty($notices)) {
+            foreach ($notices as $notice) {
+                session()->flash('notice', $notice['message']);
+            }
+        }
+
+        return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
     }
 
     public function checkPartcode(Request $request)

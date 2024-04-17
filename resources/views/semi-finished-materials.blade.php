@@ -11,6 +11,7 @@
                     <div class="card-tools">
                         @can('add-semi-material')
                         <a class="btn btn-light btn-sm" href="{{ route('semi.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
+                        <a class="btn btn-light btn-sm" href="{{ route('semi.bulk') }}"><i class="fas fa-file-import text-secondary"></i> Bulk Upload</a>
                         @endcan
                     </div>
                 </div>

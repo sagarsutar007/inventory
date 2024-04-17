@@ -122,6 +122,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{material}/show', [SemiFinishedMaterialController::class, 'show'])->name('semi.show');
         Route::get('/add', [SemiFinishedMaterialController::class, 'create'])->name('semi.add');
         Route::post('/store', [SemiFinishedMaterialController::class, 'store'])->name('semi.store');
+        Route::get('/bulk', [SemiFinishedMaterialController::class, 'bulk'])->name('semi.bulk');
+        Route::post('/bulk-store', [SemiFinishedMaterialController::class, 'bulkStore'])->name('semi.bulkStore');
         Route::get('/{material}/edit', [SemiFinishedMaterialController::class, 'edit'])->name('semi.edit');
         Route::post('/{material}/update', [SemiFinishedMaterialController::class, 'update'])->name('semi.update');
         Route::delete('/{material}', [SemiFinishedMaterialController::class, 'destroy'])->name('semi.destroy');
@@ -135,6 +137,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{material}/show', [FinishedMaterialController::class, 'show'])->name('finished.show');
         Route::get('/add', [FinishedMaterialController::class, 'create'])->name('finished.add');
         Route::post('/store', [FinishedMaterialController::class, 'store'])->name('finished.store');
+        Route::get('/bulk', [FinishedMaterialController::class, 'bulk'])->name('finished.bulk');
+        Route::post('/bulk-store', [FinishedMaterialController::class, 'bulkStore'])->name('finished.bulkStore');
         Route::get('/{material}/edit', [FinishedMaterialController::class, 'edit'])->name('finished.edit');
         Route::post('/{material}/update', [FinishedMaterialController::class, 'update'])->name('finished.update');
         Route::delete('/{material}', [FinishedMaterialController::class, 'destroy'])->name('finished.destroy');

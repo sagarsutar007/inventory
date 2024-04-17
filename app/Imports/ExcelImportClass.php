@@ -61,11 +61,11 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                 }
 
                 return true;
-            } elseif ($this->type === "raw-material") {
+            } elseif ($this->type === "raw-material" || $this->type === "semi-material" || $this->type === "finished-material") {
                 $this->importedCount--;
                 $rowCount = 3;
                 foreach ($rows->slice(2) as $row) {
-                    $this->addRawMaterial($row, $this->user, $rowCount);
+                    $this->addMaterial($row, $this->user, $rowCount, $this->type);
                     $rowCount++;
                 }
             } elseif ($this->type === "bom") {
@@ -192,7 +192,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         return $this->notices;
     }
 
-    protected function addRawMaterial($data, $user, $rowCount)
+    protected function addMaterial($data, $user, $rowCount, $type)
     {
         if (count($data)) {
             if (!empty($data[0]) && !empty($data[2]) && !empty($data[3])) {
@@ -205,48 +205,89 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                     $this->setErrorMessages(['status'=>'error', 'message' => 'Unit is empty. You can set it by editing material', 'row' => $rowCount]);
                 }
 
-                if (!empty($data[6]) && !empty($data[7])) {
-                    $dm = DependentMaterial::where('description', 'like', $data[6])->where('frequency', 'like', $data[7])->first();
-                } else {
-                    if (empty($data[6])) {
-                        $this->setErrorMessages(['status'=>'warning', 'message' => 'Dependent material is empty. You can set it later.', 'row' => $rowCount]);
-                    } else {
-                        $this->setErrorMessages(['status'=>'warning', 'message' => 'Dependent material frequency is blank', 'row' => $rowCount]);
-                    }
-                }
-
                 if ($commodity && $category) {
                     try {
-                        $material = RawMaterial::where('description', 'like', $data[0])->first();
-                        if (!$material) {
-                            $rawMaterial = RawMaterial::firstOrCreate(
-                                [
-                                    'description' => $data[0],
-                                    'type' => 'raw',
-                                ],
-                                [
-                                    'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number),
+                        if ($type == "raw-material") {
+
+                            if (!empty($data[6]) && !empty($data[7])) {
+                                $dm = DependentMaterial::where('description', 'like', $data[6])->where('frequency', 'like', $data[7])->first();
+                            } else {
+                                if (empty($data[6])) {
+                                    $this->setErrorMessages(['status'=>'warning', 'message' => 'Dependent material is empty. You can set it later.', 'row' => $rowCount]);
+                                } else {
+                                    $this->setErrorMessages(['status'=>'warning', 'message' => 'Dependent material frequency is blank', 'row' => $rowCount]);
+                                }
+                            }
+
+                            $material = RawMaterial::where('description', 'like', $data[0])->first();
+                            if (!$material) {
+                                $rawMaterial = RawMaterial::firstOrCreate(
+                                    [
+                                        'description' => $data[0],
+                                        'type' => 'raw',
+                                    ],
+                                    [
+                                        'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number, $type),
+                                        'description' => $data[0],
+                                        'uom_id' => $uom->uom_id ?? '',
+                                        'type' => 'raw',
+                                        'make' => $data[4],
+                                        'mpn' => $data[5],
+                                        'category_id' => $category->category_id,
+                                        'commodity_id' => $commodity->commodity_id,
+                                        'dm_id' => $dm->dm_id ?? '',
+                                        're_order' => $data[8],
+                                        'additional_notes' => $data[15],
+                                        'created_by' => $user
+                                    ]
+                                );
+                                
+                                $this->enterPurchase($rawMaterial->material_id, $data[9], $data[10]);
+                                $this->enterPurchase($rawMaterial->material_id, $data[11], $data[12]);
+                                $this->enterPurchase($rawMaterial->material_id, $data[13], $data[14]);
+                            } else {
+                                $this->setErrorMessages(['status'=>'error', 'message' => $data[0] . ' already exists in the master with partcode ' . $material->part_code, 'row' => $rowCount]);
+                            }
+                        } else if ($type == "semi-material") {
+                            $material = Material::where('description', 'like', $data[0])->where('type', 'like', 'semi-finished')->first();
+                            
+                            if (empty($material)) {
+
+                                Material::create([
+                                    'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number, $type),
                                     'description' => $data[0],
                                     'uom_id' => $uom->uom_id ?? '',
-                                    'type' => 'raw',
-                                    'make' => $data[4],
-                                    'mpn' => $data[5],
+                                    'type' => 'semi-finished',
                                     'category_id' => $category->category_id,
                                     'commodity_id' => $commodity->commodity_id,
-                                    'dm_id' => $dm->dm_id ?? '',
-                                    're_order' => $data[8],
-                                    'additional_notes' => $data[15],
+                                    'dm_id' => '',
+                                    'make' => '',
+                                    'mpn' => '',
+                                    're_order' => $data[4],
+                                    'additional_notes' => $data[5],
                                     'created_by' => $user
-                                ]
-                            );
-                            
-                            $this->enterPurchase($rawMaterial->material_id, $data[9], $data[10]);
-                            $this->enterPurchase($rawMaterial->material_id, $data[11], $data[12]);
-                            $this->enterPurchase($rawMaterial->material_id, $data[13], $data[14]);
+                                ]);
+                            } else {
+                                $this->setErrorMessages(['status'=>'error', 'message' => $data[0] . ' already exists in the master with partcode ' . $material->part_code, 'row' => $rowCount]);
+                            }
                         } else {
-                            $this->setErrorMessages(['status'=>'error', 'message' => $data[0] . ' already exists in the master with partcode ' . $material->part_code, 'row' => $rowCount]);
+                            $material = Material::where('description', 'like', $data[0])->where('type', 'finished')->first();
+                            if (!$material) {
+                                Material::create([
+                                    'part_code' => $this->generatePartCode($commodity->commodity_number, $category->category_number, $type),
+                                    'description' => $data[0],
+                                    'uom_id' => $uom->uom_id ?? '',
+                                    'type' => 'finished',
+                                    'category_id' => $category->category_id,
+                                    'commodity_id' => $commodity->commodity_id,
+                                    're_order' => $data[4],
+                                    'additional_notes' => $data[5],
+                                    'created_by' => $user
+                                ]);
+                            } else {
+                                $this->setErrorMessages(['status'=>'error', 'message' => $data[0] . ' already exists in the master with partcode ' . $material->part_code, 'row' => $rowCount]);
+                            }
                         }
-                        
                     } catch (\Throwable $th) {
                         throw $th;
                     }
@@ -347,7 +388,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         return $this->importedCount;
     }
 
-    protected function generatePartCode($commodity_number = '', $category_number = '')
+    protected function generatePartCode($commodity_number = '', $category_number = '', $type='')
     {
         if ($commodity_number && $category_number) {
             $commodityCode = $commodity_number;
@@ -355,18 +396,30 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
 
             try {
                 \DB::beginTransaction();
-                $lastMaterial = RawMaterial::where('type', 'raw')
-                ->latest('created_at')
-                ->value('part_code');
-                $lastPartCode = $lastMaterial ? substr($lastMaterial, -5) + 1 : 1;
+                if ($type == "raw-material") {
 
-                do {
-                    $newPartCode = $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);
-                    $exists = RawMaterial::where('part_code', $newPartCode)->exists();
-                    if ($exists) {
-                        $lastPartCode++;
-                    }
-                } while ($exists);
+                    $lastMaterial = RawMaterial::where('type', 'raw')
+                    ->latest('created_at')
+                    ->value('part_code');
+                    $lastPartCode = $lastMaterial ? substr($lastMaterial, -5) + 1 : 1;
+
+                    do {
+                        $newPartCode = $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);
+                        $exists = RawMaterial::where('part_code', $newPartCode)->exists();
+                        if ($exists) {
+                            $lastPartCode++;
+                        }
+                    } while ($exists);
+
+                } else if ($type == "semi-material") {
+                    $lastMaterial = Material::where('type', '=', 'semi-finished')->latest()->first();
+                    $lastPartCode = $lastMaterial ? substr($lastMaterial->part_code, -5) + 1 : 1;
+                    $newPartCode = 'SF' . $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);
+                } else {
+                    $lastMaterial = Material::where('type', '=', 'finished')->latest()->first();
+                    $lastPartCode = $lastMaterial ? substr($lastMaterial->part_code, -5) + 1 : 1;
+                    $newPartCode = 'FG' . $commodityCode . $categoryCode . str_pad($lastPartCode, 5, '0', STR_PAD_LEFT);
+                }
 
                 \DB::commit();
 

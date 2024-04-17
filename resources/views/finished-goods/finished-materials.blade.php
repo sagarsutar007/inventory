@@ -11,6 +11,7 @@
                     <div class="card-tools">
                         @can('add-finish-material')
                         <a class="btn btn-light btn-sm" href="{{ route('finished.add') }}"><i class="fa fa-plus text-secondary"></i> Add New</a>
+                        <a class="btn btn-light btn-sm" href="{{ route('finished.bulk') }}"><i class="fas fa-file-import text-secondary"></i> Bulk Upload</a>
                         @endcan
                     </div>
                 </div>

@@ -9,7 +9,9 @@ use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
+use App\Imports\ExcelImportClass;
 use Carbon\Carbon;
+use Excel;
 
 use App\Models\Category;
 use App\Models\Commodity;
@@ -155,6 +157,44 @@ class SemiFinishedMaterialController extends Controller
         $stock->save();
 
         return redirect()->route('semi')->with('success', 'Material added successfully.');
+    }
+
+    public function bulk()
+    {
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('add-semi-material', Auth::user())) {
+            return view('bulk-semi-material');
+        } else {
+            abort(403);
+        }
+    }
+
+    public function bulkStore(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+        $import = new ExcelImportClass('semi-material', Auth::id());
+        Excel::import($import, $file);
+
+        $importedRows = $import->getImportedCount();
+
+        $warnings = $import->getErrorMessages();
+
+        if ( $warnings ) {
+            return redirect()->back()->with('warnings', $warnings);
+        }
+
+        $notices = $import->getNotices();
+
+        if (!empty($notices)) {
+            foreach ($notices as $notice) {
+                session()->flash('notice', $notice['message']);
+            }
+        }
+
+        return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
     }
 
     /**
