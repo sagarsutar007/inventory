@@ -33,6 +33,17 @@
             </div>
         </div>
     </div>
+
+    <x-adminlte-modal id="view-modal" title="View BOM Cost" icon="fas fa-box" size='xl' scrollable>
+        <div class="row">
+            <div class="col-12" id="view-modal-section">
+                <h4 class="text-secondary text-center">Loading...</h4>
+            </div>
+        </div>
+        <x-slot name="footerSlot">
+            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+        </x-slot>
+    </x-adminlte-modal>
 @stop
 
 @section('js')
@@ -84,7 +95,13 @@
                 },
                 "columns": [
                     { "data": "serial", "name": "serial" },
-                    { "data": "code", "name": "part_code" },
+                    { 
+                        "data": "code", 
+                        "name": "part_code",
+                        "render": function(data, type, row, meta) {
+                            return '<a href="#" data-partcode="'+data+'" data-description="'+row.material_name+'" data-unit="'+row.unit+'" data-toggle="modal" data-target="#view-modal">' + data + '</a>';
+                        }
+                    },
                     { "data": "material_name", "name": "description" },
                     { "data": "commodity", "name": "commodity" },
                     { "data": "category", "name": "category" },
@@ -107,6 +124,91 @@
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
+            });
+
+
+            $('#view-modal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var partcode = button.data('partcode');
+                var description = button.data('description');
+                var unit = button.data('unit');
+                var modal = $(this);
+
+                modal.find('.modal-title').text("View BOM Cost of #" + partcode + "-" + description + "(" + unit + ")");
+
+                var part_code_array = [partcode];
+                var quantity_array = [1];
+
+                // Creating data object
+                var data = {
+                    _token: '{{ csrf_token() }}',
+                    part_code: part_code_array,
+                    quantity: quantity_array
+                };
+
+                // Convert data object to JSON string
+                var jsonData = data;
+
+                $.ajax({
+                    url: "{{ route('bom.getBomRecords') }}",
+                    method: 'POST',
+                    data: jsonData,
+                    success: function(response) {
+                        if (response.status) {
+                            $("#view-modal-section").html(response.html);
+
+                            $("#bom-table").DataTable({
+                                "responsive": true,
+                                "lengthChange": true,
+                                "autoWidth": true,
+                                "paging": false,
+                                "info": false,
+                                "buttons": [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    'colvis',
+                                ],
+                                "processing": false,
+                                "searching": false,
+                                "ordering": false,
+                                "dom": 'lBfrtip',
+                                "language": {
+                                    "lengthMenu": "_MENU_"
+                                },
+                                "lengthMenu": [
+                                    [ -1, 10, 25, 50, 100],
+                                    ['All', 10, 25, 50, 100]
+                                ]
+                            });
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+
+            $('#view-modal').on('hide.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                $("#view-modal-section").html(`
+                    <h4 class="text-secondary text-center">Loading...</h4>
+                `);
             });
         })
     </script>
