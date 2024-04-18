@@ -118,6 +118,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/stock-list', [RawMaterialController::class, 'fetchRmStockList'])->name('raw.fetchRmStockList');
         Route::get('/vendors-price-list', [RawMaterialController::class, 'vendorPriceList'])->name('raw.vendorPriceList');
         Route::post('/vendors-price-list', [RawMaterialController::class, 'fetchVendorPriceList'])->name('raw.fetchVendorPriceList');
+        Route::get('/bulk-price', [RawMaterialController::class, 'bulkPrice'])->name('raw.bulkPrice');
+        Route::post('/bulk-price-store', [RawMaterialController::class, 'bulkPriceStore'])->name('raw.bulkPriceStore');
+
     });
 
     // Semi Finished Material Routes

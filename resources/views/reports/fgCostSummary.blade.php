@@ -125,8 +125,7 @@
                     "lengthMenu": "_MENU_"
                 },
             });
-
-
+            
             $('#view-modal').on('show.bs.modal', function (event) {
                 var button = $(event.relatedTarget);
                 var partcode = button.data('partcode');

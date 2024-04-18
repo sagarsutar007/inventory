@@ -100,6 +100,13 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                 }else {
                     throw new \Exception(implode("\n", $errors));
                 }
+            } elseif ($this->type === "rm-price") {
+                $this->importedCount--;
+                $rowCount = 2;
+                foreach ($rows->slice(1) as $row) {
+                    $this->updatePrice($row, $this->user, $rowCount, $this->type);
+                    $rowCount++;
+                }
             }
             
             if (count($this->errors)) {
@@ -317,6 +324,32 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         }
     }
 
+    protected function updatePrice($data, $user, $rowCount, $type)
+    {
+        $columns = count($data);
+
+        if ($columns) {
+            if (!empty($data[0])) {
+                try {
+
+                    $material = RawMaterial::where('part_code', 'like', $data[0])->first();
+
+                    if ($material) {
+                        for ($i=3; $i < $columns; $i+=2) { 
+                            $this->enterPurchase($material->material_id, $data[$i], $data[$i + 1]);
+                        }
+                    } else {
+                        $this->setErrorMessages(['status'=>'error', 'message' => $data[0] . ' doesn\'t exists in the master', 'row' => $rowCount]);
+                    }
+                } catch (\Throwable $th) {
+                    throw $th;
+                }
+            }else {
+                $this->setErrorMessages(['status'=>'error', 'message' => 'Partcode is empty. It is required.', 'row' => $rowCount]);
+            }
+        }
+    }
+
     protected function importBom($data, $user, $extraData)
     {
         if (count($data)) {
@@ -479,7 +512,7 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
             $vendorInfo = Vendor::where('vendor_name', 'like', $vendor)->first();
 
             if ($vendorInfo) {
-                MaterialPurchase::firstOrCreate([
+                MaterialPurchase::updateOrCreate([
                     'material_id' => $material_id,
                     'vendor_id' => $vendorInfo->vendor_id
                 ],['price' => $price] );

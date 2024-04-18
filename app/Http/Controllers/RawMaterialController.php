@@ -1157,15 +1157,15 @@ class RawMaterialController extends Controller
 
     public function fetchVendorPriceList(Request $request)
     {
-        // $draw = $request->input('draw');
-        // $start = $request->input('start');
-        // $length = $request->input('length');
-        // $search = $request->input('search')['value'];
+        $draw = $request->input('draw');
+        $start = $request->input('start');
+        $length = $request->input('length');
+        $search = $request->input('search')['value'];
 
-        // $order = $request->input('order');
-        // $columnIndex = $order[0]['column'];
-        // $columnName = $request->input('columns')[$columnIndex]['name'];
-        // $columnSortOrder = $order[0]['dir'];
+        $order = $request->input('order');
+        $columnIndex = $order[0]['column'];
+        $columnName = $request->input('columns')[$columnIndex]['name'];
+        $columnSortOrder = $order[0]['dir'];
 
         $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
 
@@ -1221,9 +1221,27 @@ class RawMaterialController extends Controller
 
         foreach ($items as $index => $item) {
 
-            $purchase = MaterialPurchase::where('material_id', 'like', $item->part_code)->get();
-            dd($purchase->toArray());
-            $data[] = [
+            $purchases = MaterialPurchase::where('material_id', 'like', $item->material_id)->get();
+
+            $purArr = [];
+
+            if ($purchases->isNotEmpty()) {
+                foreach ($purchases as $purchase => $pur) {
+                    $purArr['vendor_' . $purchase + 1 ] = $pur->vendor->vendor_name;
+                    $purArr['price_' . $purchase + 1 ] = formatPrice($pur->price);
+                }
+            }else {
+                $purArr = [
+                    'vendor_1' => null,
+                    'price_1' => null,
+                    'vendor_2' => null,
+                    'price_2' => null,
+                    'vendor_3' => null,
+                    'price_3' => null,
+                ];
+            }
+
+            $data[] = array_merge([
                 'serial' => $index + 1,
                 'part_code' => $item->part_code,
                 'description' => $item->description,
@@ -1232,10 +1250,7 @@ class RawMaterialController extends Controller
                 'make' => $item->make,
                 'mpn' => $item->mpn,
                 'uom_shortcode' => $item->uom?->uom_shortcode,
-                'price_1' => number_format($item->min_price, 2),
-                'price_2' => number_format($item->avg_price, 2),
-                'price_3' => number_format($item->max_price, 2),
-            ];
+            ], $purArr);
         }
 
         $response = [
@@ -1246,6 +1261,44 @@ class RawMaterialController extends Controller
         ];
 
         return response()->json($response);
+    }
+
+    public function bulkPrice()
+    {
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('import-raw-vendor-price', Auth::user())) {
+            return view('bulk-material-price-list');
+        } else {
+            abort(403);
+        }
+    }
+
+    public function bulkPriceStore(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls',
+        ]);
+
+        $file = $request->file('file');
+        $import = new ExcelImportClass('rm-price', Auth::id());
+        Excel::import($import, $file);
+
+        $importedRows = $import->getImportedCount();
+
+        $warnings = $import->getErrorMessages();
+
+        if ( $warnings ) {
+            return redirect()->back()->with('warnings', $warnings);
+        }
+
+        $notices = $import->getNotices();
+
+        if (!empty($notices)) {
+            foreach ($notices as $notice) {
+                session()->flash('notice', $notice['message']);
+            }
+        }
+
+        return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
     }
 
 }
