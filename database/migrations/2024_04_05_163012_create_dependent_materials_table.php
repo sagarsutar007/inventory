@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('dependent_materials', function (Blueprint $table) {
             $table->uuid('dm_id')->primary();
-            $table->string('description', 120)->unique();
+            $table->string('description', 120);
             $table->enum('frequency', ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Bi-monthly', 'Quarterly', 'Half-yearly', 'Yearly', 'Other'])->default('Monthly');
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
