@@ -101,7 +101,6 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                     throw new \Exception(implode("\n", $errors));
                 }
             } elseif ($this->type === "rm-price") {
-                $this->importedCount--;
                 $rowCount = 2;
                 foreach ($rows->slice(1) as $row) {
                     $this->updatePrice($row, $this->user, $rowCount, $this->type);
