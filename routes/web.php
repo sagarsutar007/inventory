@@ -37,7 +37,10 @@ Route::get('/', function () {
 });
 
 // Authentication Routes
-Auth::routes();
+// Auth::routes();
+
+Auth::routes(['register' => false]);
+
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {

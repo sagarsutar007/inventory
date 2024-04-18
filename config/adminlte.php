@@ -531,33 +531,22 @@ return [
             'icon' => 'fas fa-fw fa-lock',
         ],
         [
-            'text' => 'Settings',
-            'icon' => 'fas fa-fw fa-cog',
+            'text' => 'Users Setting',
+            'url' => '#',
+            'can' => 'admin',
+            'icon' => 'fas fa-fw fa-users',
             'submenu' => [
                 [
-                    'text' => 'App Settings',
-                    'url' => '#',
+                    'text' => 'User Roles',
+                    'url' => 'app/roles',
                 ],
                 [
-                    'text' => 'User Settings',
-                    'url' => '#',
-                    'submenu' => [
-                        [
-                            'text' => 'User Roles',
-                            'url' => 'app/roles',
-                        ],
-                        [
-                            'text' => 'User Permissions',
-                            'url' => 'app/permissions',
-                        ],
-                        [
-                            'text' => 'Users List',
-                            'url' => 'app/users',
-                        ],
-                    ],
+                    'text' => 'Users List',
+                    'url' => 'app/users',
                 ],
             ],
         ],
+            
     ],
 
     /*
