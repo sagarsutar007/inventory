@@ -339,6 +339,11 @@ return [
                     'can' => 'view-raw-materials',
                     'active' => []
                 ],
+                [
+                    'text' => 'Price List',
+                    'url' => 'app/raw-materials/vendors-price-list',
+                    'can' => 'view-raw-vendor-price',
+                ]
             ],
             'active' => []
         ],

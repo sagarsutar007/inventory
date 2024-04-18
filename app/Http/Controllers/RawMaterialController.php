@@ -1146,4 +1146,106 @@ class RawMaterialController extends Controller
         return true;
     }
 
+    public function vendorPriceList()
+    {
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-vendor-price', Auth::user())) {
+            return view('raw-material-vendor-price');
+        } else {
+            abort(403);
+        }
+    }
+
+    public function fetchVendorPriceList(Request $request)
+    {
+        // $draw = $request->input('draw');
+        // $start = $request->input('start');
+        // $length = $request->input('length');
+        // $search = $request->input('search')['value'];
+
+        // $order = $request->input('order');
+        // $columnIndex = $order[0]['column'];
+        // $columnName = $request->input('columns')[$columnIndex]['name'];
+        // $columnSortOrder = $order[0]['dir'];
+
+        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
+
+        if (!empty ($search)) {
+            $query->where(function ($query) use ($search) {
+                $query->where('part_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('min_price', 'like', '%' . $search . '%')
+                    ->orWhere('avg_price', 'like', '%' . $search . '%')
+                    ->orWhere('max_price', 'like', '%' . $search . '%')
+                    ->orWhere('make', 'like', '%' . $search . '%')
+                    ->orWhere('mpn', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($query) use ($search) {
+                        $query->where('category_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('commodity', function ($query) use ($search) {
+                        $query->where('commodity_name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('uom', function ($query) use ($search) {
+                        $query->where('uom_shortcode', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        $totalRecords = $query->count();
+
+        if (!in_array($columnName, ['serial',])) {
+
+            if ($columnName === 'uom_shortcode') {
+                $query->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
+                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
+            } elseif ($columnName === 'commodity_name') {
+                $query->join('commodities', 'commodities.commodity_id', '=', 'materials.commodity_id')
+                    ->orderBy('commodities.commodity_name', $columnSortOrder);
+            } elseif ($columnName === 'category_name') {
+                $query->join('categories', 'categories.category_id', '=', 'materials.category_id')
+                    ->orderBy('categories.category_name', $columnSortOrder);
+            } else {
+                $query->orderBy($columnName, $columnSortOrder);
+            }
+        }
+
+        if ($length == -1) {
+            $items = $query->get();
+            $total = count($items);
+        } else {
+            $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $items = $materials->items();
+            $total = $materials->total();
+        }
+        
+        $data = [];
+
+        foreach ($items as $index => $item) {
+
+            $purchase = MaterialPurchase::where('material_id', 'like', $item->part_code)->get();
+            dd($purchase->toArray());
+            $data[] = [
+                'serial' => $index + 1,
+                'part_code' => $item->part_code,
+                'description' => $item->description,
+                'commodity' => $item->commodity->commodity_name,
+                'category' => $item->category->category_name,
+                'make' => $item->make,
+                'mpn' => $item->mpn,
+                'uom_shortcode' => $item->uom?->uom_shortcode,
+                'price_1' => number_format($item->min_price, 2),
+                'price_2' => number_format($item->avg_price, 2),
+                'price_3' => number_format($item->max_price, 2),
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "recordsTotal" => $totalRecords,
+            "recordsFiltered" => $total,
+            "data" => $data,
+        ];
+
+        return response()->json($response);
+    }
+
 }

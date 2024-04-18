@@ -120,14 +120,29 @@ class AuthServiceProvider extends ServiceProvider
             return $user->hasPermission('delete-raw-material');
         });
 
+        Gate::define('view-raw-vendor-price', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-raw-vendor-price');
+        });
+
+        Gate::define('import-raw-vendor-price', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('import-raw-vendor-price');
+        });
+
         Gate::define('view-add-raw-materials', function ($user) {
             if ($this->isAdmin($user)) {
                 return true;
             }
             $stats1 = $user->hasPermission('view-raw-materials');
             $stats2 = $user->hasPermission('add-raw-material');
+            $stats3 = $user->hasPermission('view-raw-vendor-price');
 
-            if ($stats1 || $stats2) {
+            if ($stats1 || $stats2 || $stats3) {
                 return true;
             } else {
                 return false;
