@@ -1219,6 +1219,8 @@ class RawMaterialController extends Controller
         
         $data = [];
 
+        $maxVendorNum = 0;
+
         foreach ($items as $index => $item) {
 
             $purchases = MaterialPurchase::where('material_id', 'like', $item->material_id)->get();
@@ -1226,9 +1228,16 @@ class RawMaterialController extends Controller
             $purArr = [];
 
             if ($purchases->isNotEmpty()) {
+                $integ = 0;
+
                 foreach ($purchases as $purchase => $pur) {
                     $purArr['vendor_' . $purchase + 1 ] = $pur->vendor->vendor_name;
                     $purArr['price_' . $purchase + 1 ] = formatPrice($pur->price);
+                    $integ++;
+                }
+
+                if ($maxVendorNum < $integ) {
+                    $maxVendorNum = $integ;
                 }
             }else {
                 $purArr = [
@@ -1258,6 +1267,7 @@ class RawMaterialController extends Controller
             "recordsTotal" => $totalRecords,
             "recordsFiltered" => $total,
             "data" => $data,
+            "columnsCount" => $maxVendorNum,
         ];
 
         return response()->json($response);

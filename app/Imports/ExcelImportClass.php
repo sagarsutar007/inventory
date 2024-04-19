@@ -330,8 +330,9 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
         if ($columns) {
             if (!empty($data[0])) {
                 try {
-
                     $material = RawMaterial::where('part_code', 'like', $data[0])->first();
+                
+                    $material->purchases()->delete();
 
                     if ($material) {
                         for ($i=3; $i < $columns; $i+=2) { 
@@ -514,10 +515,10 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
                 MaterialPurchase::updateOrCreate([
                     'material_id' => $material_id,
                     'vendor_id' => $vendorInfo->vendor_id
-                ],['price' => $price] );
+                ],['price' => $price, 'updated_at' => Carbon::now() ] );
             } else {
                 if (Gate::forUser(Auth::user())->allows('admin') || Gate::forUser(Auth::user())->allows('add-vendor')) {
-
+                    // Add created_by and edited_by columns
                     $vendor = Vendor::create([
                         'vendor_name' => $vendor,
                         'vendor_id' => Str::uuid(),
@@ -526,8 +527,9 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
 
                     MaterialPurchase::create([
                         'material_id' => $material_id,
-                        'vendor_id' => $vendorInfo->vendor_id,
+                        'vendor_id' => $vendor->vendor_id,
                         'price' => $price,
+                        'created_at' => Carbon::now()
                     ]);
                 } else {
                     $this->setNotices([ 'message' => $vendor . " couldn't be created due to insufficient permission."]);

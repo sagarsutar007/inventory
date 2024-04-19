@@ -18,8 +18,8 @@
                     <div class="table-responsive">
                         <table id="rawmaterials" class="table table-bordered table-striped" style="width:100%;">
                             <thead>
-                                <tr>
-                                    <th>Sno.</th>
+                                <tr id="material-header">
+                                    {{-- <th>Sno.</th>
                                     <th>Part Code</th>
                                     <th>Description</th>
                                     <th>Commodity</th>
@@ -32,7 +32,7 @@
                                     <th>Vendor 2</th>
                                     <th>Price 2</th>
                                     <th>Vendor 3</th>
-                                    <th>Price 3</th>
+                                    <th>Price 3</th> --}}
                                 </tr>
                             </thead>
                             <tbody>
@@ -92,6 +92,25 @@
                     "type": "POST",
                     "data": function ( d ) {
                         d._token = '{{ csrf_token() }}';
+                    },
+                    "success": function(resp){
+                        console.log(resp);
+                        // $("#material-header").append(`
+                        //     <th>Sno.</th>
+                        //     <th>Part Code</th>
+                        //     <th>Description</th>
+                        //     <th>Commodity</th>
+                        //     <th>Category</th>
+                        //     <th>Unit</th>
+                        //     <th>Make</th>
+                        //     <th>MPN</th>
+                        //     <th>Vendor 1</th>
+                        //     <th>Price 1</th>
+                        //     <th>Vendor 2</th>
+                        //     <th>Price 2</th>
+                        //     <th>Vendor 3</th>
+                        //     <th>Price 3</th>
+                        // `);
                     }
                 },
                 "searching": true,
