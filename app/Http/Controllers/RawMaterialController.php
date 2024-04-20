@@ -909,15 +909,17 @@ class RawMaterialController extends Controller
             $query->where(function ($query) use ($search) {
                 $query->where('part_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('transaction_id', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
                     })
                     ->orWhereHas('commodity', function ($query) use ($search) {
                         $query->where('commodity_name', 'like', '%' . $search . '%');
                     })
-                    ->orWhereHas('warehouse_records', function ($query) use ($search) {
-                        $query->where('record_date', 'like', '%' . date('Y-m-d',strtotime($search)) . '%');
-                    });
+                    ->where('record_date', 'like', '%' . date('Y-m-d',strtotime($search)) . '%');
+                    // ->orWhereHas('warehouse_records', function ($query) use ($search) {
+                        // $query->where('record_date', 'like', '%' . date('Y-m-d',strtotime($search)) . '%');
+                    // });
             });
         }
 
