@@ -1,13 +1,13 @@
 @extends('adminlte::page')
 
-@section('title', 'Realtime Stock')
+@section('title', 'Real Time Stock')
 
 @section('content')
     <div class="row">
         <div class="col-12">
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3 class="card-title">Realtime Stock</h3>
+                    <h3 class="card-title">Real Time Stock</h3>
                     <div class="card-tools">
                         <div class="btn-group">
                             <button type="button" class="btn btn-light dropdown-toggle dropdown-icon-disabled btn-sm" data-toggle="dropdown" aria-expanded="false">

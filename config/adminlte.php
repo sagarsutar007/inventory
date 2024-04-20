@@ -416,11 +416,11 @@ return [
                     'url' => 'app/warehouse/receive',
                     'can' => 'receive-warehouse',
                 ],
-                [
-                    'text' => 'View Stock',
-                    'url' => 'app/warehouse',
-                    'can' => 'view-stock',
-                ],
+                // [
+                //     'text' => 'Real Time Stock',
+                //     'url' => 'app/warehouse',
+                //     'can' => 'view-stock',
+                // ],
                 [
                     'text' => 'View Transactions',
                     'url' => 'app/warehouse/transactions',
@@ -491,6 +491,11 @@ return [
                     'text' => 'RM Stock',
                     'url' => 'app/reports/rm-stock',
                     'can' => 'view-raw-stock',
+                ],
+                [
+                    'text' => 'Real Time Stock',
+                    'url' => 'app/warehouse',
+                    'can' => 'view-stock',
                 ],
                 [
                     'text' => 'Production Order',

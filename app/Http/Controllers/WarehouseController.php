@@ -71,7 +71,7 @@ class WarehouseController extends Controller
                 ->orderBy('materials.description', $columnSortOrder);
         } elseif ($columnName === 'uom_text') {
             $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
-                ->join('uom_units', 'uom_units.id', '=', 'materials.uom_id')
+                ->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
                 ->orderBy('uom_units.uom_text', $columnSortOrder);
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
@@ -99,7 +99,7 @@ class WarehouseController extends Controller
                     // 'sno' => $index + $start + 1,
                     'code' => $material->part_code,
                     'material_name' => $material->description,
-                    'unit' => $material->uom->uom_text,
+                    'unit' => $material->uom->uom_shortcode,
                     'opening_balance' => $warehouse->opening_balance,
                     'receipt_qty' => $warehouse->receipt_qty,
                     'issue_qty' => $warehouse->issue_qty,
@@ -145,9 +145,6 @@ class WarehouseController extends Controller
                 ->orWhere('transaction_id', 'like', '%' . $search . '%')
                 ->orWhere('date', 'like', '%' . date('Y-m-d', strtotime($search)) . '%');
         }
-
-        // print_r($query->toSql());
-        // exit();
 
         $totalRecords = $query->count();
 
@@ -416,6 +413,7 @@ class WarehouseController extends Controller
         $wh = Warehouse::with('production')->first();
 
         $finishedGood = $warehouse->production?->material->description;
+        
         $quantity = $warehouse->production?->quantity . " " . $warehouse->production?->material?->uom?->uom_shortcode;
 
         $context = [
@@ -424,7 +422,7 @@ class WarehouseController extends Controller
             'records' => $records
         ];
         $returnHTML = view('warehouse.viewModalForm', $context)->render();
-        return response()->json(array('status' => true, 'html' => $returnHTML, 'quantity' => $quantity, 'material' => $finishedGood));
+        return response()->json(array('status' => true, 'html' => $returnHTML, 'quantity' => $quantity??'', 'material' => $finishedGood??''));
         
     }
 

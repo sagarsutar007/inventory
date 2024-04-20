@@ -14,11 +14,15 @@
                 @endif
             @else
                 <th align="left">Receipt Date:</th>
-                <th align="left">{{ date('d-m-Y', strtotime($warehouse->created_at)) }}</th>
-                <th colspan="4">
+                <td align="left">{{ date('d-m-Y', strtotime($warehouse->created_at)) }}</td>
+                <th colspan="2">
                     <div style="display:flex;align-items: center; justify-content: space-between;">
-                        <span>Supplier Name: {{ $warehouse->vendor?->vendor_name }}</span>
-                        <span>PO No: {{ $warehouse->popn }}</span>
+                        <span>Supplier Name: <span class="font-weight-normal">{{ $warehouse->vendor?->vendor_name }}</span></span>
+                    </div>
+                </th>
+                <th colspan="2">
+                    <div style="display:flex;align-items: center; justify-content: space-between;">
+                        <span>PO No: <span class="font-weight-normal">{{ $warehouse->popn }}</span></span>
                     </div>
                 </th>
             @endif
@@ -27,7 +31,11 @@
             <th>S.no</th>
             <th>Part no</th>
             <th colspan="2">Description</th>
+            @if($warehouse->type == 'issue')
             <th>Qty Issued</th>
+            @else
+            <th>Qty Recieved</th>
+            @endif
             <th>UOM</th>
         </tr>
     </thead>

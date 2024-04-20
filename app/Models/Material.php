@@ -79,4 +79,9 @@ class Material extends Model
     {
         return $this->belongsTo(DependentMaterial::class, 'dm_id', 'dm_id');
     }
+
+    public function vendors()
+    {
+        return $this->hasManyThrough(Vendor::class, MaterialPurchase::class, 'material_id', 'vendor_id', 'material_id', 'vendor_id');
+    }
 }

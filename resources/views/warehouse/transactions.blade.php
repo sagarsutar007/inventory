@@ -99,8 +99,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('wh.getWarehouseTransactions') }}",
                     "type": "POST",
@@ -188,7 +186,12 @@
                     method: 'GET',
                     success: function(response) {
                         if (response.status) {
-                            modal.find('.modal-title').text("Transaction Details: #" + transId + "-" + response.material + "("+response.quantity+")");
+                            var title = "";
+                            if (response.material.length > 0) {
+                                title += " - " + response.material + " (<b>" + response.quantity + "</b>)";
+                            }
+
+                            modal.find('.modal-title').html("Transaction Details: # <b>" + transId + "</b>" + title);
                             $("#view-transaction-section").html(response.html);
                         }
                     },

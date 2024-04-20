@@ -47,6 +47,7 @@
                         <thead>
                             <tr>
                                 <th>S.no</th>
+                                <th>Transaction Id</th>
                                 <th>RM Part Code</th>
                                 <th>Description</th>
                                 <th>Commodity</th>
@@ -54,7 +55,7 @@
                                 <th>Issue Date</th>
                                 <th>Quantity</th>
                                 <th>Unit</th>
-                                <th>Price 3</th>
+                                <th>Avg. Price</th>
                                 <th>Amount</th>
                             </tr>
                         </thead>
@@ -149,6 +150,7 @@
                 },
                 "columns": [
                     { "data": "serial", "name": "serial" },
+                    { "data": "transaction_id", "name": "transaction_id" },
                     { "data": "part_code", "name": "part_code" },
                     { "data": "description", "name": "description" },
                     { "data": "commodity", "name": "commodity" },
@@ -164,7 +166,7 @@
                 // "order": [[0, 'desc']],
                 "columnDefs": [
                     {
-                        "targets": [7],
+                        "targets": [10],
                         "orderable": false
                     }
                 ],
