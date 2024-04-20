@@ -886,7 +886,7 @@ class RawMaterialController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = Material::query()
+        $query = Material::query()->where('materials.type', 'raw')
         ->with(['category', 'commodity'])
         ->join('warehouse_records', 'materials.material_id', '=', 'warehouse_records.material_id')
         ->join('warehouse', 'warehouse.warehouse_id', '=', 'warehouse_records.warehouse_id');

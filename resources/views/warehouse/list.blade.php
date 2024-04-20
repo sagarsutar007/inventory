@@ -96,7 +96,7 @@
                     { "data": "re_order", "name": "re_order" },
                     { "data": "re_order_status", "name": "re_order_status" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "columnDefs": [

@@ -61,7 +61,7 @@ class WarehouseController extends Controller
             });
         }
 
-        $totalRecords = $query->count();
+        
 
         if ($columnName === 'part_code') {
             $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
@@ -78,10 +78,17 @@ class WarehouseController extends Controller
         } else {
             // $query->orderBy($columnName, $columnSortOrder);
         }
-
+        
+        $totalRecords = $query->count();
         // Paginate the query
-        $whQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $warehouses = $whQuery->items();
+
+        if ($length == -1) {
+            $warehouses = $query->get();
+        } else {
+            $whQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $warehouses = $whQuery->items();
+        }
+        
         $data = [];
         foreach ($warehouses as $index => $warehouse) {
             $material = $warehouse->material;
@@ -113,7 +120,7 @@ class WarehouseController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $whQuery->total(),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 
