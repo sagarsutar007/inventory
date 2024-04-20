@@ -79,4 +79,6 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
   width: 98%;
 }
 
-
+.pagination {
+  justify-content: flex-end;
+}

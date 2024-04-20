@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Intervention\Image\Facades\Image;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Pagination\Paginator;
 use Carbon\Carbon;
 use Excel;
 
@@ -1146,133 +1147,89 @@ class RawMaterialController extends Controller
         return true;
     }
 
-    public function vendorPriceList()
+    public function vendorPriceList(Request $request)
     {
         if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-vendor-price', Auth::user())) {
-            return view('raw-material-vendor-price');
+
+            $data = [];
+            $maxVendorNum = 0;
+            $page = $request->input('page') ?? 1;
+            $length = $request->input('length') ?? 10;
+
+            $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
+
+            if ($length == -1) {
+                $page = 1;
+                $items = $query->get();
+            } else {
+                $materials = $query->paginate($length);
+                $items = $materials->items();
+            }
+
+            foreach ($items as $index => $item) {
+
+                $purchases = MaterialPurchase::where('material_id', 'like', $item->material_id)->get();
+                $purArr = [];
+                if ($purchases->isNotEmpty()) {
+                    $integ = 0;
+                    foreach ($purchases as $purchase => $pur) {
+                        $purArr['vendor_' . $purchase + 1 ] = $pur->vendor->vendor_name;
+                        $purArr['price_' . $purchase + 1 ] = formatPrice($pur->price);
+                        $integ++;
+                    }
+    
+                    if ($maxVendorNum < $integ) {
+                        $maxVendorNum = $integ;
+                    }
+                }else {
+                    $purArr = [
+                        'vendor_1' => null,
+                        'price_1' => null,
+                        'vendor_2' => null,
+                        'price_2' => null,
+                        'vendor_3' => null,
+                        'price_3' => null,
+                    ];
+                }
+    
+                $data[] = array_merge([
+                    'serial' => $index + 1,
+                    'part_code' => $item->part_code,
+                    'description' => $item->description,
+                    'commodity' => $item->commodity->commodity_name,
+                    'category' => $item->category->category_name,
+                    'make' => $item->make,
+                    'mpn' => $item->mpn,
+                    'uom_shortcode' => $item->uom?->uom_shortcode,
+                ], $purArr);
+            }
+
+            $currentUrl = url()->current();
+            $queryString = $request->getQueryString();
+
+            if ($queryString) {
+                $currentUrl .= '?' . $queryString;
+            }
+
+
+            $context = [
+                "data" => $data,
+                "columnsCount" => $maxVendorNum,
+                "page" => $page,
+                "length" => $length,
+                'currentUrl' => $currentUrl,
+            ];
+
+            if (isset($materials)) {
+                $context['materials'] = $materials;
+            }
+
+            return view('raw-material-vendor-price', $context);
         } else {
             abort(403);
         }
     }
-
-    public function fetchVendorPriceList(Request $request)
-    {
-        $draw = $request->input('draw');
-        $start = $request->input('start');
-        $length = $request->input('length');
-        $search = $request->input('search')['value'];
-
-        $order = $request->input('order');
-        $columnIndex = $order[0]['column'];
-        $columnName = $request->input('columns')[$columnIndex]['name'];
-        $columnSortOrder = $order[0]['dir'];
-
-        $query = Material::query()->where('type', 'raw')->with(['category', 'commodity']);
-
-        if (!empty ($search)) {
-            $query->where(function ($query) use ($search) {
-                $query->where('part_code', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhere('min_price', 'like', '%' . $search . '%')
-                    ->orWhere('avg_price', 'like', '%' . $search . '%')
-                    ->orWhere('max_price', 'like', '%' . $search . '%')
-                    ->orWhere('make', 'like', '%' . $search . '%')
-                    ->orWhere('mpn', 'like', '%' . $search . '%')
-                    ->orWhereHas('category', function ($query) use ($search) {
-                        $query->where('category_name', 'like', '%' . $search . '%');
-                    })
-                    ->orWhereHas('commodity', function ($query) use ($search) {
-                        $query->where('commodity_name', 'like', '%' . $search . '%');
-                    })
-                    ->orWhereHas('uom', function ($query) use ($search) {
-                        $query->where('uom_shortcode', 'like', '%' . $search . '%');
-                    });
-            });
-        }
-
-        $totalRecords = $query->count();
-
-        if (!in_array($columnName, ['serial',])) {
-
-            if ($columnName === 'uom_shortcode') {
-                $query->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
-                    ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
-            } elseif ($columnName === 'commodity_name') {
-                $query->join('commodities', 'commodities.commodity_id', '=', 'materials.commodity_id')
-                    ->orderBy('commodities.commodity_name', $columnSortOrder);
-            } elseif ($columnName === 'category_name') {
-                $query->join('categories', 'categories.category_id', '=', 'materials.category_id')
-                    ->orderBy('categories.category_name', $columnSortOrder);
-            } else {
-                $query->orderBy($columnName, $columnSortOrder);
-            }
-        }
-
-        if ($length == -1) {
-            $items = $query->get();
-            $total = count($items);
-        } else {
-            $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-            $items = $materials->items();
-            $total = $materials->total();
-        }
-        
-        $data = [];
-
-        $maxVendorNum = 0;
-
-        foreach ($items as $index => $item) {
-
-            $purchases = MaterialPurchase::where('material_id', 'like', $item->material_id)->get();
-
-            $purArr = [];
-
-            if ($purchases->isNotEmpty()) {
-                $integ = 0;
-
-                foreach ($purchases as $purchase => $pur) {
-                    $purArr['vendor_' . $purchase + 1 ] = $pur->vendor->vendor_name;
-                    $purArr['price_' . $purchase + 1 ] = formatPrice($pur->price);
-                    $integ++;
-                }
-
-                if ($maxVendorNum < $integ) {
-                    $maxVendorNum = $integ;
-                }
-            }else {
-                $purArr = [
-                    'vendor_1' => null,
-                    'price_1' => null,
-                    'vendor_2' => null,
-                    'price_2' => null,
-                    'vendor_3' => null,
-                    'price_3' => null,
-                ];
-            }
-
-            $data[] = array_merge([
-                'serial' => $index + 1,
-                'part_code' => $item->part_code,
-                'description' => $item->description,
-                'commodity' => $item->commodity->commodity_name,
-                'category' => $item->category->category_name,
-                'make' => $item->make,
-                'mpn' => $item->mpn,
-                'uom_shortcode' => $item->uom?->uom_shortcode,
-            ], $purArr);
-        }
-
-        $response = [
-            "draw" => intval($draw),
-            "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $total,
-            "data" => $data,
-            "columnsCount" => $maxVendorNum,
-        ];
-
-        return response()->json($response);
-    }
-
+    
     public function bulkPrice()
     {
         if ( Gate::allows('admin', Auth::user()) || Gate::allows('import-raw-vendor-price', Auth::user())) {

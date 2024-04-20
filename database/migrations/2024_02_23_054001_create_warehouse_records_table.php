@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->uuid('warehouse_id');
             $table->uuid('material_id');
             $table->enum('warehouse_type', ['issued', 'received', 'reversed']);
-            $table->decimal('quantity', 7, 3)->nullable();
+            $table->string('quantity', 20)->nullable();
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
             $table->foreign('warehouse_id')->references('warehouse_id')->on('warehouse');
