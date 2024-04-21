@@ -169,6 +169,10 @@
                     {
                         "targets": [5],
                         "className": 'dt-right'
+                    },
+                    {
+                        "targets": [2],
+                        "className": 'dt-center'
                     }
                 ],
                 "dom": 'lBfrtip',

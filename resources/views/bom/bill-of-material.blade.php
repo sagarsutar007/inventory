@@ -144,14 +144,16 @@
                     {
                         "targets": [5],
                         "orderable": false
+                    },
+                    {
+                        "targets": [2],
+                        "className": 'dt-center'
                     }
                 ],
                 "dom": 'lBfrtip',
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
-                "scrollY": "320px",
-                "scrollCollapse": true,
             });
 
             // Show Error Messages

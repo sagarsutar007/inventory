@@ -142,8 +142,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('po.fetchPoConsolidatedShortageReport') }}",
                     "type": "POST",
@@ -181,7 +179,21 @@
                     },
                     { "data": "unit", "name": "unit" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
+                "columnDefs": [
+                    {
+                        "targets": [0],
+                        "orderable": false
+                    },
+                    {
+                        "targets": [5,6,7,8],
+                        "className": 'dt-right'
+                    },
+                    {
+                        "targets": [9],
+                        "className": 'dt-center'
+                    }
+                ],
                 "searching": true,
                 "ordering": true,
                 "dom": 'lBfrtip',
