@@ -29,7 +29,7 @@
                 <td>{{ $record['category'] }}</td>
                 <td>{{ $record['commodity'] }}</td>
                 <td width="10%" class="text-right">{{ $record['bom_qty'] }}</td>
-                <td width="8%" class="text-center">{{ $record['uom_shortcode'] }}</td>
+                <td width="8%">{{ $record['uom_shortcode'] }}</td>
                 <td width="10%" class="text-right">{{ formatPrice($record['avg_price']) }}</td>
                 <td width="10%" class="text-right">{{ formatPrice($record['min_price']) }}</td>
                 <td width="10%" class="text-right">{{ formatPrice($record['max_price']) }}</td>

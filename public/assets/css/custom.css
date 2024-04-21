@@ -86,7 +86,3 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
 table.dataTable th.dt-right {
   text-align: left!important;
 }
-
-table.dataTable th.dt-center {
-  text-align: left!important;
-}

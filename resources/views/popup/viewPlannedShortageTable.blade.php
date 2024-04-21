@@ -25,7 +25,7 @@
                         <td>{{ $record['description'] }}</td>
                         <td>{{ $record['make'] }}</td>
                         <td>{{ $record['mpn'] }}</td>
-                        <td class="text-center">{{ $record['unit'] }}</td>
+                        <td>{{ $record['unit'] }}</td>
                         <td class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
                         <td class="text-right">{{ formatQuantity($record['req_qty']) }}</td>
                         <td class="text-right"><a href="#view-modal" data-toggle="modal" data-partcode="{{ $record['part_code'] }}">{{ formatQuantity($record['reserved_qty']) }}</a></td>
@@ -69,7 +69,7 @@
                             <td>{{ $record['description'] }}</td>
                             <td>{{ $record['make'] }}</td>
                             <td>{{ $record['mpn'] }}</td>
-                            <td class="text-center">{{ $record['unit'] }}</td>
+                            <td>{{ $record['unit'] }}</td>
                             <td class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
                             <td class="text-right">{{ formatQuantity($record['req_qty']) }}</td>
                             <td class="text-right"><a href="#view-modal" data-toggle="modal" data-partcode="{{ $record['part_code'] }}">{{ formatQuantity($record['reserved_qty']) }}</a></td>

@@ -185,10 +185,10 @@
                         "targets": [9],
                         "className": 'dt-right'
                     },
-                    {
-                        "targets": [4],
-                        "className": 'dt-center'
-                    }
+                    // {
+                    //     "targets": [4],
+                    //     "className": 'dt-center'
+                    // }
                 ],
                 "dom": 'lBfrtip',
                 "language": {

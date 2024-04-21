@@ -19,7 +19,15 @@
                                 <input type="text" id="daterange" class="form-control form-control-lg" placeholder="Select Range">
                             </div>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-3">
+                            <select name="type" id="mtype" class="form-control form-control-lg">
+                                <option value="raw">Raw</option>
+                                <option value="semi-finished">Semi Finished</option>
+                                <option value="finished">Finished</option>
+                                <option value="">All</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
                             <div class="input-group">
                                 <input type="search" id="term" class="form-control form-control-lg" placeholder="Type your keywords here">
                                 <div class="input-group-append">
@@ -48,7 +56,7 @@
                             <tr>
                                 <th>S.no</th>
                                 <th>Transaction Id</th>
-                                <th>RM Part Code</th>
+                                <th>Part Code</th>
                                 <th>Description</th>
                                 <th>Commodity</th>
                                 <th>Category</th>
@@ -66,6 +74,17 @@
             </div>
         </div>
     </div>
+
+    <x-adminlte-modal id="modalView" title="View" icon="fas fa-eye" size='lg'>
+        <div class="row">
+            <div class="col-md-12" id="view-transaction-section">
+            </div>
+        </div>
+        <x-slot name="footerSlot">
+            <x-adminlte-button class="btn-sm" theme="info" label="Print & Save" id="printAndSaveBtn"/>
+            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+        </x-slot>
+    </x-adminlte-modal>
 @stop
 
 @section('js')
@@ -102,6 +121,7 @@
                 var startDate = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD');
                 var endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
                 var searchTerm = $('#term').val();
+                var mtype = $('#mtype').val();
 
                 // Reload DataTable with new parameters
                 $('#rm-pur-tbl').DataTable().ajax.reload(null, false);
@@ -150,12 +170,17 @@
                         d.endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
                         d.searchTerm = $('#term').val();
                         d.type = "received";
+                        d.mtype = $('#mtype').val();
                     }
                 },
                 "columns": [
                     { "data": "serial", "name": "serial" },
                     { 
-                        "data": "transaction_id", "name": "transaction_id" 
+                        "data": "transaction_id", 
+                        "name": "transaction_id",
+                        "render": function(data, type, row) {
+                            return `<a href="#" data-type="${row.type}" data-warehouseid="${row.warehouse_id}" data-transactionid="${row.transaction_id}" data-toggle="modal" data-target="#modalView">${data}</a>`;
+                        }
                     },
                     { "data": "part_code", "name": "part_code" },
                     { "data": "description", "name": "description" },
@@ -179,15 +204,43 @@
                         "targets": [7,9,10],
                         "className": 'dt-right'
                     },
-                    {
-                        "targets": [8],
-                        "className": 'dt-center'
-                    }
+                    // {
+                    //     "targets": [8],
+                    //     "className": 'dt-center'
+                    // }
                 ],
                 "dom": 'lBfrtip',
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
+            });
+
+            $('#modalView').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var warehouseId = button.data('warehouseid');
+                var type = button.data('type');
+                var transId = button.data('transactionid');
+                var modal = $(this);
+                
+
+                $.ajax({
+                    url: '/app/warehouse/' + warehouseId + '/viewTransaction',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.status) {
+                            var title = "";
+                            if (response.material.length > 0) {
+                                title += " - " + response.material + " (<b>" + response.quantity + "</b>)";
+                            }
+
+                            modal.find('.modal-title').html("Transaction Details: # <b>" + transId + "</b>" + title);
+                            $("#view-transaction-section").html(response.html);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
             });
         });
     </script>

@@ -159,7 +159,7 @@
                                         <td>{{ $item['description'] }}</td>
                                         <td>{{ $item['commodity'] }}</td>
                                         <td>{{ $item['category'] }}</td>
-                                        <td class="text-center">{{ $item['uom_shortcode'] }}</td>
+                                        <td>{{ $item['uom_shortcode'] }}</td>
                                         <td>{{ $item['make'] }}</td>
                                         <td>{{ $item['mpn'] }}</td>
                                         @for ($i=1; $i<=$columnsCount; $i++)

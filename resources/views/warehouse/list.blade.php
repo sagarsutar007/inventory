@@ -103,6 +103,14 @@
                     {
                         "targets": [7, 8],
                         "visible": false,
+                    },
+                    // {
+                    //     "targets": [2],
+                    //     "className": 'dt-center'
+                    // },
+                    {
+                        "targets": [3,4,5,6,7],
+                        "className": 'dt-right'
                     }
                 ],
                 "dom": 'lBfrtip',

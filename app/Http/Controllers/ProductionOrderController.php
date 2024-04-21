@@ -508,8 +508,8 @@ class ProductionOrderController extends Controller
                   ->orderBy('materials.part_code', $columnSortOrder);
         } elseif ($columnName === 'unit') {
             $query->join('materials', 'production_orders.material_id', '=', 'materials.material_id')
-                  ->join('uoms', 'materials.uom_id', '=', 'uoms.uom_id')
-                  ->orderBy('uoms.uom_shortcode', $columnSortOrder);
+                  ->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
+                  ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
         } elseif ($columnName === 'status') {
             $query->orderBy('status', $columnSortOrder);
         } elseif ($columnName === 'serial') {
@@ -673,7 +673,10 @@ class ProductionOrderController extends Controller
 
         $totalRecords = count($data);
 
-        $data = array_slice($data, $start, $length);
+        if ($length != -1) {
+            $data = array_slice($data, $start, $length);
+        }
+        
 
         $response = [
             "draw" => intval($draw),
@@ -768,7 +771,7 @@ class ProductionOrderController extends Controller
         
         $formattedData = array_values($data);
 
-        if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'shortage', 'unit'])) {
+        if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'quantity', 'shortage', 'unit'])) {
             usort($formattedData, function ($a, $b) use ($columnName, $columnSortOrder) {
                 $cmp = strcmp($a[$columnName], $b[$columnName]);
                 return ($columnSortOrder === 'asc') ? $cmp : -$cmp;
@@ -776,13 +779,28 @@ class ProductionOrderController extends Controller
         }
 
         $serialNo = $start + 1;
+
+        if ($length == -1) {
+            $length = 90000000000000;
+        }
         
         $paginatedData = [];
         foreach ($formattedData as $key => $obj) {
             $index = $start + $key + 1;
             if ($index >= $start && $index < ($start + $length)) {
                 $obj['serial'] = $serialNo++;
-                $obj['shortage'] = abs($obj['stock'] - $obj['balance']);
+
+                $obj['quantity'] = formatQuantity($obj['quantity']);
+                $obj['stock'] = formatQuantity($obj['stock']);
+                $obj['balance'] = formatQuantity($obj['balance']);
+
+                if ($obj['stock'] >= $obj['balance']) {
+                    $obj['shortage'] = "0.000";
+                } else {
+                    $obj['shortage'] = abs($obj['stock'] - $obj['balance']);
+                }
+
+                $obj['shortage'] = formatQuantity($obj['shortage']);
                 $paginatedData[] = $obj;
             }
         }
@@ -960,34 +978,36 @@ class ProductionOrderController extends Controller
     protected function getPlannedStats($partcode="", $quantity=1)
     {
         $material = Material::with('bom.bomRecords')->where('part_code', 'like', $partcode)->first();
-        $bomRecords = $material->bom->bomRecords;
+        $bomRecords = $material->bom?->bomRecords;
         $data = [];
-        foreach ($bomRecords as $records => $record) {
+        if ($bomRecords) {
+            foreach ($bomRecords as $records => $record) {
 
-            $bomQty = $record->quantity;
-            $reqQty = $bomQty * $quantity;
-            $reservedQty = $this->countReservedQty($record->material_id); 
+                $bomQty = $record->quantity;
+                $reqQty = $bomQty * $quantity;
+                $reservedQty = $this->countReservedQty($record->material_id); 
 
-            $stockQty = (float)$record->material->stock->closing_balance;
-            $shortQty = ($stockQty < ($reqQty + $reservedQty) )?abs($stockQty - ($reqQty + $reservedQty)):0;
+                $stockQty = (float)$record->material->stock->closing_balance;
+                $shortQty = ($stockQty < ($reqQty + $reservedQty) )?abs($stockQty - ($reqQty + $reservedQty)):0;
 
-            $status = ($stockQty < ($reqQty + $reservedQty) )?"Shortage":"";
-                       
-            $data[] = [
-                'part_code' => $record->material->part_code,
-                'description' => $record->material->description,
-                'category' => $record->material->category->category_name,
-                'commodity' => $record->material->commodity->commodity_name,
-                'make' => $record->material->make,
-                'mpn' => $record->material->mpn,
-                'unit' => $record->material->uom->uom_shortcode,
-                'bom_qty' => $bomQty,
-                'req_qty' => $reqQty,
-                'stock_qty' => $stockQty,
-                'reserved_qty' => $reservedQty,
-                'short_qty' => $shortQty,
-                'status' => $status,
-            ];
+                $status = ($stockQty < ($reqQty + $reservedQty) )?"Shortage":"";
+                        
+                $data[] = [
+                    'part_code' => $record->material->part_code,
+                    'description' => $record->material->description,
+                    'category' => $record->material->category->category_name,
+                    'commodity' => $record->material->commodity->commodity_name,
+                    'make' => $record->material->make,
+                    'mpn' => $record->material->mpn,
+                    'unit' => $record->material->uom->uom_shortcode,
+                    'bom_qty' => $bomQty,
+                    'req_qty' => $reqQty,
+                    'stock_qty' => $stockQty,
+                    'reserved_qty' => $reservedQty,
+                    'short_qty' => $shortQty,
+                    'status' => $status,
+                ];
+            }
         }
 
         return $data;

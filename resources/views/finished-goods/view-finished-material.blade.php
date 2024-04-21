@@ -110,7 +110,7 @@
                                 <td width="35%">{{ $bomRecord->material->description }}</td>
                                 <td>{{ $bomRecord->material->type }}</td>
                                 <td class="text-right">{{ formatQuantity($bomRecord->quantity) }}</td>
-                                <td class="text-center">{{ $bomRecord->material->uom->uom_text }}</td>
+                                <td>{{ $bomRecord->material->uom->uom_text }}</td>
                             </tr>
                         @endforeach
                     @else

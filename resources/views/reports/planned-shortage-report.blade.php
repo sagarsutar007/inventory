@@ -251,8 +251,6 @@
                         'colvis',
                     ],
                     "processing": true,
-                    "scrollY": "320px",
-                    "scrollCollapse": true,
                     "searching": true,
                     "ordering": true,
                     "dom": 'lBfrtip',

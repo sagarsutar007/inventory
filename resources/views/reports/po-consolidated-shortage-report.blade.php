@@ -169,30 +169,30 @@
                     { "data": "stock", "name": "stock" },
                     { "data": "balance", "name": "balance" },
                     { "data": "shortage", "name": "shortage",
-                        "render": function(data, type, row, meta) {
-                            if (row.stock >= row.balance) {
-                                return "0.000";
-                            } else {
-                                return Math.abs(row.stock - row.balance);
-                            }
-                        }
+                        // "render": function(data, type, row, meta) {
+                        //     if (row.stock >= row.balance) {
+                        //         return "0.000";
+                        //     } else {
+                        //         return Math.abs(row.stock - row.balance);
+                        //     }
+                        // }
                     },
                     { "data": "unit", "name": "unit" },
                 ],
                 "lengthMenu": datatableLength,
                 "columnDefs": [
                     {
-                        "targets": [0],
+                        "targets": [0,7,8],
                         "orderable": false
                     },
                     {
                         "targets": [5,6,7,8],
                         "className": 'dt-right'
                     },
-                    {
-                        "targets": [9],
-                        "className": 'dt-center'
-                    }
+                    // {
+                    //     "targets": [9],
+                    //     "className": 'dt-center'
+                    // }
                 ],
                 "searching": true,
                 "ordering": true,

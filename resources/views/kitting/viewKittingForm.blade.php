@@ -24,7 +24,7 @@
                     <input type="hidden" name="material[]" value="{{ $record['material_id'] }}">
                     <td>{{ $record['part_code'] }}</td>
                     <td>{{ $record['material_description'] }}</td>
-                    <td class="text-center">{{ $record['uom_shortcode'] }}</td>
+                    <td>{{ $record['uom_shortcode'] }}</td>
                     <td>{{ number_format($record['bom_qty'], 3) }}</td>
                     <td>{{ number_format($record['quantity'], 3) }}</td>
                     <td>{{ number_format($record['issued'], 3) }}</td>

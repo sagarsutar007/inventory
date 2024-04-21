@@ -24,7 +24,7 @@
                     <td>{{ $record['category'] }}</td>
                     <td>{{ $record['commodity'] }}</td>
                     <td width="10%" class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
-                    <td width="8%" class="text-center">{{ $record['uom_shortcode'] }}</td>
+                    <td width="8%">{{ $record['uom_shortcode'] }}</td>
                     {{-- <td width="8%">{{ $record['quantity'] }}</td> --}}
                     {{-- <td width="7%">{{ $record['issued'] }}</td>
                     <td width="10%">{{ $record['balance'] }}</td>

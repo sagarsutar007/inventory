@@ -107,7 +107,7 @@
                                 <td>{{ $bomRecord->material->part_code }}</td>
                                 <td width="35%">{{ $bomRecord->material->description }}</td>
                                 <td class="text-right">{{ $bomRecord->quantity }}</td>
-                                <td class="text-center">{{ $bomRecord->material->uom->uom_text }}</td>
+                                <td>{{ $bomRecord->material->uom->uom_text }}</td>
                             </tr>
                         @endforeach
                     @else

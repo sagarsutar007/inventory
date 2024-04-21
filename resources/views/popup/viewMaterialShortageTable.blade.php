@@ -27,7 +27,7 @@
             <td class="text-right">{{ $record['stock'] }}</td>
             <td class="text-right">{{ $record['balance'] }}</td>
             <td class="text-right">{{ $record['shortage'] }}</td>
-            <td class="text-center">{{ $record['unit'] }}</td>
+            <td>{{ $record['unit'] }}</td>
         </tr>
         @endforeach
     </tbody>

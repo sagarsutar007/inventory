@@ -882,14 +882,19 @@ class RawMaterialController extends Controller
         $search = $request->input('search')['value'];
 
         $order = $request->input('order');
+        $mtype = $request->input('mtype');
         $columnIndex = $order[0]['column'];
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = Material::query()->where('materials.type', 'raw')
+        $query = Material::query()
         ->with(['category', 'commodity'])
         ->join('warehouse_records', 'materials.material_id', '=', 'warehouse_records.material_id')
         ->join('warehouse', 'warehouse.warehouse_id', '=', 'warehouse_records.warehouse_id');
+
+        if (!empty($mtype)) {
+            $query->where('materials.type', $mtype);
+        }
 
         if ($request->input('type') == 'issued') {
             $query->where('warehouse_type', 'issued');
@@ -950,8 +955,6 @@ class RawMaterialController extends Controller
             $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
         }
 
-        // dd($materials);
-
         $data = [];
 
         foreach ($materials as $index => $item) {
@@ -967,6 +970,8 @@ class RawMaterialController extends Controller
                 'quantity' => $item->quantity,
                 'price_3' => $item->avg_price,
                 'amount' => formatPrice($item->avg_price * $item->quantity),
+                'type' => $item->warehouse_type,
+                'warehouse_id' => $item->warehouse_id
             ];
         }
 

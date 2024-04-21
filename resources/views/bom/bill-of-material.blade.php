@@ -145,10 +145,10 @@
                         "targets": [5],
                         "orderable": false
                     },
-                    {
-                        "targets": [2],
-                        "className": 'dt-center'
-                    }
+                    // {
+                    //     "targets": [2],
+                    //     "className": 'dt-center'
+                    // }
                 ],
                 "dom": 'lBfrtip',
                 "language": {

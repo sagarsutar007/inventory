@@ -21,7 +21,7 @@
             <td>{{ $record['type'] }}</td>
             <td class="text-right">{{ formatQuantity($record['issued']) }}</td>
             <td class="text-right">{{ formatQuantity($record['quantity']) }}</td>
-            <td class="text-center">{{ $record['unit'] }}</td>
+            <td>{{ $record['unit'] }}</td>
         </tr>
         @endif
     </tbody>

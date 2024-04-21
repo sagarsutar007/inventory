@@ -19,7 +19,7 @@
                 <tr>
                     <td width="10%">{{ $record['part_code'] }}</td>
                     <td>{{ $record['material_description'] }}</td>
-                    <td width="8%" class="text-center">{{ $record['uom_shortcode'] }}</td>
+                    <td width="8%">{{ $record['uom_shortcode'] }}</td>
                     <td width="8%" class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
                     <td width="8%" class="text-right">{{ formatQuantity($record['quantity']) }}</td>
                     <td width="7%" class="text-right">{{ formatQuantity($record['issued']) }}</td>

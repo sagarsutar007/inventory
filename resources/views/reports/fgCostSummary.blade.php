@@ -123,10 +123,10 @@
                         "targets": [6,7,8],
                         "className": 'dt-right'
                     },
-                    {
-                        "targets": [5],
-                        "className": 'dt-center'
-                    }
+                    // {
+                    //     "targets": [5],
+                    //     "className": 'dt-center'
+                    // }
                 ],
                 "dom": 'lBfrtip',
                 "language": {
