@@ -23,11 +23,11 @@
             <td>{{ $record['description'] }}</td>
             <td>{{ $record['make'] }}</td>
             <td>{{ $record['mpn'] }}</td>
-            <td>{{ $record['quantity'] }}</td>
-            <td>{{ $record['stock'] }}</td>
-            <td>{{ $record['balance'] }}</td>
-            <td>{{ $record['shortage'] }}</td>
-            <td>{{ $record['unit'] }}</td>
+            <td class="text-right">{{ $record['quantity'] }}</td>
+            <td class="text-right">{{ $record['stock'] }}</td>
+            <td class="text-right">{{ $record['balance'] }}</td>
+            <td class="text-right">{{ $record['shortage'] }}</td>
+            <td class="text-center">{{ $record['unit'] }}</td>
         </tr>
         @endforeach
     </tbody>

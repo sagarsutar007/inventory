@@ -714,9 +714,9 @@ class RawMaterialController extends Controller
                 'make' => $item->make,
                 'mpn' => $item->mpn,
                 'uom_shortcode' => $item->uom?->uom_shortcode,
-                'price_1' => number_format($item->min_price, 2),
-                'price_2' => number_format($item->avg_price, 2),
-                'price_3' => number_format($item->max_price, 2),
+                'price_1' => formatQuantity($item->min_price),
+                'price_2' => formatQuantity($item->avg_price),
+                'price_3' => formatQuantity($item->max_price),
             ];
         }
 

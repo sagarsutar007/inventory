@@ -118,6 +118,10 @@
                     {
                         "targets": [0],
                         "orderable": false
+                    },
+                    {
+                        "targets": [6,7,8],
+                        "className": 'dt-right'
                     }
                 ],
                 "dom": 'lBfrtip',
@@ -185,7 +189,7 @@
                                 ],
                                 "processing": false,
                                 "searching": false,
-                                "ordering": false,
+                                "ordering": true,
                                 "dom": 'lBfrtip',
                                 "language": {
                                     "lengthMenu": "_MENU_"

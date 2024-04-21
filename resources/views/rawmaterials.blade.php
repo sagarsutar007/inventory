@@ -172,6 +172,14 @@
                     {
                         "targets": [7, 8],
                         "visible": false,
+                    },
+                    {
+                        "targets": [11],
+                        "className": 'dt-right'
+                    },
+                    {
+                        "targets": [4],
+                        "className": 'dt-center'
                     }
                 ],
                 "dom": 'lBfrtip',

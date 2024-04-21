@@ -6,12 +6,12 @@
     <div class="row">
         <div class="col-md-12 mt-3">
             <form action="" id="material-search" method="get">
-            <div class="card collapsed-card">
+            <div class="card ">
                 <div class="card-header">
                     <h3 class="card-title">Materials Vendor Price Filter</h3>
                     <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                            <i class="fas fa-plus"></i>
+                        <button type="button" class="btn btn-tool" id="coll-btn" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
                         </button>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
                         <div class="col-md mb-3">
                             <div class="form-group">
                                 <div class="input-group mb-3">
-                                    <select class="form-control select2" id="uom" name="uom_id[]" multiple="multiple" data-placeholder="Unit" style="width: 100%;">
+                                    <select class="form-control select2" id="uom" name="uom_id[]" multiple="multiple" style="width: 100%;">
                                         <option value="all" {{ isset($_GET['uom_id']) && in_array('all', $_GET['uom_id']) ? 'selected' : '' }}>All</option>
                                         @foreach($uom as $unit)
                                         <option value="{{$unit->uom_id}}" {{ isset($_GET['uom_id']) && in_array($unit->uom_id, $_GET['uom_id']) ? 'selected' : '' }}>
@@ -48,7 +48,7 @@
                         <div class="col-md mb-3">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <select class="form-control select2" id="commodity" name="commodity_id[]" multiple="multiple" data-placeholder="Commodity" style="width: 100%;">
+                                    <select class="form-control select2" id="commodity" name="commodity_id[]" multiple="multiple" style="width: 100%;">
                                         <option value="all" {{ isset($_GET['commodity_id']) && in_array('all', $_GET['commodity_id']) ? 'selected' : '' }}>All</option>
                                         @foreach($commodity as $cmdty)
                                         <option value="{{$cmdty->commodity_id}}" {{ isset($_GET['commodity_id']) && in_array($cmdty->commodity_id, $_GET['commodity_id']) ? 'selected' : '' }}>
@@ -63,7 +63,7 @@
                         <div class="col-md mb-3">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <select class="form-control select2" id="category" name="category_id[]" multiple="multiple" data-placeholder="Category" style="width: 100%;">
+                                    <select class="form-control select2" id="category" name="category_id[]" multiple="multiple" style="width: 100%;">
                                         <option value="all" {{ isset($_GET['category_id']) && in_array('all', $_GET['category_id']) ? 'selected' : '' }}>All</option>
                                         @foreach($category as $ctg)
                                         <option value="{{$ctg->category_id}}" {{ isset($_GET['category_id']) && in_array($ctg->category_id, $_GET['category_id']) ? 'selected' : '' }}>
@@ -77,7 +77,7 @@
                         <div class="col-md mb-3">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <select class="form-control select2" id="dependent" name="dm_id[]" multiple="multiple" data-placeholder="Dependent Material" style="width: 100%;">
+                                    <select class="form-control select2" id="dependent" name="dm_id[]" multiple="multiple" style="width: 100%;">
                                         <option value="all" {{ isset($_GET['dm_id']) && in_array('all', $_GET['dm_id']) ? 'selected' : '' }}>All</option>
                                         @foreach($dependents as $dpn)
                                         <option value="{{$dpn->dm_id}}" {{ isset($_GET['dm_id']) && in_array($dpn->dm_id, $_GET['dm_id']) ? 'selected' : '' }}>
@@ -93,7 +93,7 @@
                         <div class="col-md-9 mb-3">
                             <div class="form-group">
                                 <div class="input-group">
-                                    <select class="form-control select2" id="vendors-dd" name="vendor_id[]" multiple="multiple" data-placeholder="Vendors" style="width: 100%;">
+                                    <select class="form-control select2" id="vendors-dd" name="vendor_id[]" multiple="multiple" style="width: 100%;">
                                         <option value="all" {{ isset($_GET['vendor_id']) && in_array('all', $_GET['vendor_id']) ? 'selected' : '' }}>All</option>
                                         @foreach($vendors as $vendor)
                                         <option value="{{$vendor->vendor_id}}" {{ isset($_GET['vendor_id']) && in_array($vendor->vendor_id, $_GET['vendor_id']) ? 'selected' : '' }}>
@@ -159,12 +159,12 @@
                                         <td>{{ $item['description'] }}</td>
                                         <td>{{ $item['commodity'] }}</td>
                                         <td>{{ $item['category'] }}</td>
-                                        <td>{{ $item['uom_shortcode'] }}</td>
+                                        <td class="text-center">{{ $item['uom_shortcode'] }}</td>
                                         <td>{{ $item['make'] }}</td>
                                         <td>{{ $item['mpn'] }}</td>
                                         @for ($i=1; $i<=$columnsCount; $i++)
                                         <td>{{ $item['vendor_' . $i]??'' }}</td>
-                                        <td>{{ $item['price_' . $i]??'' }}</td>
+                                        <td><div class='text-right'>{{ $item['price_' . $i]??'' }}</div></td>
                                         @endfor
                                         <td>{{ $item['dependent'] }}</td>
                                         <td>{{ $item['frequency'] }}</td>
@@ -300,6 +300,7 @@
             $('#uom').select2({
                 theme: 'bootstrap4',
                 allowClear: true,
+                placeholder: "Unit"
             });
 
             $('.select2').on('change', function() {
@@ -315,21 +316,25 @@
             $('#category').select2({
                 theme: 'bootstrap4',
                 allowClear: true,
+                placeholder: "Categories"
             });
 
             $('#commodity').select2({
                 theme: 'bootstrap4',
                 allowClear: true,
+                placeholder: "Commodity"
             });
             
             $('#dependent').select2({
                 theme: 'bootstrap4',
                 allowClear: true,
+                placeholder: "Dependent Material"
             });
 
             $('#vendors-dd').select2({
                 theme: 'bootstrap4',
                 allowClear: true,
+                placeholder: "Vendors"
             });
 
             $('#modalView').on('show.bs.modal', function (event) {
@@ -351,6 +356,8 @@
                     }
                 });
             });
+
+            $("#coll-btn").trigger('click');
         });
     </script>
 @stop

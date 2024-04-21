@@ -28,11 +28,11 @@
                 <td>{{ $record['material_description'] }}</td>
                 <td>{{ $record['category'] }}</td>
                 <td>{{ $record['commodity'] }}</td>
-                <td width="10%">{{ $record['bom_qty'] }}</td>
-                <td width="8%">{{ $record['uom_shortcode'] }}</td>
-                <td width="10%">{{ number_format($record['avg_price'], 2) }}</td>
-                <td width="10%">{{ number_format($record['min_price'], 2) }}</td>
-                <td width="10%">{{ number_format($record['max_price'], 2) }}</td>
+                <td width="10%" class="text-right">{{ $record['bom_qty'] }}</td>
+                <td width="8%" class="text-center">{{ $record['uom_shortcode'] }}</td>
+                <td width="10%" class="text-right">{{ formatPrice($record['avg_price']) }}</td>
+                <td width="10%" class="text-right">{{ formatPrice($record['min_price']) }}</td>
+                <td width="10%" class="text-right">{{ formatPrice($record['max_price']) }}</td>
             </tr>
             @php
                 $total_avg += $record['avg_price'];
@@ -44,9 +44,9 @@
         <tfoot>
             <tr>
                 <td colspan="7" class="text-right"><strong>Cost</strong></td>
-                <td>{{ number_format($total_avg, 2) }}</td>
-                <td>{{ number_format($total_min, 2) }}</td>
-                <td>{{ number_format($total_max, 2) }}</td>
+                <td class="text-right">{{ formatPrice($total_avg) }}</td>
+                <td class="text-right">{{ formatPrice($total_min) }}</td>
+                <td class="text-right">{{ formatPrice($total_max) }}</td>
             </tr>
         </tfoot>
     </table>

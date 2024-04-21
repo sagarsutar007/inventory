@@ -25,12 +25,12 @@
                         <td>{{ $record['description'] }}</td>
                         <td>{{ $record['make'] }}</td>
                         <td>{{ $record['mpn'] }}</td>
-                        <td>{{ $record['unit'] }}</td>
-                        <td>{{ number_format($record['bom_qty'], 3) }}</td>
-                        <td>{{ number_format($record['req_qty'], 3) }}</td>
-                        <td><a href="#view-modal" data-toggle="modal" data-partcode="{{ $record['part_code'] }}">{{ number_format($record['reserved_qty'], 3) }}</a></td>
-                        <td><button class="view-stock btn btn-link p-0" data-partcode="{{ $record['part_code'] }}">{{ number_format($record['stock_qty'], 3) }}</button></td>
-                        <td>{{ number_format($record['short_qty'], 3) }}</td>
+                        <td class="text-center">{{ $record['unit'] }}</td>
+                        <td class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
+                        <td class="text-right">{{ formatQuantity($record['req_qty']) }}</td>
+                        <td class="text-right"><a href="#view-modal" data-toggle="modal" data-partcode="{{ $record['part_code'] }}">{{ formatQuantity($record['reserved_qty']) }}</a></td>
+                        <td class="text-right"><button class="view-stock btn btn-link p-0" data-partcode="{{ $record['part_code'] }}">{{ formatQuantity($record['stock_qty']) }}</button></td>
+                        <td class="text-right">{{ formatQuantity($record['short_qty']) }}</td>
                         <td class="text-danger">{{ $record['status'] }}</td>
                     </tr>
                     @endforeach
@@ -69,12 +69,12 @@
                             <td>{{ $record['description'] }}</td>
                             <td>{{ $record['make'] }}</td>
                             <td>{{ $record['mpn'] }}</td>
-                            <td>{{ $record['unit'] }}</td>
-                            <td>{{ number_format($record['bom_qty'], 3) }}</td>
-                            <td>{{ number_format($record['req_qty'], 3) }}</td>
-                            <td><a href="#view-modal" data-toggle="modal" data-partcode="{{ $record['part_code'] }}">{{ number_format($record['reserved_qty'], 3) }}</a></td>
-                            <td><button class="view-stock btn btn-link p-0" data-partcode="{{ $record['part_code'] }}">{{ number_format($record['stock_qty'], 3) }}</button></td>
-                            <td>{{ number_format($record['short_qty'], 3) }}</td>
+                            <td class="text-center">{{ $record['unit'] }}</td>
+                            <td class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
+                            <td class="text-right">{{ formatQuantity($record['req_qty']) }}</td>
+                            <td class="text-right"><a href="#view-modal" data-toggle="modal" data-partcode="{{ $record['part_code'] }}">{{ formatQuantity($record['reserved_qty']) }}</a></td>
+                            <td class="text-right"><button class="view-stock btn btn-link p-0" data-partcode="{{ $record['part_code'] }}">{{ formatQuantity($record['stock_qty']) }}</button></td>
+                            <td class="text-right">{{ formatQuantity($record['short_qty']) }}</td>
                             <td class="text-danger">{{ $record['status'] }}</td>
                         </tr>
                         @endforeach

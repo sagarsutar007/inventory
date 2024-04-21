@@ -114,8 +114,6 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true,
                 "ajax": {
                     "url": "{{ route('po.get') }}",
                     "type": "POST",
@@ -151,6 +149,10 @@
                     {
                         "targets": [8],
                         "orderable": false
+                    },
+                    {
+                        "targets": [4],
+                        "className": 'dt-right'
                     }
                 ],
                 "dom": 'lBfrtip',

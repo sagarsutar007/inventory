@@ -180,6 +180,10 @@
                     {
                         "targets": [0, 1, 10],
                         "orderable": false,
+                    },
+                    {
+                        "targets": [9],
+                        "className": 'dt-right'
                     }
                 ],
                 "dom": 'lBfrtip',

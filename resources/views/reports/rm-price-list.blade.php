@@ -106,6 +106,10 @@
                     {
                         "targets": [0],
                         "orderable": false
+                    },
+                    {
+                        "targets": [-1, -2, -3],
+                        "className": 'dt-right'
                     }
                 ],
                 "dom": 'lBfrtip',

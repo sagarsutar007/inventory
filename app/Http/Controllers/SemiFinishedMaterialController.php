@@ -565,8 +565,12 @@ class SemiFinishedMaterialController extends Controller
             }
         }
 
-        $materials = $semiMaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-
+        if ($length == -1) {
+            $materials = $semiMaterials->get();
+        } else {
+            $materials = $semiMaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+        }
+        
         $data = [];
         foreach ($materials as $index => $material) {
 
@@ -620,7 +624,7 @@ class SemiFinishedMaterialController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $materials->total(),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 

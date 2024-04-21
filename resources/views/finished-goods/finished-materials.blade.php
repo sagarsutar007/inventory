@@ -165,6 +165,10 @@
                     {
                         "targets": [6],
                         "orderable": false,
+                    },
+                    {
+                        "targets": [5],
+                        "className": 'dt-right'
                     }
                 ],
                 "dom": 'lBfrtip',

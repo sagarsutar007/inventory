@@ -19,8 +19,8 @@
                 <td width="14%">{{ $record['created_at'] }}</td>
                 <td width="10%">{{ $record['part_code'] }}</td>
                 <td>{{ $record['description'] }}</td>
-                <td width="7%">{{ $record['uom'] }}</td>
-                <td width="8%" style="{{ $record['type'] === 'reversal' ? 'color: red;' : '' }}">{{ $record['quantity'] }}</td>
+                <td width="7%" class="text-center">{{ $record['uom'] }}</td>
+                <td width="8%" class="text-right" style="{{ $record['type'] === 'reversal' ? 'color: red;' : '' }}">{{ formatQuantity($record['quantity']) }}</td>
             </tr>
             @endforeach
         </tbody>

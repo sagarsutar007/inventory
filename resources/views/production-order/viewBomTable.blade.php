@@ -19,12 +19,12 @@
                 <tr>
                     <td width="10%">{{ $record['part_code'] }}</td>
                     <td>{{ $record['material_description'] }}</td>
-                    <td width="8%">{{ $record['uom_shortcode'] }}</td>
-                    <td width="8%">{{ $record['bom_qty'] }}</td>
-                    <td width="8%">{{ $record['quantity'] }}</td>
-                    <td width="7%">{{ $record['issued'] }}</td>
-                    <td width="10%">{{ $record['balance'] }}</td>
-                    <td width="6%">{{ $record['closing_balance'] }}</td>
+                    <td width="8%" class="text-center">{{ $record['uom_shortcode'] }}</td>
+                    <td width="8%" class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
+                    <td width="8%" class="text-right">{{ formatQuantity($record['quantity']) }}</td>
+                    <td width="7%" class="text-right">{{ formatQuantity($record['issued']) }}</td>
+                    <td width="10%" class="text-right">{{ formatQuantity($record['balance']) }}</td>
+                    <td width="6%" class="text-right">{{ formatQuantity($record['closing_balance']) }}</td>
                     {{-- <td></td> --}}
                     <td>
                         @if ($record['quantity'] > $record['closing_balance'])

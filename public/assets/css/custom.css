@@ -41,7 +41,7 @@ div.dataTables_wrapper div.dataTables_paginate {
 }
 
 .table tbody td {
-  padding: 0.15rem;
+  padding: 0.15rem .75rem;
 }
 
 body:not(.layout-fixed) .main-sidebar .sidebar {
@@ -81,4 +81,12 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
 
 .pagination {
   justify-content: flex-end;
+}
+
+table.dataTable th.dt-right {
+  text-align: left!important;
+}
+
+table.dataTable th.dt-center {
+  text-align: left!important;
 }

@@ -133,6 +133,10 @@
                     {
                         "targets": [8],
                         "orderable": false
+                    },
+                    {
+                        "targets": [4],
+                        "className": 'dt-right'
                     }
                 ],
                 "dom": 'lBfrtip',

@@ -22,7 +22,7 @@
                                 <td>{{ $bomRecord->material->part_code }}</td>
                                 <td width="35%">{{ $bomRecord->material->description }}</td>
                                 <td>{{ $bomRecord->material->type }}</td>
-                                <td>{{ $bomRecord->quantity }}</td>
+                                <td class="text-right">{{ $bomRecord->quantity }}</td>
                                 <td>{{ $bomRecord->material->uom->uom_text }}</td>
                             </tr>
                         @endforeach

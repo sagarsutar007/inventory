@@ -38,9 +38,7 @@ class BOMController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-
         $query = Bom::with(['bomRecords.material']);
-
 
         if (!empty ($search)) {
             $query->whereHas('material', function ($q) use ($search) {
@@ -58,9 +56,7 @@ class BOMController extends Controller
             });
         }
 
-
         $totalRecords = $query->count();
-
 
         if ($columnName === 'part_code') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
@@ -70,15 +66,15 @@ class BOMController extends Controller
                 ->orderBy('materials.description', $columnSortOrder);
         } elseif ($columnName === 'uom_text') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
-                ->join('uom_units', 'uom_units.id', '=', 'materials.uom_id')
+                ->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
                 ->orderBy('uom_units.uom_text', $columnSortOrder);
-        } elseif ($columnName === 'commodity_name') {
+        } elseif ($columnName === 'commodity') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
-                ->join('commodities', 'commodities.id', '=', 'materials.commodity_id')
+                ->join('commodities', 'commodities.commodity_id', '=', 'materials.commodity_id')
                 ->orderBy('commodities.commodity_name', $columnSortOrder);
-        } elseif ($columnName === 'category_name') {
+        } elseif ($columnName === 'category') {
             $query->join('materials', 'materials.material_id', '=', 'boms.material_id')
-                ->join('categories', 'categories.id', '=', 'materials.category_id')
+                ->join('categories', 'categories.category_id', '=', 'materials.category_id')
                 ->orderBy('categories.category_name', $columnSortOrder);
         } else {
             // $query->orderBy($columnName, $columnSortOrder);
@@ -123,7 +119,7 @@ class BOMController extends Controller
                     // 'sno' => $index + $start + 1,
                     'code' => $material->part_code,
                     'material_name' => $material->description,
-                    'unit' => $material->uom->uom_text,
+                    'unit' => $material->uom->uom_shortcode,
                     'commodity' => $material->commodity->commodity_name,
                     'category' => $material->category->category_name,
                     'action' => $actionHtml,
@@ -438,9 +434,9 @@ class BOMController extends Controller
                     'unit' => $material->uom->uom_shortcode,
                     'commodity' => $material->commodity->commodity_name,
                     'category' => $material->category->category_name,
-                    'lowest' => number_format($prices['low'], 2),
-                    'average' => number_format($prices['avg'], 2),
-                    'highest' => number_format($prices['high'], 2),
+                    'lowest' => formatPrice($prices['low']),
+                    'average' => formatPrice($prices['avg']),
+                    'highest' => formatPrice($prices['high']),
                 ];
             }
         }
