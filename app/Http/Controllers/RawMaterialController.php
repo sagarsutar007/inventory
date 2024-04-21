@@ -1076,11 +1076,11 @@ class RawMaterialController extends Controller
                 'make' => $item->make,
                 'mpn' => $item->mpn,
                 'uom' => $item->uom?->uom_shortcode,
-                'opening' => $calcBals['computedOP'] + $item->stock?->opening_balance,
-                'issued' => $calcBals['issued'],
-                'receipt' => $calcBals['receipt'],
-                'stock' => $calcBals['computedOP'] + $item->stock?->opening_balance - $calcBals['issued'] + $calcBals['receipt'],
-                'reorder_qty' => $item->re_order,
+                'opening' => formatQuantity( $calcBals['computedOP'] + $item->stock?->opening_balance),
+                'issued' => formatQuantity($calcBals['issued']),
+                'receipt' => formatQuantity($calcBals['receipt']),
+                'stock' => formatQuantity($calcBals['computedOP'] + $item->stock?->opening_balance - $calcBals['issued'] + $calcBals['receipt']),
+                'reorder_qty' => formatQuantity($item->re_order),
                 'reorder' => $rostatus,
             ];
         }

@@ -110,6 +110,10 @@
                     {
                         "targets": [-1, -2, -3],
                         "className": 'dt-right'
+                    },
+                    {
+                        "targets": [5],
+                        "className": 'dt-center'
                     }
                 ],
                 "dom": 'lBfrtip',

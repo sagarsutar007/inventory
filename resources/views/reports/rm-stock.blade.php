@@ -173,12 +173,20 @@
                 "searching": true,
                 "ordering": true,
                 // "order": [[0, 'desc']],
-                // "columnDefs": [
-                //     {
-                //         "targets": [7],
-                //         "orderable": false
-                //     }
-                // ],
+                "columnDefs": [
+                    {
+                        "targets": [7],
+                        "orderable": false
+                    },
+                    {
+                        "targets": [9],
+                        "className": "dt-center"
+                    },
+                    {
+                        "targets": [5,6,7,8,10],
+                        "className": "dt-right"
+                    }
+                ],
                 "dom": 'lBfrtip',
                 "language": {
                     "lengthMenu": "_MENU_"

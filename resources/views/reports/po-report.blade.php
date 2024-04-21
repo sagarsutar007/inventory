@@ -151,6 +151,20 @@
                 "language": {
                     "lengthMenu": "_MENU_"
                 },
+                "columnDefs": [
+                    {
+                        "targets": [0],
+                        "orderable": false
+                    },
+                    {
+                        "targets": [4],
+                        "className": 'dt-right'
+                    },
+                    {
+                        "targets": [5],
+                        "className": 'dt-center'
+                    }
+                ],
             });
 
             $("#material-search").on('submit', function(e){
