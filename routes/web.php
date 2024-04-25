@@ -34,7 +34,7 @@ use Illuminate\Support\Facades\Route;
 // Public Routes
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 // Authentication Routes
 // Auth::routes();
@@ -43,7 +43,7 @@ Auth::routes(['register' => false]);
 
 
 // Authenticated Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'checkStatus'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/app', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 

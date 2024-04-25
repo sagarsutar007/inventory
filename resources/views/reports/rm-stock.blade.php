@@ -175,7 +175,7 @@
                 // "order": [[0, 'desc']],
                 "columnDefs": [
                     {
-                        "targets": [7],
+                        "targets": [6,7,11],
                         "orderable": false
                     },
                     {

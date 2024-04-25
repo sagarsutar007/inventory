@@ -1008,18 +1008,26 @@ class RawMaterialController extends Controller
 
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
-        $searchTerm = $request->input('term');
+        $searchTerm = $request->input('searchTerm');
         
-        $material = Material::query()->where('type', 'raw')->with(['category', 'commodity', 'uom'])
+        $material = Material::query()
+            ->where('type', 'raw')
+            ->with(['category', 'commodity', 'uom'])
             ->leftJoin('stocks', 'materials.material_id', '=', 'stocks.material_id');
+
+        if (!empty($searchTerm)) {
+            $material
+                ->where('part_code', 'like', '%' . $searchTerm . '%')
+                ->orWhere('description', 'like', '%' . $searchTerm . '%');
+        }
 
         if (!empty ($search)) {
             $material->where(function ($query) use ($search) {
-                $query->where('part_code', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhere('make', 'like', '%' . $search . '%')
-                    ->orWhere('mpn', 'like', '%' . $search . '%')
-                    ->orWhere('stock', 'like', '%' . $search . '%')
+                $query->where('materials.part_code', 'like', '%' . $search . '%')
+                    ->orWhere('materials.description', 'like', '%' . $search . '%')
+                    ->orWhere('materials.make', 'like', '%' . $search . '%')
+                    ->orWhere('materials.mpn', 'like', '%' . $search . '%')
+                    ->orWhere('stocks.closing_balance', 'like', '%' . $search . '%')
                     ->orWhereHas('category', function ($query) use ($search) {
                         $query->where('category_name', 'like', '%' . $search . '%');
                     })
@@ -1035,7 +1043,7 @@ class RawMaterialController extends Controller
 
         $totalRecords = $material->count();
 
-        if (!in_array($columnName, ['serial'])) {
+        if (!in_array($columnName, ['serial', 'issued', 'receipt', 'reorder'])) {
             if ($columnName === 'uom_shortcode') {
                 $material->join('uom_units', 'materials.uom_id', '=', 'uom_units.uom_id')
                     ->orderBy('uom_units.uom_shortcode', $columnSortOrder);
@@ -1046,8 +1054,11 @@ class RawMaterialController extends Controller
                 $material->join('categories', 'materials.category_id', '=', 'categories.category_id')
                     ->orderBy('categories.category_name', $columnSortOrder);
             } else if ($columnName === 'stock') {
-                $material->join('stocks', 'materials.material_id', '=', 'stocks.material_id')
-                    ->orderBy('stocks.closing_balance', $columnSortOrder);
+                $material->orderBy('stocks.closing_balance', $columnSortOrder);
+            } else if ($columnName === 'opening') {
+                $material->orderBy('stocks.opening_balance', $columnSortOrder);
+            } else if ($columnName === 'reorder_qty') {
+                $material->orderBy('re_order', $columnSortOrder);
             } else {
                 $material->orderBy($columnName, $columnSortOrder);
             }
@@ -1059,9 +1070,7 @@ class RawMaterialController extends Controller
             $materials = $material->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
         }
         
-        
         $data = [];
-
         foreach ($materials as $index => $item) {
 
             if ($item?->stock && $item?->re_order && $item?->stock?->closing_balance < $item?->re_order) {

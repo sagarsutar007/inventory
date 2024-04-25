@@ -86,3 +86,10 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
 table.dataTable th.dt-right {
   text-align: left!important;
 }
+
+
+.login-page {
+  background-image: url('/assets/img/SSE_BACKGROUND.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}

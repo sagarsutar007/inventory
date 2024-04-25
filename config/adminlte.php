@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'Inventory',
+    'title' => 'SSE | Inventory',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -64,7 +64,7 @@ return [
     */
 
     'logo' => '<b>Inventory</b>',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    'logo_img' => 'assets/img/logo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -84,9 +84,9 @@ return [
     */
 
     'auth_logo' => [
-        'enabled' => false,
+        'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'assets/img/logo.png',
             'alt' => 'Auth Logo',
             'class' => '',
             'width' => 50,
@@ -109,8 +109,8 @@ return [
     'preloader' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
-            'alt' => 'AdminLTE Preloader Image',
+            'path' => 'assets/img/loader.png',
+            'alt' => 'Kiaan IT Solutions',
             'effect' => 'animation__shake',
             'width' => 60,
             'height' => 60,
