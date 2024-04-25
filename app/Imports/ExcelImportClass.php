@@ -331,10 +331,8 @@ class ExcelImportClass implements ToCollection, WithBatchInserts
             if (!empty($data[0])) {
                 try {
                     $material = RawMaterial::where('part_code', 'like', $data[0])->first();
-                
-                    $material->purchases()->delete();
-
                     if ($material) {
+                        $material->purchases()->delete();
                         for ($i=3; $i < $columns; $i+=2) { 
                             $this->enterPurchase($material->material_id, $data[$i], $data[$i + 1]);
                         }
