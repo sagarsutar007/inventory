@@ -1352,4 +1352,29 @@ class RawMaterialController extends Controller
         return redirect()->back()->with('success', $importedRows . ' records imported successfully!');
     }
 
+    public function whereUsed()
+    {
+        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-material-master', Auth::user())) {
+            return view('reports.where-used');
+        } else {
+            abort(403);
+        }
+    }
+
+    public function getMaterialsFromRaw(Request $request)
+    {
+        $partCode = $request->input('part_code');
+        
+        if (count($partCode)) {
+
+            // $context = [
+            //     'materials' => $materials,
+            // ];
+    
+            // $returnHTML = view('list-material-used', $context)->render();
+        } else {
+            return response()->json(['status' => false, 'error' => 'Part code is required'], 400);
+        }
+    }
+
 }

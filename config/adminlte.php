@@ -474,6 +474,11 @@ return [
             'icon' => 'fas fa-fw fa-clipboard-list',
             'submenu' => [
                 [
+                    'text' => 'Where Used',
+                    'url' => 'app/reports/where-used',
+                    'can' => 'view-where-used',
+                ],
+                [
                     'text' => 'RM Price List',
                     'url' => 'app/reports/rm-price-list',
                     'can' => 'view-rm-price',

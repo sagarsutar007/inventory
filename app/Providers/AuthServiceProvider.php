@@ -572,6 +572,13 @@ class AuthServiceProvider extends ServiceProvider
             }
             return $user->hasPermission('view-raw-issu');
         });
+
+        Gate::define('view-where-used', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('view-where-used');
+        });
     }
 
     protected function isAdmin($user){

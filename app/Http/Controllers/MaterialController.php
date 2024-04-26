@@ -152,4 +152,37 @@ class MaterialController extends Controller
         return response()->json(array('status' => true, 'html' => $returnHTML));
     }
 
+    public function getRawMaterials(Request $request)
+    {
+        $searchTerm = $request->input('q') ?? $request->input('term');
+        $selectedValues = $request->input('selected_values', []);
+
+        $selectedValues = array_filter($selectedValues, function ($value) {
+            return $value !== null;
+        });
+
+        $query = Material::with('uom')
+            ->where('type', '=', 'raw')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('material_purchases')
+                    ->whereColumn('material_purchases.material_id', 'materials.material_id');
+            });
+
+        if (!empty($searchTerm)) {
+            $query->where(function ($subquery) use ($searchTerm) {
+                $subquery->where('description', 'like', '%' . $searchTerm . '%')
+                    ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if (!empty($selectedValues)) {
+            $query->whereNotIn('materials.material_id', $selectedValues);
+        }
+
+        $materials = $query->orderBy('description')->get();
+
+        return response()->json($materials);
+    }
+
 }

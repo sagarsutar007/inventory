@@ -125,8 +125,6 @@
                     'colvis',
                 ],
                 "stateSave": true,
-                "scrollY": "320px",
-                "scrollCollapse": true
             }).buttons().container().appendTo('#dependents_wrapper .col-md-6:eq(0)');
 
             $('#modalEdit').on('show.bs.modal', function (event) {

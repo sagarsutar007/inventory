@@ -57,6 +57,7 @@ Route::middleware(['auth', 'checkStatus'])->group(function () {
     Route::post('app/material/{material}/export-bom/', [MaterialController::class, 'exportBomRecords'])->name('material.exportBOM');
     Route::post('app/material/{material}/import-bom/', [MaterialController::class, 'importBomRecords'])->name('material.importBOM');
     Route::post('app/material/get-all-materials', [MaterialController::class, 'getMaterials'])->name('materials.get');
+    Route::post('app/material/get-all-raw-materials', [MaterialController::class, 'getRawMaterials'])->name('materials.getRaw');
     Route::post('app/material/get-details', [MaterialController::class, 'getMaterialDetails'])->name('material.getDetails');
     Route::post('app/material/get-finished-goods', [ProductionOrderController::class, 'getFinishedGoods'])->name('material.getFinishedGoods');
 
@@ -122,7 +123,7 @@ Route::middleware(['auth', 'checkStatus'])->group(function () {
         Route::post('/vendors-price-list', [RawMaterialController::class, 'fetchVendorPriceList'])->name('raw.fetchVendorPriceList');
         Route::get('/bulk-price', [RawMaterialController::class, 'bulkPrice'])->name('raw.bulkPrice');
         Route::post('/bulk-price-store', [RawMaterialController::class, 'bulkPriceStore'])->name('raw.bulkPriceStore');
-
+        Route::post('/get-where-used', [RawMaterialController::class, 'getMaterialsFromRaw'])->name('raw.getMaterialsFromRaw');
     });
 
     // Semi Finished Material Routes
@@ -259,6 +260,7 @@ Route::middleware(['auth', 'checkStatus'])->group(function () {
 
     Route::prefix('/app/reports')->group(function () {
         Route::get('', [ReportController::class, 'index'])->name('reports');
+        Route::get('/where-used', [RawMaterialController::class, 'whereUsed'])->name('reports.whereUsed');
         Route::get('/rm-price-list', [RawMaterialController::class, 'priceList'])->name('reports.rmPriceList');
         Route::get('/material-list', [RawMaterialController::class, 'materialList'])->name('reports.materialList');
         Route::get('/bom-view', [BOMController::class, 'bomView'])->name('reports.bom');
