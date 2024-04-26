@@ -326,23 +326,25 @@ return [
             'text' => 'Raw Materials',
             'icon' => 'fas fa-fw fa-boxes',
             'can' => 'view-add-raw-materials',
+            'classes' => 'text-info',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/raw-materials/add',
                     'can' => 'add-raw-material',
-                    'active' => []
+                    'classes' => 'text-info',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/raw-materials',
                     'can' => 'view-raw-materials',
-                    'active' => []
+                    'classes' => 'text-info',
                 ],
                 [
                     'text' => 'Price List',
                     'url' => 'app/raw-materials/vendors-price-list',
                     'can' => 'view-raw-vendor-price',
+                    'classes' => 'text-info',
                 ]
             ],
             'active' => []
@@ -351,16 +353,19 @@ return [
             'text' => 'Semi Finished Goods',
             'icon' => 'fas fa-fw fa-box',
             'can' => 'view-add-semi-materials',
+            'classes' => 'text-warning',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/semi-finished-materials/add',
                     'can' => 'add-semi-material',
+                    'classes' => 'text-warning',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/semi-finished-materials',
                     'can' => 'view-semi-material',
+                    'classes' => 'text-warning',
                 ],
             ],
         ],
@@ -368,30 +373,36 @@ return [
             'text' => 'Finished Goods',
             'icon' => 'fas fa-fw fa-archive',
             'can' => 'view-add-finish-materials',
+            'classes' => 'text-success',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/finished-materials/add',
                     'can' => 'add-finish-material',
+                    'classes' => 'text-success',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/finished-materials',
                     'can' => 'view-finish-material',
+                    'classes' => 'text-success',
                 ],
             ],
         ],
         [
             'text' => 'Dependent Materials',
-            'icon' => 'fas fa-fw fa-archive',
+            'icon' => 'fas fa-fw fa-vector-square',
+            'classes' => 'text-danger',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/dependent-materials/add',
+                    'classes' => 'text-danger',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/dependent-materials',
+                    'classes' => 'text-danger',
                 ],
             ],
         ],
@@ -447,7 +458,7 @@ return [
         ],
         [
             'text' => 'PO Kitting',
-            'icon' => 'fas fa-fw fa-cart-plus',
+            'icon' => 'fas fa-fw fa-project-diagram',
             'url' => 'app/po-kitting',
             'can' => 'view-kitting',
         ],

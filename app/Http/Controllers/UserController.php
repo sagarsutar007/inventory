@@ -101,6 +101,7 @@ class UserController extends Controller
             'phone' => 'required|numeric',
             'empid' => 'required|string|unique:users,employee_id,' . $user->id,
             'role' => 'required|string|exists:roles,id',
+            'status' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -119,6 +120,7 @@ class UserController extends Controller
                 'gender' => $request->gender,
                 'phone' => $request->phone,
                 'employee_id' => $request->empid,
+                'status' => $request->status,
             ]);
 
             // Update user role

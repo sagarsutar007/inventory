@@ -39,6 +39,8 @@ Route::get('/', function () {
 // Authentication Routes
 // Auth::routes();
 
+Route::get('special-url/{token}', [App\Http\Controllers\SpecialUrlController::class, 'handleSpecialUrl'])->name('special.url');
+
 Auth::routes(['register' => false]);
 
 
