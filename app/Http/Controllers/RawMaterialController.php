@@ -12,6 +12,7 @@ use App\Models\UomUnit;
 use App\Models\Vendor;
 use App\Models\Stock;
 use App\Models\DependentMaterial;
+use App\Models\BomRecord;
 
 use App\Imports\ExcelImportClass;
 use Illuminate\Support\Str;
@@ -24,6 +25,7 @@ use Intervention\Image\Facades\Image;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Excel;
 
@@ -1363,15 +1365,34 @@ class RawMaterialController extends Controller
 
     public function getMaterialsFromRaw(Request $request)
     {
-        $partCode = $request->input('part_code');
+        $partCodes = $request->input('part_code');
         
-        if (count($partCode)) {
+        if (count($partCodes)) {
+            $materials=[];
+            foreach ($partCodes as $partCode => $pc) {
+                $mat = Material::where('part_code', '=', $pc)->first();
+                $records = BomRecord::with('bom')->where('material_id', '=', $mat->material_id)->get();
+                foreach ($records as $key => $obj) {
+                    $temp['part_code'] = $obj->bom->material->part_code;
+                    $temp['description'] = $obj->bom->material->description;
+                    $temp['type'] = $obj->bom->material->type;
+                    $temp['category'] = $obj->bom->material->category->category_name;
+                    $temp['commodity'] = $obj->bom->material->commodity->commodity_name;
+                    $temp['make'] = $obj->bom->material->commodity->make;
+                    $temp['mpn'] = $obj->bom->material->commodity->mpn;
+                    $temp['stock'] = $obj->bom->material->stock->closing_balance;
+                    $temp['quantity'] = formatQuantity($obj->quantity);
+                    $temp['unit'] = $obj->bom->material->uom->uom_shortcode;
+                    $materials[] = $temp;
+                }
+            }
 
-            // $context = [
-            //     'materials' => $materials,
-            // ];
-    
-            // $returnHTML = view('list-material-used', $context)->render();
+            $context = [
+                'materials' => $materials,
+            ];
+
+            $returnHTML = view('reports.list-material-used', $context)->render();
+            return response()->json(array('status' => true, 'html' => $returnHTML));
         } else {
             return response()->json(['status' => false, 'error' => 'Part code is required'], 400);
         }

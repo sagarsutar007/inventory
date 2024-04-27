@@ -47,7 +47,7 @@
 
             <div id="bom" style="display: none;">
                 <div class="bom-section mt-3 d-flex align-items-center justify-content-between">
-                    <h5 class="text-secondary">Required Materials</h5>
+                    <h5 class="text-secondary">Used in Materials</h5>
                     <div class="btn-group">
                         {{-- <button class="btn btn-sm btn-primary btn-combined">
                             <i class="fas fa-table"></i>
@@ -195,11 +195,11 @@
                 var description = $(".material-description").val();
                 var unit = "(" + $(".material-unit").val() + ")";
 
-                $('#bom-table').DataTable({
+                $('#materials-tbl').DataTable({
                     "responsive": true,
-                    "lengthChange": false,
-                    "paging": false,
-                    "info": false,
+                    "lengthChange": true,
+                    "paging": true,
+                    "info": true,
                     "footer": true,
                     "buttons": [
                         {
@@ -229,11 +229,14 @@
                         'colvis',
                     ],
                     "processing": true,
-                    "searching": false,
+                    "searching": true,
                     "ordering": true,
-                    "dom": 'Bfrtip',
+                    "dom": 'lBfrtip',
                     "autoWidth": true,
                     "lengthMenu": datatableLength,
+                    "language": {
+                        "lengthMenu": "_MENU_"
+                    },
                 });
             }
 
