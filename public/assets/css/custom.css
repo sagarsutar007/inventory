@@ -44,6 +44,10 @@ div.dataTables_wrapper div.dataTables_paginate {
   padding: 0.15rem .75rem;
 }
 
+body:not(.layout-fixed) .main-sidebar {
+  position: fixed;
+}
+
 body:not(.layout-fixed) .main-sidebar .sidebar {
   overflow-y: auto;
   overflow-x: hidden;
@@ -52,6 +56,8 @@ body:not(.layout-fixed) .main-sidebar .sidebar {
   top: 60px;
   left: 0;
 }
+
+
 
 .sidebar:hover {
   scrollbar-width: none !important;

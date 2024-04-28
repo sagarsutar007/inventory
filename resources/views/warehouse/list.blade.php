@@ -86,7 +86,11 @@
                     }
                 },
                 "columns": [
-                    { "data": "code", "name": "part_code" },
+                    { 
+                        "data": "code", 
+                        "name": "part_code",
+                        //render code here
+                    },
                     { "data": "material_name", "name": "description" },
                     { "data": "unit", "name": "uom_text" },
                     { "data": "opening_balance", "name": "opening_balance" },

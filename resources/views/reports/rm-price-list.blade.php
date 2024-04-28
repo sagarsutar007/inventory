@@ -23,9 +23,9 @@
                                 <th>Unit</th>
                                 <th>Make</th>
                                 <th>Mpn</th>
-                                <th>Price 1</th>
-                                <th>Price 2</th>
-                                <th>Price 3</th>
+                                <th>Min Price</th>
+                                <th>Avg Price</th>
+                                <th>Max Price</th>
                             </tr>
                         </thead>
                         <tbody>
