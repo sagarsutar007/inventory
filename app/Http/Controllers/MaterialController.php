@@ -113,8 +113,8 @@ class MaterialController extends Controller
 
     public function stockDetail(Request $request) {
         $partcode = $request->input('partcode');
-        $startDate = $request->input('startDate');
-        $endDate = $request->input('endDate');
+        $startDate = date('Y-m-d', strtotime($request->input('startDate')));
+        $endDate = date('Y-m-d', strtotime($request->input('endDate')));
 
         $material = Material::with('stock')->where('part_code', $partcode)->first();
 
