@@ -43,6 +43,17 @@
             </div>
         </div>
     </div>
+
+    <x-adminlte-modal id="view-stock" title="View Stock Quantity" icon="fas fa-box" size='xl' scrollable>
+        <div class="row">
+            <div class="col-12" id="view-stock-section">
+                <h4 class="text-secondary text-center">Loading...</h4>
+            </div>
+        </div>
+        <x-slot name="footerSlot">
+            <x-adminlte-button class="btn-sm" theme="default" label="Close" data-dismiss="modal"/>
+        </x-slot>
+    </x-adminlte-modal>
 @stop
 
 @section('js')
@@ -89,7 +100,12 @@
                     { 
                         "data": "code", 
                         "name": "part_code",
-                        //render code here
+                        "render": function ( data, type, row ) {
+                            return `<button class="view-stock btn btn-link p-0" 
+                            data-partcode="${data}" 
+                            data-desc="${row.material_name}"
+                            >${data}</button>`;
+                        }
                     },
                     { "data": "material_name", "name": "description" },
                     { "data": "unit", "name": "uom_text" },
@@ -214,7 +230,99 @@
                 });
             }
 
-            
+            $('#view-stock').on('hide.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                $("#view-stock-section").html(`
+                    <h4 class="text-secondary text-center">Loading...</h4>
+                `);
+            });
+
+            $(document).on('click', '.view-stock', function(e){
+                e.preventDefault();
+                var partcode = $(this).data('partcode');
+                var description = $(this).data('desc');
+                var today = new Date();
+                var startDate = financialYear();
+                var endDate = (today.getDate() < 10 ? '0' : '') + today.getDate() + '-' + ((today.getMonth() + 1) < 10 ? '0' : '') + (today.getMonth() + 1) + '-' + today.getFullYear();
+
+                var title = "View Stock of " + partcode + " - " + description + " from " + startDate + " to " + endDate;
+
+                $.ajax({
+                    url: "{{ route('material.stockDetail') }}",
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        partcode: partcode,
+                        startDate: startDate,
+                        endDate: endDate,
+                    },
+                    success: function(response) {
+                        if (response.status) {
+                            var cleanedHtml = response.html.replace(/\\/g, '');
+                            $("#view-stock-section").html(cleanedHtml);
+                            $("#view-stock-qty").DataTable({
+                                "responsive": true,
+                                "lengthChange": false,
+                                "autoWidth": true,
+                                "paging": false,
+                                "info": false,
+                                "buttons": [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    'colvis',
+                                ],
+                                "processing": false,
+                                "searching": false,
+                                "ordering": false,
+                                "dom": 'Brt',
+                                "language": {
+                                    "lengthMenu": "_MENU_"
+                                },
+                                "lengthMenu": [
+                                    [ -1, 10, 25, 50, 100],
+                                    ['All', 10, 25, 50, 100]
+                                ]
+                            });
+                            $("#view-stock").find('.modal-title').text(title);
+                            $("#view-stock").modal('show');
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+
+            function financialYear(){
+                var currentDate = new Date();
+                var financialYearStartMonth = 3;                 
+                var financialYearStartDay = 1;
+                
+                if (currentDate.getMonth() >= financialYearStartMonth && currentDate.getDate() >= financialYearStartDay) {
+                    var startDate = new Date(currentDate.getFullYear(), financialYearStartMonth, financialYearStartDay);
+                } else {
+                    var startDate = new Date(currentDate.getFullYear() - 1, financialYearStartMonth, financialYearStartDay);
+                }
+                var formattedStartDate = (startDate.getDate() < 10 ? '0' : '') + startDate.getDate() + '-' + ((startDate.getMonth() + 1) < 10 ? '0' : '') + (startDate.getMonth() + 1) + '-' + startDate.getFullYear();
+                console.log(formattedStartDate);
+                return formattedStartDate;
+            }
         });
     </script>
 @stop
