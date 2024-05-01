@@ -3,7 +3,7 @@
         <tr>
             <th>Partcode</th>
             <th>Description</th>
-            <th>Quantity</th>
+            <th>QPA</th>
             <th>Unit</th>
             <th>Make</th>
             <th>MPN</th>

@@ -122,3 +122,37 @@
         </div>
     </div>
 </div>
+<div class="tab-pane fade" id="used" role="tabpanel" aria-labelledby="used-tab">
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="used-table" class="table table-bordered table-striped" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th width="6%">Partcode</th>
+                            <th>Material Name</th>
+                            <th>QPA</th>
+                            <th>Unit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(count($used))
+                            @foreach($used as $mat)
+                                <tr>
+                                    <td width="6%">{{ $mat['part_code'] }}</td>
+                                    <td>{{ $mat['description'] }}</td>
+                                    <td width="6%" class="text-right">{{ $mat['quantity'] }}</td>
+                                    <td width="6%">{{ $mat['unit'] }}</td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="3">No records found!</td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

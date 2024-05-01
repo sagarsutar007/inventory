@@ -92,6 +92,9 @@
                 <li class="nav-item">
                     <a class="nav-link" id="vendors-tab" data-toggle="tab" data-target="#vendors" type="button" role="tab" aria-controls="vendors" aria-selected="true">Vendors</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="used-tab" data-toggle="tab" data-target="#used" type="button" role="tab" aria-controls="used" aria-selected="true">Used In</a>
+                </li>
             </ul>
         </x-slot>
         <x-slot name="body">
@@ -271,6 +274,35 @@
                     success: function(response) {
                         if (response.status) {
                             $("#view-material-modal").html(response.html);
+                            $("#used-table").DataTable({
+                                lengthMenu: datatableLength,
+                                autoWidth: true,
+                                language: {
+                                    lengthMenu: "_MENU_"
+                                },
+                                buttons: [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    'colvis',
+                                ],
+                                dom: 'lBfrtip',
+                            });
                         }
                     },
                     error: function(error) {

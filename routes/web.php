@@ -48,6 +48,10 @@ Auth::routes(['register' => false]);
 Route::middleware(['auth', 'checkStatus'])->group(function () {
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
     Route::get('/app', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/app/profile', [UserController::class, 'profile'])->name('profile');
+    Route::post('/app/profile', [UserController::class, 'setProfile'])->name('setProfile');
+    Route::get('/app/change-password', [UserController::class, 'changePassword'])->name('password');
+    Route::post('/app/change-password', [UserController::class, 'setPassword'])->name('setPassword');
 
     //Utility Routes
     Route::get('app/vendor/autocomplete', [VendorController::class, 'autocomplete'])->name('vendors.autocomplete');

@@ -371,7 +371,7 @@ class WarehouseController extends Controller
             return response()->json(['status' => true, 'message' => "Material Issued Successfully!"], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => false, 'message' => 'Something went wrong!', 'error' => $e->getMessage()], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage(), 'error' => $e->getMessage()], 500);
         }
     }
 

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 use App\Models\User;
 use App\Models\Role;
@@ -18,17 +20,25 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with('role.role')->where('type', 'user')->get();
-        return view('users.index', compact('users'));
+        if ( Gate::allows('admin', Auth::user())) {
+            $users = User::with('role.role')->where('type', 'user')->get();
+            return view('users.index', compact('users'));
+        } else {
+            abort(403);
+        }
     }
 
     public function create()
     {
-        $context = [
-            'roles' => Role::all()
-        ];
-        
-        return view('users.create', $context);
+        if ( Gate::allows('admin', Auth::user())) {
+            $context = [
+                'roles' => Role::all()
+            ];
+            
+            return view('users.create', $context);
+        } else {
+            abort(403);
+        }
     }
 
     public function store(Request $request)
@@ -84,11 +94,15 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $context = [
-            'roles' => Role::all(),
-            'user' => $user,
-        ];
-        return view('users.edit', $context);
+        if ( Gate::allows('admin', Auth::user())) {
+            $context = [
+                'roles' => Role::all(),
+                'user' => $user,
+            ];
+            return view('users.edit', $context);
+        } else {
+            abort(403);
+        }
     }
     
     public function update(Request $request, User $user)
@@ -152,13 +166,17 @@ class UserController extends Controller
 
     public function permission(Request $request, User $user)
     {
-        $context = [
-            'permissions' => Permission::all(),
-            'user' => $user,
-            'userPermissions' => $user->permissions
-        ];
-        
-        return view('users.permissions', $context);
+        if ( Gate::allows('admin', Auth::user())) {
+            $context = [
+                'permissions' => Permission::all(),
+                'user' => $user,
+                'userPermissions' => $user->permissions
+            ];
+            
+            return view('users.permissions', $context);
+        } else {
+            abort(403);
+        }
     }
 
     public function setPermission(Request $request, User $user)
@@ -187,14 +205,66 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        try {
-            $user->permissions()->delete();
-            $user->roles()->detach();
-            $user->delete();
-            return redirect()->route('users')->with('success', 'User deleted successfully.');
-        } catch (\Exception $e) {
-            dd($e->getMessage());
+        if ( Gate::allows('admin', Auth::user())) {
+            try {
+                $user->permissions()->delete();
+                $user->roles()->detach();
+                $user->delete();
+                return redirect()->route('users')->with('success', 'User deleted successfully.');
+            } catch (\Exception $e) {
+                dd($e->getMessage());
+            }
+        } else {
+            abort(403);
         }
     }
 
+    public function profile()
+    {
+        $profile = Auth::user();
+        return view('profile', compact('profile'));
+    }
+
+    public function setProfile(Request $request) {
+        // Validate incoming request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . Auth::id(),
+            'phone' => 'required|string|max:15',
+        ]);
+        
+        $user = Auth::user();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->phone = $request->phone;
+        $user->save();
+
+        return redirect()->route('profile')->with('success', 'Profile updated successfully.');
+    }
+
+    public function changePassword()
+    {
+        return view('change-password');
+    }
+
+    public function setPassword(Request $request)
+    {
+        $request->validate([
+            'current_pass' => 'required|string',
+            'new_pass' => 'required|string|min:8|different:current_pass',
+            'conf_pass' => 'required|string|same:new_pass',
+        ]);
+        
+        $user = Auth::user();
+        
+        if (!Hash::check($request->current_pass, $user->password)) {
+            return back()->withErrors(['current_pass' => 'The current password is incorrect.'])->withInput();
+        }
+        
+        $user->password = Hash::make($request->new_pass);
+        
+        $user->save();
+        
+        return redirect()->route('password')->with('success', 'Password updated successfully.');
+    }
 }

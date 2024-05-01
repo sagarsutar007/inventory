@@ -93,9 +93,22 @@ table.dataTable th.dt-right {
   text-align: left!important;
 }
 
-
 .login-page {
   background-image: url('/assets/img/SSE_BACKGROUND.jpg');
   background-size: 100% 100%;
   background-repeat: no-repeat;
+}
+
+.equal-height-row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.equal-height-row [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+}
+
+.equal-height-row [class*="col-"] .card {
+    flex-grow: 1;
 }

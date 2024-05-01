@@ -393,6 +393,7 @@ class RawMaterialController extends Controller
 
     public function show(RawMaterial $material)
     {
+        $used = [];
         $uoms = UomUnit::all();
         $categories = Category::all();
         $commodities = Commodity::all();
@@ -404,6 +405,21 @@ class RawMaterialController extends Controller
         $category = $material->category()->first();
         $purchases = $material->purchases()->with('vendor')->get();
         $dm = $material->dependant()->first();
+        
+        $records = BomRecord::with('bom')->where('material_id', '=', $material->material_id)->get();
+        foreach ($records as $key => $obj) {
+            $temp['part_code'] = $obj->bom->material->part_code;
+            $temp['description'] = $obj->bom->material->description;
+            $temp['type'] = $obj->bom->material->type;
+            $temp['category'] = $obj->bom->material->category->category_name;
+            $temp['commodity'] = $obj->bom->material->commodity->commodity_name;
+            $temp['make'] = $obj->bom->material->commodity->make;
+            $temp['mpn'] = $obj->bom->material->commodity->mpn;
+            $temp['stock'] = $obj->bom->material->stock->closing_balance;
+            $temp['quantity'] = formatQuantity($obj->quantity);
+            $temp['unit'] = $obj->bom->material->uom->uom_shortcode;
+            $used[] = $temp;
+        }
 
         $context = [
             'material' => $material,
@@ -415,7 +431,8 @@ class RawMaterialController extends Controller
             'categories' => $categories,
             'commodities' => $commodities,
             'purchases' => $purchases,
-            'dm' => $dm
+            'dm' => $dm,
+            'used' => $used
         ];
 
         $returnHTML = view('view-raw-material', $context)->render();

@@ -237,6 +237,12 @@
                     "language": {
                         "lengthMenu": "_MENU_"
                     },
+                    "columnDefs": [
+                        {
+                            "targets": [4,5,6,7, 8,9],
+                            "visible": false,
+                        }
+                    ],
                 });
             }
 
