@@ -61,8 +61,6 @@ class WarehouseController extends Controller
             });
         }
 
-        
-
         if ($columnName === 'part_code') {
             $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
                 ->orderBy('materials.part_code', $columnSortOrder);
@@ -75,6 +73,12 @@ class WarehouseController extends Controller
                 ->orderBy('uom_units.uom_text', $columnSortOrder);
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
+        } elseif ($columnName === 're_order_status') {
+            $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
+                ->orderByRaw("CASE WHEN stocks.closing_balance < materials.re_order THEN 1 ELSE 0 END $columnSortOrder");
+        } elseif ($columnName === 're_order') {
+            $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
+                ->orderBy('materials.re_order', $columnSortOrder);
         } else {
             // $query->orderBy($columnName, $columnSortOrder);
         }
@@ -94,7 +98,7 @@ class WarehouseController extends Controller
             $material = $warehouse->material;
             if ($material) {
 
-                if ($warehouse->closing_balance <= $material->re_order && $material->re_order != null) {
+                if ($warehouse->closing_balance < $material->re_order && $material->re_order != null) {
                     $stockQty = "<span class='text-danger fw-bold'>" . $warehouse->closing_balance . "</span><div data-toggle='tooltip' data-placement='top' class='record-badge-reorder' title='Re Order'></div>";
                     $re_order_status = "<span class='text-danger fw-bold'>Yes</span>";
                 } else {
