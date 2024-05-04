@@ -295,7 +295,7 @@ class ProductionOrderController extends Controller
         $weekNumber = Carbon::now()->weekOfYear;
         $day = Carbon::now()->format('d');
         $poPrefix = 'PO' . $year . $weekNumber . $day;
-        $lastPoNumber = ProductionOrder::where('po_number', 'like', '%' . $year . '%')->max('po_number');
+        $lastPoNumber = ProductionOrder::where('po_number', 'like', '%' . $poPrefix . '%')->max('po_number');
         $increment = 1;
         if ($lastPoNumber) {
             $lastNumericPart = (int) substr($lastPoNumber, -5);

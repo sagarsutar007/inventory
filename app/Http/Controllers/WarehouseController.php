@@ -580,9 +580,9 @@ class WarehouseController extends Controller
         $weekNumber = date('W');
         $date = date('d');
         $transactionId = sprintf('%02d%02d%02d', $year, $weekNumber, $date);
-        $lastTransactionId = Warehouse::where('transaction_id', 'like', $year . '%')->max('transaction_id');
+        $lastTransactionId = Warehouse::where('transaction_id', 'like', $transactionId . '%')->orderBy('transaction_id', 'desc')->first();
         if ($lastTransactionId) {
-            $lastNumericPart = intval(substr($lastTransactionId, 6));
+            $lastNumericPart = intval(substr($lastTransactionId->transaction_id, 6));
             $newNumericPart = str_pad($lastNumericPart + 1, 5, '0', STR_PAD_LEFT);
             $transactionId .= $newNumericPart;
         } else {
