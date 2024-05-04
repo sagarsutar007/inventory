@@ -112,3 +112,7 @@ table.dataTable th.dt-right {
 .equal-height-row [class*="col-"] .card {
     flex-grow: 1;
 }
+
+.text-lime {
+  color: #3bff00!important;
+}

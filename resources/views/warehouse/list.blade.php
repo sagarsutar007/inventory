@@ -245,7 +245,7 @@
                 var startDate = financialYear();
                 var endDate = (today.getDate() < 10 ? '0' : '') + today.getDate() + '-' + ((today.getMonth() + 1) < 10 ? '0' : '') + (today.getMonth() + 1) + '-' + today.getFullYear();
 
-                var title = "View Stock of " + partcode + " - " + description + " from " + startDate + " to " + endDate;
+                var title = `View Stock of <strong>` + partcode + `</strong> - ` + description + `<br/> from <strong>` + startDate + `</strong> to <strong>` + endDate + `</strong>`;
 
                 $.ajax({
                     url: "{{ route('material.stockDetail') }}",

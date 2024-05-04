@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th>Transaction ID</th>
-            <th>Date</th>
+            <th style="text-wrap: nowrap;">Date</th>
             <th>Purchase/Production Order Number</th>
             <th>Type</th>
             <th>Receipt</th>
@@ -16,21 +16,21 @@
         @endphp
         @if ($transactions)
             <tr>
-                <td>Opening Balance</td>
-                <td></td>
+                <td><strong>Opening Balance</strong></td>
+                <td style="text-wrap: nowrap;"></td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td>
-                    {{ $opening }}
+                    {{ formatQuantity($opening) }}
                     @php $balance += $opening; @endphp
                 </td>
             </tr>
             @foreach ($transactions as $trans)
                 <tr>
                     <td>{{ $trans->warehouse->transaction_id }}</td>
-                    <td>{{ date('d-m-Y', strtotime($trans->warehouse->date)) }}</td>
+                    <td style="text-wrap: nowrap;">{{ date('d-m-Y', strtotime($trans->warehouse->date)) }}</td>
                     <td>{{ $trans->warehouse->popn }}</td>
                     <td>
                         @if ($trans->warehouse->po_kitting === "true")
@@ -43,17 +43,17 @@
                     </td>
                     <td>
                         @if ($trans->warehouse->type != "issue")
-                            {{ $trans->quantity }}
+                            {{ formatQuantity($trans->quantity) }}
                             @php $balance += $trans->quantity; @endphp
                         @endif
                     </td>
                     <td>
                         @if ($trans->warehouse->type == "issue")
-                            {{ $trans->quantity }}
+                            {{ formatQuantity($trans->quantity) }}
                             @php $balance -= $trans->quantity; @endphp
                         @endif
                     </td>
-                    <td>{{ number_format($balance, 3) }}</td>
+                    <td>{{ formatQuantity($balance) }}</td>
                 </tr>
             @endforeach
         @endif

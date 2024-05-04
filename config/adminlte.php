@@ -320,7 +320,8 @@ return [
             'url' => 'app/categories',
             'icon' => 'fas fa-fw fa-th',
             'can' => 'view-categories',
-            'active' => []
+            'active' => [],
+            'classes' => 'text-warning',
         ],
         [
             'text' => 'Raw Materials',
@@ -338,7 +339,7 @@ return [
                     'text' => 'View All',
                     'url' => 'app/raw-materials',
                     'can' => 'view-raw-materials',
-                    // 'classes' => 'text-info',
+                    'classes' => 'text-lime',
                 ],
                 [
                     'text' => 'Price List',
@@ -353,7 +354,7 @@ return [
             'text' => 'Semi Finished Goods',
             'icon' => 'fas fa-fw fa-box',
             'can' => 'view-add-semi-materials',
-            // 'classes' => 'text-warning',
+            'classes' => 'text-warning',
             'submenu' => [
                 [
                     'text' => 'Add New',
@@ -365,7 +366,7 @@ return [
                     'text' => 'View All',
                     'url' => 'app/semi-finished-materials',
                     'can' => 'view-semi-material',
-                    // 'classes' => 'text-warning',
+                    'classes' => 'text-lime',
                 ],
             ],
         ],
@@ -385,14 +386,14 @@ return [
                     'text' => 'View All',
                     'url' => 'app/finished-materials',
                     'can' => 'view-finish-material',
-                    // 'classes' => 'text-success',
+                    'classes' => 'text-lime',
                 ],
             ],
         ],
         [
             'text' => 'Dependent Materials',
             'icon' => 'fas fa-fw fa-vector-square',
-            // 'classes' => 'text-danger',
+            'classes' => 'text-warning',
             'submenu' => [
                 [
                     'text' => 'Add New',
@@ -402,7 +403,7 @@ return [
                 [
                     'text' => 'View All',
                     'url' => 'app/dependent-materials',
-                    // 'classes' => 'text-danger',
+                    'classes' => 'text-lime',
                 ],
             ],
         ],
@@ -416,6 +417,7 @@ return [
             'text' => 'Warehouse',
             'icon' => 'fas fa-fw fa-people-carry',
             'can' => 'view-warehouse',
+            'classes' => 'text-warning',
             'submenu' => [
                 [
                     'text' => 'Issue',
@@ -426,6 +428,7 @@ return [
                     'text' => 'Receive',
                     'url' => 'app/warehouse/receive',
                     'can' => 'receive-warehouse',
+                    'classes' => 'text-lime',
                 ],
                 // [
                 //     'text' => 'Real Time Stock',
@@ -453,6 +456,7 @@ return [
                     'text' => 'View All',
                     'url' => 'app/production-orders',
                     'can' => 'view-po',
+                    'classes' => 'text-lime',
                 ],
             ],
         ],
@@ -461,6 +465,7 @@ return [
             'icon' => 'fas fa-fw fa-project-diagram',
             'url' => 'app/po-kitting',
             'can' => 'view-kitting',
+            'classes' => 'text-warning',
         ],
         [
             'text' => 'Vendors',
@@ -472,6 +477,7 @@ return [
             'text' => 'Reports',
             'url' => '#',
             'icon' => 'fas fa-fw fa-clipboard-list',
+            'classes' => 'text-warning',
             'submenu' => [
                 [
                     'text' => 'Where Used',
@@ -482,6 +488,7 @@ return [
                     'text' => 'RM Price List',
                     'url' => 'app/reports/rm-price-list',
                     'can' => 'view-rm-price',
+                    'classes' => 'text-lime',
                 ],
                 [
                     'text' => 'Material Master List',
@@ -492,6 +499,7 @@ return [
                     'text' => 'BOM View',
                     'url' => 'app/reports/bom-view',
                     'can' => 'view-bom-view',
+                    'classes' => 'text-lime',
                 ],
                 [
                     'text' => 'BOM Cost View',
@@ -502,6 +510,7 @@ return [
                     'text' => 'FG Cost Summary',
                     'url' => 'app/reports/fg-cost-summary',
                     'can' => 'view-fg-cost',
+                    'classes' => 'text-lime',
                 ],
                 [
                     'text' => 'RM Stock',
@@ -512,6 +521,7 @@ return [
                     'text' => 'Real Time Stock',
                     'url' => 'app/warehouse',
                     'can' => 'view-stock',
+                    'classes' => 'text-lime',
                 ],
                 [
                     'text' => 'Production Order',
@@ -522,6 +532,7 @@ return [
                     'text' => 'PO Shortage',
                     'url' => 'app/reports/po-shortage-stock',
                     'can' => 'view-po-shortage',
+                    'classes' => 'text-lime',
                 ],
                 [
                     'text' => 'PO Shortage Consolidated',
@@ -532,6 +543,7 @@ return [
                     'text' => 'Planned Order Shortage',
                     'url' => 'app/reports/plo-shortage-report',
                     'can' => 'view-plan-short',
+                    'classes' => 'text-lime',
                 ],
                 [
                     'text' => 'RM Purchase',
@@ -542,6 +554,7 @@ return [
                     'text' => 'RM Issuance',
                     'url' => 'app/reports/rm-issuance-report',
                     'can' => 'view-raw-issu',
+                    'classes' => 'text-lime',
                 ],
             ],
         ],
