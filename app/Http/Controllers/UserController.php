@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Gate;
 
 use App\Models\User;
 use App\Models\Role;
@@ -20,7 +21,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        if ( Gate::allows('admin', Auth::user())) {
+        if (Gate::allows('admin', Auth::user())) {
             $users = User::with('role.role')->where('type', 'user')->get();
             return view('users.index', compact('users'));
         } else {
@@ -30,11 +31,11 @@ class UserController extends Controller
 
     public function create()
     {
-        if ( Gate::allows('admin', Auth::user())) {
+        if (Gate::allows('admin', Auth::user())) {
             $context = [
                 'roles' => Role::all()
             ];
-            
+
             return view('users.create', $context);
         } else {
             abort(403);
@@ -64,12 +65,12 @@ class UserController extends Controller
                 'phone' => $request->input('phone'),
                 'password' => $request->input('password'),
             ]);
-            
+
             $userRole = UserRole::create([
                 'user_id' => $user->id,
                 'role_id' => $request->input('role'),
             ]);
-            
+
             $permissions = PermissionRole::where('role_id', $userRole->role_id)->pluck('permission_id');
 
             $userPermissions = [];
@@ -94,7 +95,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        if ( Gate::allows('admin', Auth::user())) {
+        if (Gate::allows('admin', Auth::user())) {
             $context = [
                 'roles' => Role::all(),
                 'user' => $user,
@@ -104,7 +105,7 @@ class UserController extends Controller
             abort(403);
         }
     }
-    
+
     public function update(Request $request, User $user)
     {
         $validator = Validator::make($request->all(), [
@@ -166,13 +167,13 @@ class UserController extends Controller
 
     public function permission(Request $request, User $user)
     {
-        if ( Gate::allows('admin', Auth::user())) {
+        if (Gate::allows('admin', Auth::user())) {
             $context = [
                 'permissions' => Permission::all(),
                 'user' => $user,
                 'userPermissions' => $user->permissions
             ];
-            
+
             return view('users.permissions', $context);
         } else {
             abort(403);
@@ -196,7 +197,7 @@ class UserController extends Controller
                     'permission_id' => $permissionId,
                 ]);
             }
-            
+
             return redirect()->back()->with('success', 'Permissions updated successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to update permissions. Please try again.');
@@ -205,7 +206,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if ( Gate::allows('admin', Auth::user())) {
+        if (Gate::allows('admin', Auth::user())) {
             try {
                 $user->permissions()->delete();
                 $user->roles()->detach();
@@ -225,14 +226,15 @@ class UserController extends Controller
         return view('profile', compact('profile'));
     }
 
-    public function setProfile(Request $request) {
+    public function setProfile(Request $request)
+    {
         // Validate incoming request
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . Auth::id(),
             'phone' => 'required|string|max:15',
         ]);
-        
+
         $user = Auth::user();
         $user->name = $request->name;
         $user->email = $request->email;
@@ -254,17 +256,17 @@ class UserController extends Controller
             'new_pass' => 'required|string|min:8|different:current_pass',
             'conf_pass' => 'required|string|same:new_pass',
         ]);
-        
+
         $user = Auth::user();
-        
+
         if (!Hash::check($request->current_pass, $user->password)) {
             return back()->withErrors(['current_pass' => 'The current password is incorrect.'])->withInput();
         }
-        
+
         $user->password = Hash::make($request->new_pass);
-        
+
         $user->save();
-        
+
         return redirect()->route('password')->with('success', 'Password updated successfully.');
     }
 }
