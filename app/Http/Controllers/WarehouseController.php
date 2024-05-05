@@ -21,7 +21,7 @@ class WarehouseController extends Controller
      */
     public function index()
     {
-        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-stock', Auth::user())) {
+        if (Gate::allows('admin', Auth::user()) || Gate::allows('view-stock', Auth::user())) {
             return view('warehouse.list');
         } else {
             abort(403);
@@ -30,7 +30,7 @@ class WarehouseController extends Controller
 
     public function transactions()
     {
-        if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-transaction', Auth::user())) {
+        if (Gate::allows('admin', Auth::user()) || Gate::allows('view-transaction', Auth::user())) {
             return view('warehouse.transactions');
         } else {
             abort(403);
@@ -80,9 +80,9 @@ class WarehouseController extends Controller
             $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
                 ->orderBy('materials.re_order', $columnSortOrder);
         } else {
-            // $query->orderBy($columnName, $columnSortOrder);
+            $query->orderBy($columnName, $columnSortOrder);
         }
-        
+
         $totalRecords = $query->count();
         // Paginate the query
 
@@ -92,7 +92,7 @@ class WarehouseController extends Controller
             $whQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
             $warehouses = $whQuery->items();
         }
-        
+
         $data = [];
         foreach ($warehouses as $index => $warehouse) {
             $material = $warehouse->material;
@@ -214,7 +214,7 @@ class WarehouseController extends Controller
      */
     public function transIssue()
     {
-        if ( Gate::allows('admin', Auth::user()) || Gate::allows('issue-warehouse', Auth::user())) {
+        if (Gate::allows('admin', Auth::user()) || Gate::allows('issue-warehouse', Auth::user())) {
             $vendors = Vendor::all();
             return view('warehouse.issue', compact('vendors'));
         } else {
@@ -227,7 +227,7 @@ class WarehouseController extends Controller
      */
     public function transReceive()
     {
-        if ( Gate::allows('admin', Auth::user()) || Gate::allows('receive-warehouse', Auth::user())) {
+        if (Gate::allows('admin', Auth::user()) || Gate::allows('receive-warehouse', Auth::user())) {
             $vendors = Vendor::all();
             return view('warehouse.receive', compact('vendors'));
         } else {
@@ -424,7 +424,7 @@ class WarehouseController extends Controller
         $wh = Warehouse::with('production')->first();
 
         $finishedGood = $warehouse->production?->material->description;
-        
+
         $quantity = $warehouse->production?->quantity . " " . $warehouse->production?->material?->uom?->uom_shortcode;
 
         $context = [
@@ -433,8 +433,8 @@ class WarehouseController extends Controller
             'records' => $records
         ];
         $returnHTML = view('warehouse.viewModalForm', $context)->render();
-        return response()->json(array('status' => true, 'html' => $returnHTML, 'quantity' => $quantity??'', 'material' => $finishedGood??''));
-        
+        return response()->json(array('status' => true, 'html' => $returnHTML, 'quantity' => $quantity ?? '', 'material' => $finishedGood ?? ''));
+
     }
 
     /**

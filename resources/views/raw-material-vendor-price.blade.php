@@ -18,16 +18,16 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md mb-3">
-                            <input type="text" id="part_code" name="part_code" class="form-control" placeholder="Partcode" value="{{ $_GET['part_code']??''; }}">
+                            <input type="text" id="part_code" name="part_code" class="form-control" placeholder="Partcode" value="{{ $_GET['part_code'] ?? '' }}">
                         </div>
                         <div class="col-md mb-3">
-                            <input type="text" id="description" name="description" class="form-control" placeholder="Description" value="{{ $_GET['description']??''; }}">
+                            <input type="text" id="description" name="description" class="form-control" placeholder="Description" value="{{ $_GET['description'] ?? '' }}">
                         </div>
                         <div class="col-md mb-3">
-                            <input type="text" id="make" name="make" class="form-control" placeholder="Make" value="{{ $_GET['make']??''; }}">
+                            <input type="text" id="make" name="make" class="form-control" placeholder="Make" value="{{ $_GET['make'] ?? '' }}">
                         </div>
                         <div class="col-md mb-3">
-                            <input type="text" id="mpn" name="mpn" class="form-control" placeholder="MPN" value="{{ $_GET['mpn']??''; }}">
+                            <input type="text" id="mpn" name="mpn" class="form-control" placeholder="MPN" value="{{ $_GET['mpn'] ?? '' }}">
                         </div>
                     </div>
                     <div class="row">
@@ -35,10 +35,10 @@
                             <div class="form-group">
                                 <div class="input-group mb-3">
                                     <select class="form-control select2" id="uom" name="uom_id[]" multiple="multiple" style="width: 100%;">
-                                        <option value="all" {{ isset($_GET['uom_id']) && in_array('all', $_GET['uom_id']) ? 'selected' : '' }}>All</option>
+                                        <option value="all" {{ (isset($_GET['uom_id']) && in_array('all', $_GET['uom_id'])) ? 'selected' : '' }}>All</option>
                                         @foreach($uom as $unit)
                                         <option value="{{$unit->uom_id}}" {{ isset($_GET['uom_id']) && in_array($unit->uom_id, $_GET['uom_id']) ? 'selected' : '' }}>
-                                            {{$unit->uom_text}}
+                                            {{ $unit->uom_text }}
                                         </option>
                                         @endforeach
                                     </select>                                        
@@ -139,7 +139,7 @@
                                     <th>Unit</th>
                                     <th>Make</th>
                                     <th>MPN</th>
-                                    @for ($i=1; $i<=$columnsCount; $i++)
+                                    @for ($i = 1; $i <= $columnsCount; $i++)
                                     <th>Vendor {{ $i }}</th>
                                     <th>Price {{ $i }}</th>
                                     @endfor
@@ -162,9 +162,9 @@
                                         <td>{{ $item['uom_shortcode'] }}</td>
                                         <td>{{ $item['make'] }}</td>
                                         <td>{{ $item['mpn'] }}</td>
-                                        @for ($i=1; $i<=$columnsCount; $i++)
-                                        <td>{{ $item['vendor_' . $i]??'' }}</td>
-                                        <td><div class='text-right'>{{ $item['price_' . $i]??'' }}</div></td>
+                                        @for ($i = 1; $i <= $columnsCount; $i++)
+                                        <td>{{ $item['vendor_' . $i] ?? '' }}</td>
+                                        <td><div class='text-right'>{{ $item['price_' . $i] ?? '' }}</div></td>
                                         @endfor
                                         <td>{{ $item['dependent'] }}</td>
                                         <td>{{ $item['frequency'] }}</td>
@@ -308,11 +308,8 @@
 
             $('.select2').on('change', function() {
                 var selectedValues = $(this).val();
-
-                // If "All" option is selected, deselect all other options
                 if (selectedValues && selectedValues.includes('all')) {
-                    // Deselect all options except "All"
-                    $(this).val(['all']).trigger('change.select2'); // Triggering 'change.select2' prevents infinite loop
+                    $(this).val(['all']).trigger('change.select2');
                 }
             });
 
