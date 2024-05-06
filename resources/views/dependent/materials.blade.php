@@ -125,6 +125,9 @@
                     'colvis',
                 ],
                 "stateSave": true,
+                "stateSaveParams": function(settings, data) {
+                    data.search.search = '';
+                },
             }).buttons().container().appendTo('#dependents_wrapper .col-md-6:eq(0)');
 
             $('#modalEdit').on('show.bs.modal', function (event) {

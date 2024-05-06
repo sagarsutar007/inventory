@@ -228,7 +228,7 @@
                 "stateSave": true,
                 "stateSaveParams": function(settings, data) {
                     data.search.search = '';
-                }
+                },
                 "buttons": [
                     {
                         extend: 'excel',

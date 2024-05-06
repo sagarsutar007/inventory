@@ -141,6 +141,9 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
+                "stateSaveParams": function(settings, data) {
+                    data.search.search = '';
+                },
                 "ajax": {
                     "url": "{{ route('finished.fetchFinishedMaterials') }}",
                     "type": "POST",

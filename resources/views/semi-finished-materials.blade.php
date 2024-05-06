@@ -150,8 +150,9 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
-                // "scrollY": "440px",
-                // "scrollCollapse": true,
+                "stateSaveParams": function(settings, data) {
+                    data.search.search = '';
+                },
                 "ajax": {
                     "url": "{{ route('semi.fetchSemiMaterials') }}",
                     "type": "POST",
