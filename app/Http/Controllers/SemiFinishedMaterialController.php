@@ -202,6 +202,7 @@ class SemiFinishedMaterialController extends Controller
      */
     public function show(Material $material)
     {
+        $used = [];
         $material = $material->fresh();
         $attachments = $material->attachments()->get();
         $uom = $material->uom()->first();
@@ -213,6 +214,22 @@ class SemiFinishedMaterialController extends Controller
         } else {
             $bomRecords = null;
         }
+
+        $records = BomRecord::with('bom')->where('material_id', '=', $material->material_id)->get();
+        foreach ($records as $key => $obj) {
+            $temp['part_code'] = $obj->bom->material->part_code;
+            $temp['description'] = $obj->bom->material->description;
+            $temp['type'] = $obj->bom->material->type;
+            $temp['category'] = $obj->bom->material->category->category_name;
+            $temp['commodity'] = $obj->bom->material->commodity->commodity_name;
+            $temp['make'] = $obj->bom->material->commodity->make;
+            $temp['mpn'] = $obj->bom->material->commodity->mpn;
+            $temp['stock'] = $obj->bom->material->stock->closing_balance;
+            $temp['quantity'] = formatQuantity($obj->quantity);
+            $temp['unit'] = $obj->bom->material->uom->uom_shortcode;
+            $used[] = $temp;
+        }
+        
         $context = [
             'material' => $material,
             'attachments' => $attachments,
@@ -220,6 +237,7 @@ class SemiFinishedMaterialController extends Controller
             'category' => $category,
             'uom' => $uom,
             'bomRecords' => $bomRecords,
+            'used' => $used
         ];
 
         // return view('view-semi-material', $context);

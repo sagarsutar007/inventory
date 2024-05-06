@@ -73,6 +73,9 @@
                 <li class="nav-item">
                     <a class="nav-link" id="boms-tab" data-toggle="tab" data-target="#boms" type="button" role="tab" aria-controls="boms" aria-selected="false">Bill of Materials</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="used-tab" data-toggle="tab" data-target="#used" type="button" role="tab" aria-controls="used" aria-selected="true">Used In</a>
+                </li>
             </ul>
         </x-slot>
         <x-slot name="body">

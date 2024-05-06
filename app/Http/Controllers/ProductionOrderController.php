@@ -234,7 +234,7 @@ class ProductionOrderController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => count($productionOrders),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 
