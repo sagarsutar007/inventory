@@ -245,7 +245,7 @@
                 var startDate = financialYear();
                 var endDate = (today.getDate() < 10 ? '0' : '') + today.getDate() + '-' + ((today.getMonth() + 1) < 10 ? '0' : '') + (today.getMonth() + 1) + '-' + today.getFullYear();
 
-                var title = `View Stock of <strong>` + partcode + `</strong> - ` + description + `<br/> from <strong>` + startDate + `</strong> to <strong>` + endDate + `</strong>`;
+                var title = `View Stock of <strong>` + partcode + `</strong> <br/> ` + description + `<br/> <strong>` + startDate + `</strong> to <strong>` + endDate + `</strong>`;
 
                 $.ajax({
                     url: "{{ route('material.stockDetail') }}",
@@ -299,7 +299,7 @@
                                     ['All', 10, 25, 50, 100]
                                 ]
                             });
-                            $("#view-stock").find('.modal-title').text(title);
+                            $("#view-stock").find('.modal-title').addClass('text-center').html(title);
                             $("#view-stock").modal('show');
                         }
                     },
