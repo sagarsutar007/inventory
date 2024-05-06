@@ -362,7 +362,7 @@
             if ($('#dm').length){
                 loadSelect2($('#dm'), 'dm');
             }
-
+            
             // Function to add a new category item
             $(".add-vendor-price-item").click(function () {
                 var newItem = $(".vendor-with-price:first").clone();
