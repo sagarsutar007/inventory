@@ -517,13 +517,18 @@ class ProductionOrderController extends Controller
         } 
 
         // Paginate the query
-        $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $productionOrders = $poQuery->items();
+        if ($length == -1) {
+            $productionOrders = $query->get();
+            $totalCount = $totalRecords;
+        } else {
+            $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $productionOrders = $poQuery->items();
+        }
+        
         $data = [];
         foreach ($productionOrders as $index => $order) {
             $material = $order->material;
             if ($material) {
-
                 $currentPage = ($start / $length) + 1;
                 $serial = ($currentPage - 1) * $length + $index + 1;
                 $data[] = [
@@ -543,7 +548,7 @@ class ProductionOrderController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $poQuery->total(),
+            "recordsFiltered" => $totalCount ?? $poQuery->total(),
             "data" => $data,
         ];
 
