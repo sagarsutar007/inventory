@@ -33,7 +33,7 @@
                     {{-- <td></td> --}}
                     <td style="width: 10%;">
                         @if ( $record['balance'] != 0)
-                        <input type="number" name="issue[]" max="{{ number_format($record['balance'], 3) }}" class="form-control" placeholder="Issue Quantity">
+                        <input type="number" name="issue[]" max="{{ $record['balance'] }}" class="form-control" placeholder="Issue Quantity">
                         @else
                         <input type="number" name="issue[]" class="form-control" readonly placeholder="Issue Completed">
                         @endif

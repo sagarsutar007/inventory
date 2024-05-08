@@ -396,7 +396,6 @@ class KittingController extends Controller
         return $overallStatus;
     }
 
-
     public function warehouseRecords(Request $request)
     {
         $validator = Validator::make($request->all(), [
