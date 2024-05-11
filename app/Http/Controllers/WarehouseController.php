@@ -71,6 +71,14 @@ class WarehouseController extends Controller
             $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
                 ->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
                 ->orderBy('uom_units.uom_text', $columnSortOrder);
+        } elseif ($columnName === 'category') {
+            $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
+                ->join('categories', 'categories.category_id', '=', 'materials.category_id')
+                ->orderBy('categories.category_name', $columnSortOrder);
+        } elseif ($columnName === 'commodity') {
+            $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
+                ->join('commodities', 'commodities.commodity_id', '=', 'materials.commodity_id')
+                ->orderBy('commodities.commodity_name', $columnSortOrder);
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
         } elseif ($columnName === 're_order_status') {
@@ -110,6 +118,8 @@ class WarehouseController extends Controller
                     // 'sno' => $index + $start + 1,
                     'code' => $material->part_code,
                     'material_name' => $material->description,
+                    'category' => $material->category->category_name,
+                    'commodity' => $material->commodity->commodity_name,
                     'unit' => $material->uom->uom_shortcode,
                     'opening_balance' => $warehouse->opening_balance,
                     'receipt_qty' => $warehouse->receipt_qty,

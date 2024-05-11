@@ -27,6 +27,8 @@
                                 <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Part Code</th>
                                 <th>Description</th>
+                                <th>Commodity</th>
+                                <th>Category</th>
                                 <th>Unit</th>
                                 <th>Opening</th>
                                 <th>Receipt</th>
@@ -111,6 +113,8 @@
                         }
                     },
                     { "data": "material_name", "name": "description" },
+                    { "data": "commodity", "name": "commodity" },
+                    { "data": "category", "name": "category" },
                     { "data": "unit", "name": "uom_text" },
                     { "data": "opening_balance", "name": "opening_balance" },
                     { "data": "receipt_qty", "name": "receipt_qty" },

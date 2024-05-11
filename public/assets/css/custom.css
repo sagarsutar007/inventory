@@ -116,3 +116,7 @@ table.dataTable th.dt-right {
 .text-lime {
   color: #3bff00!important;
 }
+
+.modal-title {
+  font-size: 20px;
+}

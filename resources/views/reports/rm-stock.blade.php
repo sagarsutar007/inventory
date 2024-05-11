@@ -211,7 +211,7 @@
                 var startDate = $('#daterange').data('daterangepicker').startDate.format('DD-MM-YYYY');
                 var endDate = $('#daterange').data('daterangepicker').endDate.format('DD-MM-YYYY');
 
-                var title = "View Stock of " + partcode + " - " + description + " from " + startDate + " to " + endDate;
+                var title = `<div class="text-center">View Stock of <b>#${partcode}</b> <br/><b>${description}</b> <br/> from <b>${startDate}</b> to <b>${endDate}</b></div>`;
 
                 $.ajax({
                     url: "{{ route('material.stockDetail') }}",
@@ -265,7 +265,7 @@
                                     ['All', 10, 25, 50, 100]
                                 ]
                             });
-                            $("#view-stock").find('.modal-title').text(title);
+                            $("#view-stock").find('.modal-title').html(title);
                             $("#view-stock").modal('show');
                         }
                     },
