@@ -525,6 +525,7 @@ class WarehouseController extends Controller
                     $warehouseRecord->warehouse_id = $warehouse->warehouse_id;
                     $warehouseRecord->material_id = $material->material_id;
                     $warehouseRecord->warehouse_type = $warehouse_type;
+                    $warehouseRecord->record_date = $warehouse->date;
                     $warehouseRecord->quantity = $validatedData['quantity'][$key];
                     $warehouseRecord->created_by = Auth::id();
                     $warehouseRecord->save();

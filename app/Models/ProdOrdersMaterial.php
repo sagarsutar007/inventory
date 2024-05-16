@@ -24,6 +24,10 @@ class ProdOrdersMaterial extends Model
         'updated_by',
     ];
 
+    protected $casts = [
+        'quantity' => 'float',
+    ];
+
     public function material()
     {
         return $this->belongsTo(Material::class, 'material_id', 'material_id');

@@ -13,6 +13,8 @@
     <tbody>
         @php
             $balance = 0;
+            $totalIssued=0;
+            $totalReceipt=0;
         @endphp
         @if ($transactions)
             <tr>
@@ -44,20 +46,28 @@
                     <td>
                         @if ($trans->warehouse->type != "issue")
                             {{ formatQuantity($trans->quantity) }}
-                            @php $balance += $trans->quantity; @endphp
+                            @php $totalReceipt += $trans->quantity; $balance += $trans->quantity; @endphp
                         @endif
                     </td>
                     <td>
                         @if ($trans->warehouse->type == "issue")
                             {{ formatQuantity($trans->quantity) }}
-                            @php $balance -= $trans->quantity; @endphp
+                            @php $totalIssued += $trans->quantity; $balance -= $trans->quantity; @endphp
                         @endif
                     </td>
                     <td>{{ formatQuantity($balance) }}</td>
                 </tr>
             @endforeach
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <th>{{ formatQuantity($totalReceipt) }}</th>
+                <th>{{ formatQuantity($totalIssued) }}</th>
+                <td></td>
+            </tr>
         @endif
-
-        
     </tbody>
 </table>
+

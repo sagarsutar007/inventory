@@ -68,6 +68,16 @@ class KittingController extends Controller
                     $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
                     $quantity = $record->quantity * $quantities[$key];
+                    // if ($record->material->material_id == "9bba495d-31d5-4a9b-8dfe-d201d6e9c376") {
+                    //     echo "prodOrderMaterial->quantity: "; 
+                    //     var_dump($prodOrderMaterial->quantity);
+                    //     echo "<br/>";
+                    //     echo "quantity: "; 
+                    //     var_dump((float)number_format($quantity, 3, '.', '')); 
+                    //     echo "<br/>";
+                    //     print_r(number_format($quantity, 3) - $prodOrderMaterial->quantity);
+                    //     exit();
+                    // }
                     if (isset ($bomRecords[$record->material->description])) {
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
                     } else {
@@ -77,8 +87,8 @@ class KittingController extends Controller
                             'part_code' => $record->material->part_code,
                             'material_description' => $record->material->description,
                             'quantity' => $quantity,
-                            'issued' => $prodOrderMaterial ? $prodOrderMaterial->quantity : 0,
-                            'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
+                            'issued' => $prodOrderMaterial ? $prodOrderMaterial->quantity : 0.000,
+                            'balance' => sprintf('%.3f', $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity),
                             'bom_qty' => $record->quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
                             'closing_balance' => $closingBalance,
@@ -93,6 +103,8 @@ class KittingController extends Controller
         return $bomRecords;
     }
 
+
+    //
     public function reverseItem(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -151,7 +163,9 @@ class KittingController extends Controller
             $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
             $warehouseRecord->material_id = $request->material_id;
             $warehouseRecord->warehouse_type = 'reversed';
+            $warehouseRecord->record_date = $warehouseIssue->date;
             $warehouseRecord->quantity = $request->reverse_qty;
+            $warehouseRecord->created_by = Auth::id();
             $warehouseRecord->created_at = now();
             $warehouseRecord->save();
 
@@ -180,7 +194,7 @@ class KittingController extends Controller
             ]);
         }
     }
-
+    //
     public function issueOrder(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -231,7 +245,9 @@ class KittingController extends Controller
                     $warehouseRecord->warehouse_id = $warehouseIssue->warehouse_id;
                     $warehouseRecord->material_id = $materialId;
                     $warehouseRecord->warehouse_type = 'issued';
+                    $warehouseRecord->record_date = $warehouseIssue->date;
                     $warehouseRecord->quantity = $newQuantity;
+                    $warehouseRecord->created_by = Auth::id();
                     $warehouseRecord->created_at = now();
                     $warehouseRecord->save();
 
