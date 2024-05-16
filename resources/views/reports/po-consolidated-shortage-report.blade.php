@@ -233,7 +233,7 @@
                 // var endDate = $('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD');
 
                 var modal = $(this);
-                modal.find('.modal-title').text('View: #' + partcode + ' - ' + description);
+                modal.find('.modal-title').html(`<div class="text-center">View: <strong>#` + partcode + `</strong> <br/> ` + description+`</div>`);
 
                 $.ajax({
                     url: "{{ route('po.fetchMaterialShortageConsolidated') }}",
@@ -278,8 +278,6 @@
                                     },
                                     'colvis',
                                 ],
-                                "scrollY": "320px",
-                                "scrollCollapse": true,
                                 "lengthMenu": [10, 25, 50, 75, 100],
                                 "searching": true,
                                 "ordering": true,

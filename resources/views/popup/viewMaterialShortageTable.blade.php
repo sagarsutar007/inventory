@@ -23,10 +23,10 @@
             <td>{{ $record['description'] }}</td>
             <td>{{ $record['make'] }}</td>
             <td>{{ $record['mpn'] }}</td>
-            <td class="text-right">{{ $record['quantity'] }}</td>
-            <td class="text-right">{{ $record['stock'] }}</td>
-            <td class="text-right">{{ $record['balance'] }}</td>
-            <td class="text-right">{{ $record['shortage'] }}</td>
+            <td class="text-right">{{ formatQuantity($record['quantity']) }}</td>
+            <td class="text-right">{{ formatQuantity($record['stock']) }}</td>
+            <td class="text-right">{{ formatQuantity($record['balance']) }}</td>
+            <td class="text-right">{{ formatQuantity($record['shortage']) }}</td>
             <td>{{ $record['unit'] }}</td>
         </tr>
         @endforeach

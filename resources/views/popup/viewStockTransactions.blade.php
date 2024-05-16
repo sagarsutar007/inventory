@@ -24,10 +24,10 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>
+                <th>
                     {{ formatQuantity($opening) }}
                     @php $balance += $opening; @endphp
-                </td>
+                </th>
             </tr>
             @foreach ($transactions as $trans)
                 <tr>
@@ -65,7 +65,7 @@
                 <td></td>
                 <th>{{ formatQuantity($totalReceipt) }}</th>
                 <th>{{ formatQuantity($totalIssued) }}</th>
-                <td></td>
+                <th>{{ formatQuantity($balance) }}</th>
             </tr>
         @endif
     </tbody>

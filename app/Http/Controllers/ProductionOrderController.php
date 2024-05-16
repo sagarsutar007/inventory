@@ -632,24 +632,27 @@ class ProductionOrderController extends Controller
                         $stock = $bomRecord->material->stock?->closing_balance;
                         $balance = $bomRecord->quantity * $order->quantity - $pomRecord?->quantity;
 
-                        $data[] = [
-                            'po_id' => $order->po_id,
-                            'po_number' => $order->po_number,
-                            'po_date' => $order->record_date,
-                            'fg_partcode' => $order->material->part_code,
-                            'part_code' => $bomRecord->material->part_code,
-                            'description' => $bomRecord->material->description,
-                            'make' => $bomRecord->material->make,
-                            'mpn' => $bomRecord->material->mpn,
-                            'quantity' => number_format($order->quantity * $bomRecord->quantity, 3),
-                            'stock' => number_format($stock, 3),
-                            'balance' => number_format($balance, 3),
-                            'shortage' => number_format(abs($stock - $balance), 3),
-                            'unit' => $bomRecord->material->uom->uom_shortcode,
-                            'status' => $pomRecord->status??'',
-                            'issued' => number_format($pomRecord->quantity??0, 3),
-                        ];
+                        if ($balance > $stock ) {
+                            $shortage = number_format(abs($stock - $balance), 3);
 
+                            $data[] = [
+                                'po_id' => $order->po_id,
+                                'po_number' => $order->po_number,
+                                'po_date' => $order->record_date,
+                                'fg_partcode' => $order->material->part_code,
+                                'part_code' => $bomRecord->material->part_code,
+                                'description' => $bomRecord->material->description,
+                                'make' => $bomRecord->material->make,
+                                'mpn' => $bomRecord->material->mpn,
+                                'quantity' => number_format($order->quantity * $bomRecord->quantity, 3),
+                                'stock' => number_format($stock, 3),
+                                'balance' => number_format($balance, 3),
+                                'shortage' => $shortage,
+                                'unit' => $bomRecord->material->uom->uom_shortcode,
+                                'status' => $pomRecord->status??'',
+                                'issued' => number_format($pomRecord->quantity??0, 3),
+                            ];
+                        }
                     }
                 }
             }
@@ -795,6 +798,9 @@ class ProductionOrderController extends Controller
             if ($index >= $start && $index < ($start + $length)) {
                 $obj['serial'] = $serialNo++;
 
+                $stock = $obj['stock'];
+                $balance = $obj['balance'];
+
                 $obj['quantity'] = formatQuantity($obj['quantity']);
                 $obj['stock'] = formatQuantity($obj['stock']);
                 $obj['balance'] = formatQuantity($obj['balance']);
@@ -802,18 +808,17 @@ class ProductionOrderController extends Controller
                 if ($obj['stock'] >= $obj['balance']) {
                     $obj['shortage'] = "0.000";
                 } else {
-                    $obj['shortage'] = abs($obj['stock'] - $obj['balance']);
+                    $obj['shortage'] = abs($stock - $balance);
+                    $obj['shortage'] = formatQuantity($obj['shortage']);
+                    $paginatedData[] = $obj;
                 }
-
-                $obj['shortage'] = formatQuantity($obj['shortage']);
-                $paginatedData[] = $obj;
             }
         }
         
         $response = [
             "draw" => intval($draw),
-            "recordsTotal" => $totalRecords,
-            "recordsFiltered" => count($data),
+            "recordsTotal" => count($paginatedData),
+            "recordsFiltered" => count($paginatedData),
             "data" => $paginatedData,
         ];
 
