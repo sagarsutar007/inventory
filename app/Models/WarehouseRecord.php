@@ -25,6 +25,10 @@ class WarehouseRecord extends Model
         'created_at'
     ];
 
+    // protected $casts = [
+    //     'quantity' => 'decimal:3',
+    // ];
+
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class, 'warehouse_id', 'warehouse_id');

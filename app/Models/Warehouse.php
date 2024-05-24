@@ -28,6 +28,10 @@ class Warehouse extends Model
         'created_at',
     ];
 
+    // protected $casts = [
+    //     'quantity' => 'decimal:3',
+    // ];
+
     public function material()
     {
         return $this->belongsTo(Material::class, 'material_id', 'material_id');

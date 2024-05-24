@@ -119,6 +119,7 @@ class ProductionOrderController extends Controller
                     $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $po_id)->where('material_id', $record->material->material_id)->first();
                     $closingBalance = Stock::where('material_id', $record->material->material_id)->value('closing_balance');
                     $quantity = $record->quantity * $quantities[$key];
+                    // dd($quantity);
                     if (isset ($bomRecords[$record->material->description])) {
                         $bomRecords[$record->material->description]['quantity'] += $quantity;
                     } else {
@@ -131,14 +132,16 @@ class ProductionOrderController extends Controller
                             'quantity' => $quantity,
                             'bom_qty' => $record->quantity,
                             'issued' => $prodOrderMaterial ? $prodOrderMaterial->quantity : 0,
-                            'balance' => $prodOrderMaterial ? $quantity - $prodOrderMaterial->quantity : $quantity,
+                            'balance' => $prodOrderMaterial ? subtractAndNormalize($quantity, $prodOrderMaterial->quantity) : $quantity,
                             'uom_shortcode' => $record->material->uom->uom_shortcode,
-                            'closing_balance' => $closingBalance,
+                            'closing_balance' => (float)$closingBalance,
                         ];
                     }
                 }
             }
         }
+
+        
         $bomRecords = array_values($bomRecords);
         return $bomRecords;
     }
@@ -295,7 +298,7 @@ class ProductionOrderController extends Controller
         $weekNumber = Carbon::now()->weekOfYear;
         $day = Carbon::now()->format('d');
         $poPrefix = 'PO' . $year . $weekNumber . $day;
-        $lastPoNumber = ProductionOrder::where('po_number', 'like', '%' . $poPrefix . '%')->max('po_number');
+        $lastPoNumber = ProductionOrder::where('po_number', 'like', '%PO' . $year . '%')->max('po_number');
         $increment = 1;
         if ($lastPoNumber) {
             $lastNumericPart = (int) substr($lastPoNumber, -5);
@@ -580,26 +583,40 @@ class ProductionOrderController extends Controller
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = ProductionOrder::with('material','prod_order_materials')->whereNot('production_orders.status', 'Completed');
+        $query = ProductionOrder::with('material.bom.bomRecords','prod_order_materials')->whereNot('production_orders.status', 'Completed');
 
         // if (!empty($startDate) && !empty($endDate)) {
         //     $query->whereBetween('record_date', [$startDate, $endDate]);
         // }
 
         if (!empty($search)) {
-            $query->whereHas('material', function ($q) use ($search) {
-                $q->where('description', 'like', '%' . $search . '%')
-                    ->orWhere('part_code', 'like', '%' . $search . '%')
-                    ->orWhere('mpn', 'like', '%' . $search . '%')
-                    ->orWhere('make', 'like', '%' . $search . '%')
-                    ->orWhereHas('uom', function ($u) use ($search) {
-                        $u->where('uom_text', 'like', '%' . $search . '%')
-                            ->orWhere('uom_shortcode', 'like', '%' . $search . '%');
+            $query->where(function ($qury) use ($search) {
+                $qury->whereHas('prod_order_materials', function ($qry) use ($search) {
+                    $qry->whereHas('material', function ($q) use ($search) {
+                        $q->where('description', 'like', '%' . $search . '%')
+                            ->orWhere('part_code', 'like', '%' . $search . '%')
+                            ->orWhere('mpn', 'like', '%' . $search . '%')
+                            ->orWhere('make', 'like', '%' . $search . '%')
+                            ->orWhereHas('uom', function ($u) use ($search) {
+                                $u->where('uom_text', 'like', '%' . $search . '%')
+                                    ->orWhere('uom_shortcode', 'like', '%' . $search . '%');
+                            });
                     });
-            })
-            ->orWhere('po_number', 'like', '%' . $search . '%')
-            ->orWhere('quantity', 'like', '%' . $search . '%')
-            ->orWhere('record_date', 'like', '%' . $search . '%');
+                })
+                ->orWhereHas('material.bom.bomRecords.material', function ($bomQuery) use ($search) {
+                    $bomQuery->where('description', 'like', '%' . $search . '%')
+                        ->orWhere('part_code', 'like', '%' . $search . '%')
+                        ->orWhere('mpn', 'like', '%' . $search . '%')
+                        ->orWhere('make', 'like', '%' . $search . '%')
+                        ->orWhereHas('uom', function ($un) use ($search) {
+                            $un->where('uom_text', 'like', '%' . $search . '%')
+                                ->orWhere('uom_shortcode', 'like', '%' . $search . '%');
+                        });
+                })
+                ->orWhere('po_number', 'like', '%' . $search . '%')
+                ->orWhere('quantity', 'like', '%' . $search . '%')
+                ->orWhere('record_date', 'like', '%' . $search . '%');
+            });
         }
         
         if ($columnName === 'po_number') {
@@ -609,6 +626,8 @@ class ProductionOrderController extends Controller
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
         } 
+
+        // dd($query->toRawSql());
 
         // Paginate the query
         // $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
@@ -705,125 +724,266 @@ class ProductionOrderController extends Controller
         }
     }
 
+    // public function fetchPoConsolidatedShortageReport(Request $request)
+    // {
+    //     $draw = $request->input('draw');
+    //     $start = $request->input('start');
+    //     $length = $request->input('length');
+    //     $search = $request->input('search')['value'];
+
+    //     // $startDate = $request->input('startDate');
+    //     // $endDate = $request->input('endDate');
+
+    //     $order = $request->input('order');
+    //     $columnIndex = $order[0]['column'];
+    //     $columnName = $request->input('columns')[$columnIndex]['name'];
+    //     $columnSortOrder = $order[0]['dir'];
+
+    //     $query = ProductionOrder::with('material', 'prod_order_materials')
+    //     ->whereNot('production_orders.status', 'Complete');
+
+    //     // if (!empty($startDate) && !empty($endDate)) {
+    //     //     $query->whereBetween('record_date', [$startDate, $endDate]);
+    //     // }
+
+    //     // $totalRecords = $query->count();
+    //     $productionOrders = $query->get();
+
+    //     $data = [];
+
+    //     // Loop through each production order
+    //     foreach ($productionOrders as $orders => $order) {
+    //         $bomRecords = $order->material?->bom?->bomRecords;
+            
+    //         foreach ($bomRecords as $bomKey => $bomRec) {
+    //             $prOdrMat = ProdOrdersMaterial::where('po_id', 'like', $order->po_id)
+    //                 ->where('material_id', 'like', $bomRec->material_id)
+    //                 ->first();
+
+    //             $quantity = $order->quantity * $bomRec->quantity;
+    //             // $stock = $prOdrMat ? $prOdrMat->material->stock->closing_balance : $bomRec->material->stock->closing_balance;
+    //             $stock = $bomRec->material->stock->closing_balance;
+
+    //             if ($prOdrMat === null || $prOdrMat->status == "Partial") {
+    //                 $balance = $prOdrMat ? $quantity - $prOdrMat->quantity : $quantity;
+
+    //                 $matchesSearch = false;
+    //                 if (!empty($search)) {
+    //                     $matchesSearch = 
+    //                         stripos($bomRec->material->description, $search) !== false ||
+    //                         stripos($bomRec->material->part_code, $search) !== false ||
+    //                         stripos($bomRec->material->mpn, $search) !== false ||
+    //                         stripos($bomRec->material->make, $search) !== false ||
+    //                         stripos($bomRec->material->uom->uom_shortcode, $search) !== false ||
+    //                         stripos((string)$stock, $search) !== false;
+    //                 }
+
+    //                 if (empty($search) || $matchesSearch) {
+    //                     $data[$bomRec->material_id] ??= [
+    //                         'part_code' => $bomRec->material->part_code,
+    //                         'description' => $bomRec->material->description,
+    //                         'make' => $bomRec->material->make,
+    //                         'mpn' => $bomRec->material->mpn,
+    //                         'quantity' => 0,
+    //                         'stock' => $stock,
+    //                         'balance' => 0,
+    //                         'unit' => $bomRec->material->uom->uom_shortcode
+    //                     ];
+
+    //                     $data[$bomRec->material_id]['quantity'] += $quantity;
+    //                     $data[$bomRec->material_id]['balance'] += $balance;
+    //                 }
+    //             }
+    //         }
+    //     }
+        
+    //     $formattedData = array_values($data);
+
+    //     if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'quantity', 'shortage', 'unit'])) {
+    //         usort($formattedData, function ($a, $b) use ($columnName, $columnSortOrder) {
+    //             $cmp = strcmp($a[$columnName], $b[$columnName]);
+    //             return ($columnSortOrder === 'asc') ? $cmp : -$cmp;
+    //         });
+    //     }
+
+    //     $serialNo = $start + 1;
+
+    //     if ($length == -1) {
+    //         $length = 900000000000000000;
+    //     }
+        
+    //     $paginatedData = [];
+    //     foreach ($formattedData as $key => $obj) {
+    //         $index = $start + $key + 1;
+    //         if ($index >= $start && $index < ($start + $length)) {
+    //             $obj['serial'] = $serialNo++;
+
+    //             $stock = $obj['stock'];
+    //             $balance = $obj['balance'];
+
+    //             $obj['quantity'] = formatQuantity($obj['quantity']);
+    //             $obj['stock'] = formatQuantity($obj['stock']);
+    //             $obj['balance'] = formatQuantity($obj['balance']);
+
+    //             if ($obj['stock'] >= $obj['balance']) {
+    //                 $obj['shortage'] = "0.000";
+    //             } else {
+    //                 $obj['shortage'] = abs($stock - $balance);
+    //                 $obj['shortage'] = formatQuantity($obj['shortage']);
+    //                 $paginatedData[] = $obj;
+    //             }
+    //         }
+    //     }
+        
+    //     $response = [
+    //         "draw" => intval($draw),
+    //         "recordsTotal" => count($paginatedData),
+    //         "recordsFiltered" => count($paginatedData),
+    //         "data" => $paginatedData,
+    //     ];
+
+    //     return response()->json($response);
+    // }
+
     public function fetchPoConsolidatedShortageReport(Request $request)
     {
         $draw = $request->input('draw');
         $start = $request->input('start');
-        $length = $request->input('length');
+        $length = $request->input('length', 10);
         $search = $request->input('search')['value'];
-
-        $startDate = $request->input('startDate');
-        $endDate = $request->input('endDate');
 
         $order = $request->input('order');
         $columnIndex = $order[0]['column'];
         $columnName = $request->input('columns')[$columnIndex]['name'];
         $columnSortOrder = $order[0]['dir'];
 
-        $query = ProductionOrder::with('material', 'prod_order_materials')
-        ->where('production_orders.status', 'Partially Issued');
+        $query = ProductionOrder::with(['material.bom.bomRecords.material.uom', 'prod_order_materials.material.stock'])
+            ->whereNot('status', 'Completed');
 
-        if (!empty($startDate) && !empty($endDate)) {
-            $query->whereBetween('record_date', [$startDate, $endDate]);
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('prod_order_materials.material', function ($q) use ($search) {
+                    $q->where('description', 'like', '%' . $search . '%')
+                        ->orWhere('part_code', 'like', '%' . $search . '%')
+                        ->orWhere('mpn', 'like', '%' . $search . '%')
+                        ->orWhere('make', 'like', '%' . $search . '%')
+                        ->orWhereHas('uom', function ($q) use ($search) {
+                            $q->where('uom_text', 'like', '%' . $search . '%')
+                            ->orWhere('uom_shortcode', 'like', '%' . $search . '%');
+                        });
+                })
+                ->orWhereHas('material.bom.bomRecords.material', function ($q) use ($search) {
+                    $q->where('description', 'like', '%' . $search . '%')
+                        ->orWhere('part_code', 'like', '%' . $search . '%')
+                        ->orWhere('mpn', 'like', '%' . $search . '%')
+                        ->orWhere('make', 'like', '%' . $search . '%')
+                        ->orWhereHas('uom', function ($q) use ($search) {
+                            $q->where('uom_text', 'like', '%' . $search . '%')
+                            ->orWhere('uom_shortcode', 'like', '%' . $search . '%');
+                        });
+                });
+            });
         }
 
-        $totalRecords = $query->count();
         $productionOrders = $query->get();
 
         $data = [];
-
-        // Loop through each production order
-        foreach ($productionOrders as $orders => $order) {
-            $bomRecords = $order->material?->bom?->bomRecords;
+        foreach ($productionOrders as $order) {
+            $bomRecords = $order->material->bom->bomRecords ?? [];
             
-            foreach ($bomRecords as $bomKey => $bomRec) {
-                $prOdrMat = ProdOrdersMaterial::where('po_id', 'like', $order->po_id)
-                    ->where('material_id', 'like', $bomRec->material_id)
-                    ->first();
-
+            foreach ($bomRecords as $bomRec) {
+                $prOdrMat = $order->prod_order_materials->firstWhere('material_id', $bomRec->material_id);
                 $quantity = $order->quantity * $bomRec->quantity;
-                $stock = $prOdrMat ? $prOdrMat->material->stock->closing_balance : $bomRec->material->stock->closing_balance;
+                $stock = $bomRec->material->stock->closing_balance ?? 0;
+                $balance = $prOdrMat ? $quantity - $prOdrMat->quantity : $quantity;
 
                 if ($prOdrMat === null || $prOdrMat->status == "Partial") {
-                    $balance = $prOdrMat ? $quantity - $prOdrMat->quantity : $quantity;
+                    $matchesSearch = empty($search) || stripos($bomRec->material->description, $search) !== false
+                        || stripos($bomRec->material->part_code, $search) !== false
+                        || stripos($bomRec->material->mpn, $search) !== false
+                        || stripos($bomRec->material->make, $search) !== false
+                        || stripos($bomRec->material->uom->uom_shortcode, $search) !== false
+                        || stripos((string)$stock, $search) !== false;
+                    if ($matchesSearch) {
+                        $materialId = $bomRec->material_id;
+                        if (!isset($data[$materialId])) {
+                            $data[$materialId] = [
+                                'part_code' => $bomRec->material->part_code,
+                                'description' => $bomRec->material->description,
+                                'make' => $bomRec->material->make,
+                                'mpn' => $bomRec->material->mpn,
+                                'quantity' => 0,
+                                'stock' => $stock,
+                                'balance' => 0,
+                                'unit' => $bomRec->material->uom->uom_shortcode,
+                            ];
+                        }
 
-                    $matchesSearch = false;
-                    if (!empty($search)) {
-                        $matchesSearch = 
-                            stripos($bomRec->material->description, $search) !== false ||
-                            stripos($bomRec->material->part_code, $search) !== false ||
-                            stripos($bomRec->material->mpn, $search) !== false ||
-                            stripos($bomRec->material->make, $search) !== false ||
-                            stripos($bomRec->material->uom->uom_shortcode, $search) !== false ||
-                            stripos((string)$stock, $search) !== false;
-                    }
-
-                    if (empty($search) || $matchesSearch) {
-                        $data[$bomRec->material_id] ??= [
-                            'part_code' => $bomRec->material->part_code,
-                            'description' => $bomRec->material->description,
-                            'make' => $bomRec->material->make,
-                            'mpn' => $bomRec->material->mpn,
-                            'quantity' => 0,
-                            'stock' => $stock,
-                            'balance' => 0,
-                            'unit' => $bomRec->material->uom->uom_shortcode
-                        ];
-
-                        $data[$bomRec->material_id]['quantity'] += $quantity;
-                        $data[$bomRec->material_id]['balance'] += $balance;
+                        $data[$materialId]['quantity'] += $quantity;
+                        $data[$materialId]['balance'] += $balance;
                     }
                 }
             }
         }
-        
-        $formattedData = array_values($data);
 
-        if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'quantity', 'shortage', 'unit'])) {
+        $totalRecords = count($productionOrders);
+        $newData = [];
+        foreach($data as $dt)
+        {
+            if ($dt['balance'] > $dt['stock']) {
+                $newData[] = $dt;
+            }
+        }
+
+        $formattedData = array_values($newData);
+
+        if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'quantity', 'balance', 'unit'])) {
             usort($formattedData, function ($a, $b) use ($columnName, $columnSortOrder) {
                 $cmp = strcmp($a[$columnName], $b[$columnName]);
                 return ($columnSortOrder === 'asc') ? $cmp : -$cmp;
             });
         }
 
-        $serialNo = $start + 1;
-
-        if ($length == -1) {
-            $length = 90000000000000;
-        }
-        
+        $serialNo = $start;
         $paginatedData = [];
-        foreach ($formattedData as $key => $obj) {
-            $index = $start + $key + 1;
-            if ($index >= $start && $index < ($start + $length)) {
-                $obj['serial'] = $serialNo++;
+        if ($start > 0){
+            $newArr = array_slice($formattedData, $start, $length);
+        } else {
+            if ($length > 0) {
+                $newArr = array_slice($formattedData, 0, $length);
+            } else {
+                $newArr = $formattedData;
+            }
+            
+        }
 
-                $stock = $obj['stock'];
-                $balance = $obj['balance'];
+        foreach ($newArr as $obj) {
+            $serialNo = $serialNo + 1;
+            $obj['serial'] = $serialNo;
+            $stock = $obj['stock'];
+            $balance = $obj['balance'];
 
+            if ($stock < $balance ) {
                 $obj['quantity'] = formatQuantity($obj['quantity']);
                 $obj['stock'] = formatQuantity($obj['stock']);
                 $obj['balance'] = formatQuantity($obj['balance']);
+                $obj['shortage'] = $stock >= $balance ? "0.000" : formatQuantity(abs($stock - $balance));
 
-                if ($obj['stock'] >= $obj['balance']) {
-                    $obj['shortage'] = "0.000";
-                } else {
-                    $obj['shortage'] = abs($stock - $balance);
-                    $obj['shortage'] = formatQuantity($obj['shortage']);
-                    $paginatedData[] = $obj;
-                }
+                $paginatedData[] = $obj;
             }
+            
         }
-        
+
         $response = [
             "draw" => intval($draw),
-            "recordsTotal" => count($paginatedData),
-            "recordsFiltered" => count($paginatedData),
+            "recordsTotal" => count($newData),
+            "recordsFiltered" => count($newData),
             "data" => $paginatedData,
         ];
 
         return response()->json($response);
     }
+
 
     public function fetchMaterialShortageConsolidated(Request $request)
     {

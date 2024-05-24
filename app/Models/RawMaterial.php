@@ -35,6 +35,13 @@ class RawMaterial extends Model
         'edited_by',
     ];
 
+    protected $casts = [
+        'avg_price' => 'decimal:3',
+        'min_price' => 'decimal:3',
+        'max_price' => 'decimal:3',
+        're_order' => 'decimal:3',
+    ];
+
     public function attachments()
     {
         return $this->hasMany(MaterialAttachments::class, 'material_id', 'material_id');

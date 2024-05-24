@@ -18,6 +18,10 @@ class BomRecord extends Model
         'bom_record_id', 'bom_id', 'material_id', 'quantity'
     ];
 
+    protected $casts = [
+        'quantity' => 'decimal:3'
+    ];
+    
     public function bom()
     {
         return $this->belongsTo(Bom::class, 'bom_id', 'bom_id');
