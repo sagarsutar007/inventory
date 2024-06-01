@@ -372,12 +372,11 @@
                         if (response.status) {
                             $('#modalEdit').modal('hide');
                             toastr.success(response.message);
-                            $('#rawmaterials').DataTable().ajax.reload();
+                            $('#rawmaterials').DataTable().ajax.reload(null, false);
                         }
                     },
                     error: function (xhr, status, error) {
                         let response = JSON.parse(xhr.responseText);
-                        console.error(xhr.responseText);
                         toastr.error(response.message);
                     }
                 });
