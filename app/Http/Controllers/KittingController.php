@@ -357,15 +357,21 @@ class KittingController extends Controller
         $year = date('y');
         $weekNumber = date('W');
         $date = date('d');
-        $transactionId = sprintf('%02d%02d%02d', $year, $weekNumber, $date);
-        $lastTransactionId = Warehouse::where('transaction_id', 'like', $year . '%')->max('transaction_id');
+        $transactionIdPrefix = sprintf('%02d%02d%02d', $year, $weekNumber, $date);
+        $lastTransactionId = Warehouse::where('transaction_id', 'like', $transactionIdPrefix . '%')->max('transaction_id');
+
         if ($lastTransactionId) {
             $lastNumericPart = intval(substr($lastTransactionId, 6));
-            $newNumericPart = str_pad($lastNumericPart + 1, 5, '0', STR_PAD_LEFT);
-            $transactionId .= $newNumericPart;
         } else {
-            $transactionId .= '00001';
+            $lastNumericPart = 0;
         }
+
+        do {
+            $lastNumericPart++;
+            $newNumericPart = str_pad($lastNumericPart, 5, '0', STR_PAD_LEFT);
+            $transactionId = $transactionIdPrefix . $newNumericPart;
+            $existingTransaction = Warehouse::where('transaction_id', $transactionId)->exists();
+        } while ($existingTransaction);
 
         return $transactionId;
     }
