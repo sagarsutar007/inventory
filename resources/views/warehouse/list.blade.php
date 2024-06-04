@@ -106,10 +106,10 @@
                         "data": "code", 
                         "name": "part_code",
                         "render": function ( data, type, row ) {
-                            return `<button class="view-stock btn btn-link p-0" 
+                            return `<span class="view-stock text-primary p-0" 
                             data-partcode="${data}" 
                             data-desc="${row.material_name}"
-                            >${data}</button>`;
+                            >${data}</span>`;
                         }
                     },
                     { "data": "material_name", "name": "description" },
