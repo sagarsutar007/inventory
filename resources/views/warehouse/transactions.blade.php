@@ -119,12 +119,12 @@
                     { "data": "date", "name": "date" },
                     { "data": "action" },
                 ],
-                "lengthMenu": [10, 25, 50, 75, 100],
+                "lengthMenu": datatableLength,
                 "searching": true,
                 "ordering": true,
                 "columnDefs": [
                     {
-                        "targets": [5],
+                        "targets": [6],
                         "orderable": false
                     }
                 ],

@@ -629,7 +629,7 @@ class SemiFinishedMaterialController extends Controller
                 'image' => $image,
                 'part_code' => $material->part_code,
                 'description' => $material->description,
-                'unit' => $material->uom->uom_shortcode,
+                'unit' => $material?->uom?->uom_shortcode,
                 'make' => $material->make,
                 'mpn' => $material->mpn,
                 're_order' => formatQuantity($material->re_order),

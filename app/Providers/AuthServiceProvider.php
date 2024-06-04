@@ -120,6 +120,7 @@ class AuthServiceProvider extends ServiceProvider
             return $user->hasPermission('edit-raw-material');
         });
 
+        
         Gate::define('clone-raw-material', function ($user) {
             if ($this->isAdmin($user)) {
                 return true;

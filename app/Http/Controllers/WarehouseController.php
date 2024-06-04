@@ -185,8 +185,12 @@ class WarehouseController extends Controller
         }
 
         // Paginate the query
-        $whQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $warehouses = $whQuery->items();
+        if ($length == -1) {
+            $warehouses = $query->get();
+        } else {
+            $whQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $warehouses = $whQuery->items();
+        }
         $data = [];
         foreach ($warehouses as $index => $warehouse) {
             $actionHtml = '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" data-transactionid="' . $warehouse->transaction_id . '" class="btn btn-sm btn-link" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>';
@@ -212,7 +216,7 @@ class WarehouseController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $whQuery->total(),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 

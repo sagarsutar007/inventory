@@ -128,7 +128,7 @@
                 "ordering": true,
                 "columnDefs": [
                     {
-                        "targets": [7, 8],
+                        "targets": [5, 9],
                         "visible": false,
                     },
                     // {

@@ -613,6 +613,10 @@ class ProductionOrderController extends Controller
                                 ->orWhere('uom_shortcode', 'like', '%' . $search . '%');
                         });
                 })
+                ->orWhereHas('material', function ($bomQuery) use ($search) {
+                    $bomQuery->where('description', 'like', '%' . $search . '%')
+                        ->orWhere('part_code', 'like', '%' . $search . '%');
+                })
                 ->orWhere('po_number', 'like', '%' . $search . '%')
                 ->orWhere('quantity', 'like', '%' . $search . '%')
                 ->orWhere('record_date', 'like', '%' . $search . '%');

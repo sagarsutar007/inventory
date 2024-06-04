@@ -66,7 +66,7 @@ class DependentMaterialController extends Controller
     public function edit(DependentMaterial $record)
     {
         if (!$record) {
-            return response()->json(['error' => 'Record not found!'], Response::HTTP_NOT_FOUND);
+            return response()->json(['error' => 'Record not found!']);
         }
         return response()->json(['record' => $record]);
     }
