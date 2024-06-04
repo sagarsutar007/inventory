@@ -23,10 +23,6 @@ class MaterialPurchase extends Model
         'updated_at'
     ];
 
-    protected $casts = [
-        'price' => 'decimal:3',
-    ];
-
     public function material()
     {
         return $this->belongsTo(Material::class);

@@ -120,3 +120,7 @@ table.dataTable th.dt-right {
 .modal-title {
   font-size: 20px;
 }
+
+.direct-chat-messages {
+  height: calc(100vh - 250px);
+}

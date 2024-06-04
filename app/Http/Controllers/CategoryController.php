@@ -94,7 +94,7 @@ class CategoryController extends Controller
     {
         if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-category', Auth::user())) {
             if (!$category) {
-                return response()->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
+                return response()->json(['error' => 'Category not found']);
             }
             return response()->json(['category' => $category]);
         } else {

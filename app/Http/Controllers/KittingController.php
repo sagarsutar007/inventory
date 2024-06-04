@@ -134,11 +134,15 @@ class KittingController extends Controller
             ]);
         }
 
+        $request->reverse_qty = (float)$request->reverse_qty;
+
         $prodOrder = ProductionOrder::where('po_id', $request->po_id)->first();
 
         $prodOrderMaterial = ProdOrdersMaterial::where('po_id', $request->po_id)
             ->where('material_id', $request->material_id)
             ->first();
+
+        $prodOrderMaterial->quantity = (float)$prodOrderMaterial->quantity;    
 
         $material = Material::find($request->material_id);
 
@@ -193,7 +197,8 @@ class KittingController extends Controller
             $stock->updated_by = Auth::id();
             $stock->save();
 
-            $this->updateProdOrderStatus($request->po_id);
+            $ststs = $this->updateProdOrderStatus($request->po_id);
+
 
             DB::commit();
 
@@ -231,6 +236,7 @@ class KittingController extends Controller
         try {
             $transactionId = UniqueIdGenerator::generateId('warehouse', 'old_transaction_id', '');
             $prodOrder = ProductionOrder::where('po_id', $request->production_id)->first();
+            $prodOrder->quantity = (float)$prodOrder->quantity;
             $material = Material::with('bom')->find($prodOrder->material_id);
             $bomid = $material->bom->bom_id;
             $warehouseIssue = new Warehouse();
@@ -248,6 +254,7 @@ class KittingController extends Controller
             foreach ($request->material as $index => $materialId) {
 
                 $bomrecord = BomRecord::where('bom_id', $bomid)->where('material_id', $materialId)->first();
+                $bomrecord->quantity = (float)$bomrecord->quantity;
                 $stock = Stock::where('material_id', $materialId)->first();
 
                 $required_qty = $bomrecord->quantity * $prodOrder->quantity;
@@ -325,14 +332,14 @@ class KittingController extends Controller
                             $error[] = [
                                 'part_code' => $material->part_code,
                                 'description' => $material->description,
-                                'message' => $material->description + " has requested quantity that is more than the required quantity"
+                                'message' => $material->description . " has requested quantity that is more than the required quantity"
                             ];
                         }
                     }
                 }
             }
 
-            $this->updateProdOrderStatus($request->production_id);
+            $status = $this->updateProdOrderStatus($request->production_id);
 
             if (empty ($error)) {
                 DB::commit();
@@ -359,10 +366,12 @@ class KittingController extends Controller
     {
         $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
         $prodMaterial = Material::findOrFail($prodOrder->material_id);
-        $required_quantity = $prodOrder->quantity;
+        $required_quantity = (float)$prodOrder->quantity;
         $bomRecords = $prodMaterial->bom?->bomRecords;
         if ($bomRecords) {
             foreach ($bomRecords as $bomRecord) {
+                $bomRecord->quantity = (float)$bomRecord->quantity;
+
                 if ($bomRecord->material_id == $materialId) {
                     $required_qty = $bomRecord->quantity * $required_quantity;
                     
@@ -371,7 +380,7 @@ class KittingController extends Controller
                         ->where('material_id', $materialId)
                         ->first();
                     if ($existingRecord) {
-                        if (floatsAreEqual($existingRecord->quantity + $quantity,$required_qty)) {
+                        if (floatsAreEqual($existingRecord->quantity + $quantity, $required_qty)) {
                             return 'Completed';
                         } else if ((float)$existingRecord->quantity + $quantity < $required_qty) {
                             return 'Partial';

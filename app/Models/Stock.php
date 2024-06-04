@@ -27,52 +27,6 @@ class Stock extends Model
         'updated_at',
     ];
 
-    // protected $casts = [
-    //     'opening_balance' => 'decimal:10,3',
-    //     'receipt_qty' => 'decimal:10,3',
-    //     'issue_qty' => 'decimal:10,3',
-    //     'closing_balance' => 'decimal:10,3',
-    // ];
-
-    // public function getClosingBalanceAttribute($value)
-    // {
-    //     return (float) $value;
-    // }
-
-    // public function setClosingBalanceAttribute($value)
-    // {
-    //     $this->attributes['closing_balance'] = (string) $value;
-    // }
-
-    // public function getOpeningBalanceAttribute($value)
-    // {
-    //     return (float) $value;
-    // }
-
-    // public function setOpeningBalanceAttribute($value)
-    // {
-    //     $this->attributes['opening_balance'] = (string) $value;
-    // }
-
-    // public function getReceiptQtyAttribute($value)
-    // {
-    //     return (float) $value;
-    // }
-
-    // public function setReceiptQtyAttribute($value)
-    // {
-    //     $this->attributes['receipt_qty'] = (string) $value;
-    // }
-
-    // public function getIssueQtyAttribute($value)
-    // {
-    //     return (float) $value;
-    // }
-
-    // public function setIssueQtyAttribute($value)
-    // {
-    //     $this->attributes['issue_qty'] = (string) $value;
-    // }
 
     public function material()
     {
