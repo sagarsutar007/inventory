@@ -281,7 +281,7 @@ class WarehouseController extends Controller
 
             $warehouse = new Warehouse();
             $warehouse->vendor_id = $validatedData['vendor'];
-            $warehouse->transaction_id = $this->generateTransactionId();
+            $warehouse->old_transaction_id = $this->generateTransactionId();
             $warehouse->type = 'receive';
             $warehouse->popn = $validatedData['popn'];
             $warehouse->date = date('y-m-d', strtotime($validatedData['date']));
@@ -345,7 +345,7 @@ class WarehouseController extends Controller
 
             $warehouse = new Warehouse();
             $warehouse->vendor_id = $validatedData['vendor'];
-            $warehouse->transaction_id = $this->generateTransactionId();
+            $warehouse->old_transaction_id = $this->generateTransactionId();
             // $warehouse->popn = $validatedData['popn'];
             $warehouse->reason = $validatedData['reason'];
             $warehouse->type = 'issue';

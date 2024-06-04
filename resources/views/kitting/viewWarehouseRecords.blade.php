@@ -16,7 +16,7 @@
             <tr>
                 <td width="10%">{{ $record['transaction_id'] }}</td>
                 <td width="7%">{{ ucfirst($record['type']) }}</td>
-                <td width="14%">{{ $record['created_at'] }}</td>
+                <td width="14%">{!! $record['created_at'] !!}</td>
                 <td width="10%">{{ $record['part_code'] }}</td>
                 <td>{{ $record['description'] }}</td>
                 <td width="7%">{{ $record['uom'] }}</td>

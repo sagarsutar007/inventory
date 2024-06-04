@@ -16,7 +16,7 @@ class ProductionOrder extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'po_number',
+        'old_po_number',
         'material_id',
         'quantity',
         'status',
@@ -24,23 +24,6 @@ class ProductionOrder extends Model
         'created_by',
         'updated_by',
     ];
-
-    // protected $casts = [
-    //     'quantity' => 'decimal:10,3'
-    // ];
-
-
-    // // Accessor for quantity
-    // public function getQuantityAttribute($value)
-    // {
-    //     return (float) $value;
-    // }
-
-    // // Mutator for quantity
-    // public function setQuantityAttribute($value)
-    // {
-    //     $this->attributes['quantity'] = (string) $value;
-    // }
 
     public function prod_order_materials()
     {

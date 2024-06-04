@@ -18,6 +18,8 @@ use App\Models\ProdOrdersMaterial;
 use App\Models\Warehouse;
 use App\Models\WarehouseRecord;
 
+use App\Services\UniqueIdGenerator;
+
 class KittingController extends Controller
 {
     public function index()
@@ -116,8 +118,7 @@ class KittingController extends Controller
 
         return $bomRecords;
     }
-
-
+    
     //
     public function reverseItem(Request $request)
     {
@@ -159,9 +160,10 @@ class KittingController extends Controller
 
         DB::beginTransaction();
         try {
+            $transactionId = UniqueIdGenerator::generateId('warehouse', 'old_transaction_id', '');
             $warehouseIssue = new Warehouse();
             $warehouseIssue->warehouse_id = Str::uuid();
-            $warehouseIssue->transaction_id = $this->generateTransactionId();
+            $warehouseIssue->old_transaction_id = $transactionId;
             $warehouseIssue->type = 'reversal';
             $warehouseIssue->popn = $prodOrder->po_number;
             $warehouseIssue->po_id = $prodOrder->po_id;
@@ -227,12 +229,13 @@ class KittingController extends Controller
         $error = [];
 
         try {
+            $transactionId = UniqueIdGenerator::generateId('warehouse', 'old_transaction_id', '');
             $prodOrder = ProductionOrder::where('po_id', $request->production_id)->first();
             $material = Material::with('bom')->find($prodOrder->material_id);
             $bomid = $material->bom->bom_id;
             $warehouseIssue = new Warehouse();
             $warehouseIssue->warehouse_id = Str::uuid();
-            $warehouseIssue->transaction_id = $this->generateTransactionId();
+            $warehouseIssue->old_transaction_id = $transactionId;
             $warehouseIssue->type = 'issue';
             $warehouseIssue->popn = $prodOrder->po_number;
             $warehouseIssue->po_id = $prodOrder->po_id;
@@ -352,30 +355,6 @@ class KittingController extends Controller
         }
     }
 
-    public function generateTransactionId()
-    {
-        $year = date('y');
-        $weekNumber = date('W');
-        $date = date('d');
-        $transactionIdPrefix = sprintf('%02d%02d%02d', $year, $weekNumber, $date);
-        $lastTransactionId = Warehouse::where('transaction_id', 'like', $transactionIdPrefix . '%')->max('transaction_id');
-
-        if ($lastTransactionId) {
-            $lastNumericPart = intval(substr($lastTransactionId, 6));
-        } else {
-            $lastNumericPart = 0;
-        }
-
-        do {
-            $lastNumericPart++;
-            $newNumericPart = str_pad($lastNumericPart, 5, '0', STR_PAD_LEFT);
-            $transactionId = $transactionIdPrefix . $newNumericPart;
-            $existingTransaction = Warehouse::where('transaction_id', $transactionId)->exists();
-        } while ($existingTransaction);
-
-        return $transactionId;
-    }
-
     private function getStatus($prodId = "", $materialId = "", $quantity = 0)
     {
         $prodOrder = ProductionOrder::where('po_id', $prodId)->first();
@@ -464,10 +443,13 @@ class KittingController extends Controller
 
         foreach ($warehouseRecords as $warehouse) {
             foreach ($warehouse->records as $record) {
+
+                $show = date('d-m-Y h:i a', strtotime('+5 hours 30 minutes', strtotime($warehouse->created_at)));
+                $hide = date('d-m-Y h:i:s a', strtotime('+5 hours 30 minutes', strtotime($warehouse->created_at)));
                 $flattenedRecords[] = [
                     'transaction_id' => $warehouse->transaction_id,
                     'type' => $warehouse->type,
-                    'created_at' => date('d-m-Y h:i a', strtotime('+5 hours 30 minutes', strtotime($warehouse->created_at))),
+                    'created_at' => "<span class='d-none'>" . $hide . "</span>" . $show,
                     'part_code' => $record->material->part_code,
                     'description' => $record->material->description,
                     'uom' => $record->material->uom->uom_shortcode,

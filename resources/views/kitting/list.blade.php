@@ -337,7 +337,7 @@
                                 'colvis',
                             ],
                             stateSave: true,
-                            order: [[2, 'desc']],
+                            order: [[2, 'DESC']],
                         });
 
                         $('[data-toggle="tooltip"]').tooltip();

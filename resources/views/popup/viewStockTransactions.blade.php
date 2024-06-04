@@ -32,7 +32,7 @@
             @foreach ($transactions as $trans)
                 <tr>
                     <td>{{ $trans->warehouse->transaction_id }}</td>
-                    <td style="text-wrap: nowrap;">{{ date('d-m-Y', strtotime($trans->warehouse->date)) }}</td>
+                    <td style="text-wrap: nowrap;" data-sort='{!! $trans->warehouse->created_at !!}'>{{ date('d-m-Y', strtotime($trans->warehouse->date)) }}</td>
                     <td>{{ $trans->warehouse->popn }}</td>
                     <td>
                         @if ($trans->warehouse->po_kitting === "true")

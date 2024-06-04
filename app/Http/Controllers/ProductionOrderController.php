@@ -17,6 +17,7 @@ use App\Models\WarehouseRecord;
 use App\Models\Stock;
 use App\Models\ProductionOrder;
 use App\Models\ProdOrdersMaterial;
+use App\Services\UniqueIdGenerator;
 
 class ProductionOrderController extends Controller
 {
@@ -268,11 +269,11 @@ class ProductionOrderController extends Controller
         DB::beginTransaction();
 
         try {
-            $poNumber = $this->generatePoNumber();
+            $poNumber = UniqueIdGenerator::generateId('production_orders', 'po_number', 'PO');
             for ($i = 0; $i < count($request->part_code); $i++) {
                 $material = Material::where('part_code', $request->part_code[$i])->first();
                 ProductionOrder::create([
-                    'po_number' => $poNumber,
+                    'old_po_number' => $poNumber,
                     'material_id' => $material->material_id,
                     'quantity' => $request->quantity[$i],
                     'record_date' => $this->getISTDate(),
@@ -289,24 +290,6 @@ class ProductionOrderController extends Controller
 
             return redirect()->back()->with('error', 'Failed to create production order: ' . $e->getMessage());
         }
-    }
-
-    public function generatePoNumber()
-    {
-        $year = Carbon::now()->format('y');
-
-        $weekNumber = Carbon::now()->weekOfYear;
-        $day = Carbon::now()->format('d');
-        $poPrefix = 'PO' . $year . $weekNumber . $day;
-        $lastPoNumber = ProductionOrder::where('po_number', 'like', '%PO' . $year . '%')->max('po_number');
-        $increment = 1;
-        if ($lastPoNumber) {
-            $lastNumericPart = (int) substr($lastPoNumber, -5);
-            $increment = $lastNumericPart + 1;
-        }
-        $incrementFormatted = str_pad($increment, 5, '0', STR_PAD_LEFT);
-        $poNumber = $poPrefix . $incrementFormatted;
-        return $poNumber;
     }
 
     public function createOrder(Request $request)
@@ -330,14 +313,14 @@ class ProductionOrderController extends Controller
         DB::beginTransaction();
 
         try {
-            $poNumber = $this->generatePoNumber();
+            $poNumber = UniqueIdGenerator::generateId('production_orders', 'po_number', 'PO');
 
             for ($i = 0; $i < count($request->part_code); $i++) {
 
                 $material = Material::where('part_code', $request->part_code[$i])->first();
 
                 $productionOrder = ProductionOrder::create([
-                    'po_number' => $poNumber,
+                    'old_po_number' => $poNumber,
                     'material_id' => $material->material_id,
                     'quantity' => $request->quantity[$i],
                     'status' => 'Pending',
