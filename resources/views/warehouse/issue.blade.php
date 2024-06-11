@@ -269,6 +269,7 @@
 
                 $('.quantity').each(function() {
                     if ($(this).val() === '') {
+                        console.log($(this).val());
                         $(this).closest('.input-group').after('<span class="text-danger validation-error">Quantity is required.</span>');
                         isValid = false;
                     }

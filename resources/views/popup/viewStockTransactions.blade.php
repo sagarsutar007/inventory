@@ -13,6 +13,8 @@
     <tbody>
         @php
             $balance = 0;
+            $totalIssued=0;
+            $totalReceipt=0;
         @endphp
         @if ($transactions)
             <tr>
@@ -22,15 +24,15 @@
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>
+                <th>
                     {{ formatQuantity($opening) }}
                     @php $balance += $opening; @endphp
-                </td>
+                </th>
             </tr>
             @foreach ($transactions as $trans)
                 <tr>
                     <td>{{ $trans->warehouse->transaction_id }}</td>
-                    <td style="text-wrap: nowrap;">{{ date('d-m-Y', strtotime($trans->warehouse->date)) }}</td>
+                    <td style="text-wrap: nowrap;" data-sort='{!! $trans->warehouse->created_at !!}'>{{ date('d-m-Y', strtotime($trans->warehouse->date)) }}</td>
                     <td>{{ $trans->warehouse->popn }}</td>
                     <td>
                         @if ($trans->warehouse->po_kitting === "true")
@@ -44,20 +46,28 @@
                     <td>
                         @if ($trans->warehouse->type != "issue")
                             {{ formatQuantity($trans->quantity) }}
-                            @php $balance += $trans->quantity; @endphp
+                            @php $totalReceipt += $trans->quantity; $balance += $trans->quantity; @endphp
                         @endif
                     </td>
                     <td>
                         @if ($trans->warehouse->type == "issue")
                             {{ formatQuantity($trans->quantity) }}
-                            @php $balance -= $trans->quantity; @endphp
+                            @php $totalIssued += $trans->quantity; $balance -= $trans->quantity; @endphp
                         @endif
                     </td>
                     <td>{{ formatQuantity($balance) }}</td>
                 </tr>
             @endforeach
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <th>{{ formatQuantity($totalReceipt) }}</th>
+                <th>{{ formatQuantity($totalIssued) }}</th>
+                <th>{{ formatQuantity($balance) }}</th>
+            </tr>
         @endif
-
-        
     </tbody>
 </table>
+

@@ -93,6 +93,9 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
+                "stateSaveParams": function(settings, data) {
+                    data.search.search = '';
+                },
                 "ajax": {
                     "url": "{{ route('po.get') }}",
                     "type": "POST",
@@ -159,6 +162,7 @@
                 let po_status = $(this).data('status');
 
                 let status = showKittingStatus(po_status);
+                
                 $.ajax({
                     type: "GET",
                     url: "{{ route('kitting.viewKittingForm') }}",
@@ -225,7 +229,11 @@
                 $('input[name="issue[]"]').each(function() {
                     var inputValue = $(this).val();
                     var maxAttributeValue = $(this).attr('max');
+                    console.log("Input Value:", parseFloat(inputValue));
+                    console.log("Max Value:", parseFloat(maxAttributeValue));
+                    console.log("condition Value:",parseFloat(inputValue) > parseFloat(maxAttributeValue));
                     if (parseFloat(inputValue) > parseFloat(maxAttributeValue)) {
+                        
                         toastr.error('Issue quantity cannot exceed maximum allowed quantity!');
                         status = false;
                         return false;
@@ -329,7 +337,7 @@
                                 'colvis',
                             ],
                             stateSave: true,
-                            order: [[2, 'desc']],
+                            order: [[2, 'DESC']],
                         });
 
                         $('[data-toggle="tooltip"]').tooltip();

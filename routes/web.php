@@ -18,8 +18,9 @@ use App\Http\Controllers\KittingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DependentMaterialController;
-use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,8 @@ Route::get('/', function () {
 // Auth::routes();
 
 Route::get('special-url/{token}', [App\Http\Controllers\SpecialUrlController::class, 'handleSpecialUrl'])->name('special.url');
+Route::post('/save-chat-message', [NotificationController::class, 'store'])->name('save.chat.message');
+
 
 Auth::routes(['register' => false]);
 
@@ -102,12 +105,13 @@ Route::middleware(['auth', 'checkStatus'])->group(function () {
         Route::get('', [DependentMaterialController::class, 'index'])->name('dm.index');
         Route::get('/add', [DependentMaterialController::class, 'add'])->name('dm.add');
         Route::post('/store', [DependentMaterialController::class, 'store'])->name('dm.store');
-        Route::get('/{material}/edit', [CategoryController::class, 'edit'])->name('dm.edit');
+        Route::get('/{record}/edit', [DependentMaterialController::class, 'edit'])->name('dm.edit');
         Route::post('/search', [DependentMaterialController::class, 'search'])->name('dm.search');
-        Route::delete('/{material}', [DependentMaterialController::class, 'destroy'])->name('dm.destroy');
-        Route::post('/{material}/update', [DependentMaterialController::class, 'update'])->name('dm.update');
+        Route::delete('/{record}', [DependentMaterialController::class, 'destroy'])->name('dm.destroy');
+        Route::post('/{record}/update', [DependentMaterialController::class, 'update'])->name('dm.update');
         Route::post('/save', [DependentMaterialController::class, 'save'])->name('dm.save');
     });
+
 
     // Raw Material Routes
     Route::prefix('/app/raw-materials')->group(function () {

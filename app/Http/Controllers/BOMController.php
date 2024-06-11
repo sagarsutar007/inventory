@@ -130,7 +130,7 @@ class BOMController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => count($bomsQuery),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 

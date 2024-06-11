@@ -15,21 +15,46 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($records as $record)
-        <tr>
-            <td>{{ $record['po_number'] }}</td>
-            <td>{{ $record['po_date'] }}</td>
-            <td>{{ $record['part_code'] }}</td>
-            <td>{{ $record['description'] }}</td>
-            <td>{{ $record['make'] }}</td>
-            <td>{{ $record['mpn'] }}</td>
-            <td class="text-right">{{ $record['quantity'] }}</td>
-            <td class="text-right">{{ $record['stock'] }}</td>
-            <td class="text-right">{{ $record['balance'] }}</td>
-            <td class="text-right">{{ $record['shortage'] }}</td>
-            <td>{{ $record['unit'] }}</td>
-        </tr>
-        @endforeach
+        @php 
+            $totalQty= 0;
+            $totalStock= 0;
+            $totalBalance= 0;
+            $totalShortage= 0;
+        @endphp
+            @foreach ($records as $record)
+            <tr>
+                <td>{{ $record['po_number'] }}</td>
+                <td>{{ $record['po_date'] }}</td>
+                <td>{{ $record['part_code'] }}</td>
+                <td>{{ $record['description'] }}</td>
+                <td>{{ $record['make'] }}</td>
+                <td>{{ $record['mpn'] }}</td>
+                <td class="text-right">{{ formatQuantity($record['quantity']) }}</td>
+                <td class="text-right">{{ formatQuantity($record['stock']) }}</td>
+                <td class="text-right">{{ formatQuantity($record['balance']) }}</td>
+                <td class="text-right">{{ formatQuantity($record['shortage']) }}</td>
+                <td>{{ $record['unit'] }}</td>
+            </tr>
+            @php
+                $totalQty += $record['quantity'];
+                $totalStock = $record['stock'];
+                $totalBalance += $record['balance'];
+                $totalShortage = $totalBalance - $totalStock;
+            @endphp
+            @endforeach
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th class="text-right">{{ formatQuantity($totalQty) }}</th>
+                <th class="text-right">{{ formatQuantity($totalStock) }}</th>
+                <th class="text-right">{{ formatQuantity($totalBalance) }}</th>
+                <th class="text-right">{{ formatQuantity($totalShortage) }}</th>
+                <th>{{ $record['unit'] }}</th>
+            </tr>
     </tbody>
     {{-- <tfoot>
 

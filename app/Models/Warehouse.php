@@ -20,13 +20,17 @@ class Warehouse extends Model
     protected $fillable = [
         'warehouse_id',
         'material_id',
-        'transaction_id',
+        'old_transaction_id',
         'po_id',
         'reason',
         'quantity',
         'created_by',
         'created_at',
     ];
+
+    // protected $casts = [
+    //     'quantity' => 'decimal:3',
+    // ];
 
     public function material()
     {

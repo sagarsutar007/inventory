@@ -86,6 +86,9 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
+                "stateSaveParams": function(settings, data) {
+                    data.search.search = '';
+                },
                 "ajax": {
                     "url": "{{ route('bom.fetchFgCostSummary') }}",
                     "type": "POST",
@@ -141,7 +144,7 @@
                 var unit = button.data('unit');
                 var modal = $(this);
 
-                modal.find('.modal-title').text("View BOM Cost of #" + partcode + "-" + description + "(" + unit + ")");
+                modal.find('.modal-title').html(`<div class="text-center">View BOM Cost of <br/> <b>#${partcode}</b> <br/> <b>${description}(${unit})</b></div>`);
 
                 var part_code_array = [partcode];
                 var quantity_array = [1];

@@ -27,7 +27,7 @@
                     <td width="6%" class="text-right">{{ formatQuantity($record['closing_balance']) }}</td>
                     {{-- <td></td> --}}
                     <td>
-                        @if ($record['quantity'] > $record['closing_balance'])
+                        @if ($record['balance'] > $record['closing_balance'])
                             <span class="text-danger">Shortage</span>
                         @else
                             Available

@@ -71,6 +71,14 @@ class WarehouseController extends Controller
             $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
                 ->join('uom_units', 'uom_units.uom_id', '=', 'materials.uom_id')
                 ->orderBy('uom_units.uom_text', $columnSortOrder);
+        } elseif ($columnName === 'category') {
+            $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
+                ->join('categories', 'categories.category_id', '=', 'materials.category_id')
+                ->orderBy('categories.category_name', $columnSortOrder);
+        } elseif ($columnName === 'commodity') {
+            $query->join('materials', 'materials.material_id', '=', 'stocks.material_id')
+                ->join('commodities', 'commodities.commodity_id', '=', 'materials.commodity_id')
+                ->orderBy('commodities.commodity_name', $columnSortOrder);
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
         } elseif ($columnName === 're_order_status') {
@@ -110,6 +118,8 @@ class WarehouseController extends Controller
                     // 'sno' => $index + $start + 1,
                     'code' => $material->part_code,
                     'material_name' => $material->description,
+                    'category' => $material->category->category_name,
+                    'commodity' => $material->commodity->commodity_name,
                     'unit' => $material->uom->uom_shortcode,
                     'opening_balance' => $warehouse->opening_balance,
                     'receipt_qty' => $warehouse->receipt_qty,
@@ -175,8 +185,12 @@ class WarehouseController extends Controller
         }
 
         // Paginate the query
-        $whQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
-        $warehouses = $whQuery->items();
+        if ($length == -1) {
+            $warehouses = $query->get();
+        } else {
+            $whQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
+            $warehouses = $whQuery->items();
+        }
         $data = [];
         foreach ($warehouses as $index => $warehouse) {
             $actionHtml = '<a href="#" data-type="' . $warehouse->type . '" data-warehouseid="' . $warehouse->warehouse_id . '" data-transactionid="' . $warehouse->transaction_id . '" class="btn btn-sm btn-link" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>';
@@ -202,7 +216,7 @@ class WarehouseController extends Controller
         $response = [
             "draw" => intval($draw),
             "recordsTotal" => $totalRecords,
-            "recordsFiltered" => $whQuery->total(),
+            "recordsFiltered" => $totalRecords,
             "data" => $data,
         ];
 
@@ -271,7 +285,7 @@ class WarehouseController extends Controller
 
             $warehouse = new Warehouse();
             $warehouse->vendor_id = $validatedData['vendor'];
-            $warehouse->transaction_id = $this->generateTransactionId();
+            $warehouse->old_transaction_id = $this->generateTransactionId();
             $warehouse->type = 'receive';
             $warehouse->popn = $validatedData['popn'];
             $warehouse->date = date('y-m-d', strtotime($validatedData['date']));
@@ -335,7 +349,7 @@ class WarehouseController extends Controller
 
             $warehouse = new Warehouse();
             $warehouse->vendor_id = $validatedData['vendor'];
-            $warehouse->transaction_id = $this->generateTransactionId();
+            $warehouse->old_transaction_id = $this->generateTransactionId();
             // $warehouse->popn = $validatedData['popn'];
             $warehouse->reason = $validatedData['reason'];
             $warehouse->type = 'issue';
@@ -515,6 +529,7 @@ class WarehouseController extends Controller
                     $warehouseRecord->warehouse_id = $warehouse->warehouse_id;
                     $warehouseRecord->material_id = $material->material_id;
                     $warehouseRecord->warehouse_type = $warehouse_type;
+                    $warehouseRecord->record_date = $warehouse->date;
                     $warehouseRecord->quantity = $validatedData['quantity'][$key];
                     $warehouseRecord->created_by = Auth::id();
                     $warehouseRecord->save();

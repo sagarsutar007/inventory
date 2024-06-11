@@ -27,6 +27,8 @@
                                 <!-- <th width="5%">Sno.</th> -->
                                 <th width="10%">Part Code</th>
                                 <th>Description</th>
+                                <th>Commodity</th>
+                                <th>Category</th>
                                 <th>Unit</th>
                                 <th>Opening</th>
                                 <th>Receipt</th>
@@ -89,6 +91,9 @@
                 "processing": true,
                 "serverSide": true,
                 "stateSave": true,
+                "stateSaveParams": function(settings, data) {
+                    data.search.search = '';
+                },
                 "ajax": {
                     "url": "{{ route('wh.getWarehouseRecords') }}",
                     "type": "POST",
@@ -101,13 +106,15 @@
                         "data": "code", 
                         "name": "part_code",
                         "render": function ( data, type, row ) {
-                            return `<button class="view-stock btn btn-link p-0" 
+                            return `<span class="view-stock text-primary p-0" 
                             data-partcode="${data}" 
                             data-desc="${row.material_name}"
-                            >${data}</button>`;
+                            >${data}</span>`;
                         }
                     },
                     { "data": "material_name", "name": "description" },
+                    { "data": "commodity", "name": "commodity" },
+                    { "data": "category", "name": "category" },
                     { "data": "unit", "name": "uom_text" },
                     { "data": "opening_balance", "name": "opening_balance" },
                     { "data": "receipt_qty", "name": "receipt_qty" },
@@ -121,7 +128,7 @@
                 "ordering": true,
                 "columnDefs": [
                     {
-                        "targets": [7, 8],
+                        "targets": [5, 9],
                         "visible": false,
                     },
                     // {
@@ -245,7 +252,7 @@
                 var startDate = financialYear();
                 var endDate = (today.getDate() < 10 ? '0' : '') + today.getDate() + '-' + ((today.getMonth() + 1) < 10 ? '0' : '') + (today.getMonth() + 1) + '-' + today.getFullYear();
 
-                var title = `View Stock of <strong>` + partcode + `</strong> - ` + description + `<br/> from <strong>` + startDate + `</strong> to <strong>` + endDate + `</strong>`;
+                var title = `View Stock of <strong>` + partcode + `</strong> <br/> ` + description + `<br/> <strong>` + startDate + `</strong> to <strong>` + endDate + `</strong>`;
 
                 $.ajax({
                     url: "{{ route('material.stockDetail') }}",
@@ -299,7 +306,7 @@
                                     ['All', 10, 25, 50, 100]
                                 ]
                             });
-                            $("#view-stock").find('.modal-title').text(title);
+                            $("#view-stock").find('.modal-title').addClass('text-center').html(title);
                             $("#view-stock").modal('show');
                         }
                     },

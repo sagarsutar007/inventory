@@ -31,6 +31,13 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
 
+        Gate::define('send-notification', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('send-notification');
+        });
+
         Gate::define('view-commodities', function ($user) {
             if ($this->isAdmin($user)) {
                 return true;
@@ -111,6 +118,14 @@ class AuthServiceProvider extends ServiceProvider
                 return true;
             }
             return $user->hasPermission('edit-raw-material');
+        });
+
+        
+        Gate::define('clone-raw-material', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+            return $user->hasPermission('clone-raw-material');
         });
 
         Gate::define('delete-raw-material', function ($user) {

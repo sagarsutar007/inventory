@@ -24,6 +24,22 @@ class ProdOrdersMaterial extends Model
         'updated_by',
     ];
 
+    // protected $casts = [
+    //     'quantity' => 'decimal:10,3',
+    // ];
+
+    // Accessor for quantity
+    // public function getQuantityAttribute($value)
+    // {
+    //     return (float) $value;
+    // }
+
+    // // Mutator for quantity
+    // public function setQuantityAttribute($value)
+    // {
+    //     $this->attributes['quantity'] = (string) $value;
+    // }
+
     public function material()
     {
         return $this->belongsTo(Material::class, 'material_id', 'material_id');

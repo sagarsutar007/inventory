@@ -122,13 +122,17 @@ class RawMaterialController extends Controller
                 $image = '<div class="text-center"><img src="' . asset('assets/img/default-image.jpg') . '" class="mt-2" width="15px" height="15px"></div>';
             }
 
-            $actions = '<div class="text-center"> <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>'; 
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-materials', Auth::user())) {
+                $actions = '<div class="text-center"> <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>'; 
+            }
             
             if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-raw-material', Auth::user())) {
                 $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
             }
 
-            $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>';
+            if ( Gate::allows('admin', Auth::user()) || Gate::allows('clone-raw-material', Auth::user())) {
+                $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalClone"><i class="fas fa-copy" data-toggle="tooltip" data-placement="top" title="Clone"></i></a>';
+            }
 
             if ( Gate::allows('admin', Auth::user()) || Gate::allows('delete-raw-material', Auth::user())) {
                 $actions .= ' / <form action="' . route('raw.destroy', $material->material_id) . '" method="post" style="display: inline;">

@@ -16,7 +16,7 @@ class ProductionOrder extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'po_number',
+        'old_po_number',
         'material_id',
         'quantity',
         'status',

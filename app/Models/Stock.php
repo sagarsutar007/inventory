@@ -27,6 +27,7 @@ class Stock extends Model
         'updated_at',
     ];
 
+
     public function material()
     {
         return $this->belongsTo(Material::class, 'material_id', 'material_id');
