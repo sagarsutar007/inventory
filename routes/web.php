@@ -18,6 +18,7 @@ use App\Http\Controllers\KittingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DependentMaterialController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -52,6 +53,7 @@ Route::middleware(['auth', 'checkStatus'])->group(function () {
     Route::post('/app/profile', [UserController::class, 'setProfile'])->name('setProfile');
     Route::get('/app/change-password', [UserController::class, 'changePassword'])->name('password');
     Route::post('/app/change-password', [UserController::class, 'setPassword'])->name('setPassword');
+    Route::get('/app/settings', [SettingsController::class, 'index'])->name('settings');
 
     //Utility Routes
     Route::get('app/vendor/autocomplete', [VendorController::class, 'autocomplete'])->name('vendors.autocomplete');
