@@ -394,16 +394,19 @@ return [
             'text' => 'Dependent Materials',
             'icon' => 'fas fa-fw fa-vector-square',
             'classes' => 'text-warning',
+            'can' => 'view-add-dependent-materials',
             'submenu' => [
                 [
                     'text' => 'Add New',
                     'url' => 'app/dependent-materials/add',
+                    'can' => 'add-dependent-material',
                     // 'classes' => 'text-danger',
                 ],
                 [
                     'text' => 'View All',
                     'url' => 'app/dependent-materials',
                     'classes' => 'text-lime',
+                    'can' => 'view-dependent-material',
                 ],
             ],
         ],

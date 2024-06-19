@@ -283,6 +283,20 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         // Dependent Materials Gates
+        Gate::define('view-add-dependent-materials', function ($user) {
+            if ($this->isAdmin($user)) {
+                return true;
+            }
+
+            $stats1 = $user->hasPermission('view-dependent-material');
+            $stats2 = $user->hasPermission('add-dependent-material');
+
+            if ($stats1 || $stats2) {
+                return true;
+            } else {
+                return false;
+            }
+        });
 
         Gate::define('view-dependent-material', function ($user) {
             if ($this->isAdmin($user)) {
