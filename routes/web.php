@@ -56,6 +56,7 @@ Route::middleware(['auth', 'checkStatus'])->group(function () {
     Route::post('/app/profile', [UserController::class, 'setProfile'])->name('setProfile');
     Route::get('/app/change-password', [UserController::class, 'changePassword'])->name('password');
     Route::post('/app/change-password', [UserController::class, 'setPassword'])->name('setPassword');
+    Route::get('/app/settings', [SettingsController::class, 'index'])->name('settings');
 
     //Utility Routes
     Route::get('app/vendor/autocomplete', [VendorController::class, 'autocomplete'])->name('vendors.autocomplete');
