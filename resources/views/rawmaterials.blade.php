@@ -95,6 +95,9 @@
                 <li class="nav-item">
                     <a class="nav-link" id="used-tab" data-toggle="tab" data-target="#used" type="button" role="tab" aria-controls="used" aria-selected="true">Used In</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="reserved-tab" data-toggle="tab" data-target="#reserved" type="button" role="tab" aria-controls="reserved" aria-selected="true">Reserved</a>
+                </li>
             </ul>
         </x-slot>
         <x-slot name="body">
