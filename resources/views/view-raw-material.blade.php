@@ -156,3 +156,36 @@
         </div>
     </div>
 </div>
+<div class="tab-pane fade" id="reserved" role="tabpanel" aria-labelledby="reserved-tab">
+    <h6>Vendors</h6>
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sno.</th>
+                            <th>Reserved Category</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(count($purchases))
+                            @foreach($purchases as $purchase)
+                                <tr>
+                                    <td>{{ $loop->iteration }}.</td>
+                                    <td>{{ $purchase->vendor->vendor_name }}</td>
+                                    <td>{{ $purchase->price }}</td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="3">No vendors records found!</td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
