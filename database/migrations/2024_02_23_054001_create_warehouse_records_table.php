@@ -11,6 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('warehouse_records', function (Blueprint $table) {
+            $table->bigInteger('id')->unsigned();
             $table->uuid('warehouse_record_id')->primary();
             $table->uuid('warehouse_id');
             $table->uuid('material_id');
@@ -24,6 +25,8 @@ return new class extends Migration {
             $table->foreign('material_id')->references('material_id')->on('materials');
             $table->timestamps();
         });
+
+        DB::statement('ALTER TABLE warehouse_records MODIFY COLUMN id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ADD UNIQUE (id)');
     }
 
     /**

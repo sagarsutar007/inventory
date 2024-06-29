@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('production_orders', function (Blueprint $table) {
-            $table->string('old_po_number', 20)->charset('utf8mb4')->collation('utf8mb4_general_ci')->change();
+            // $table->string('old_po_number', 20)->charset('utf8mb4')->collation('utf8mb4_general_ci')->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('production_orders', function (Blueprint $table) {
-            $table->string('old_po_number', 20)->change();
+            // $table->string('old_po_number', 20)->change();
         });
     }
 };

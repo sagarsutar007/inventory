@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('warehouse', function (Blueprint $table) {
-            $table->string('transaction_id', 20)->virtual()->nullable();
+            // $table->string('transaction_id', 20)->virtual()->nullable();
         });
 
         DB::unprepared('
@@ -36,7 +36,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('warehouse', function (Blueprint $table) {
-            $table->dropColumn('transaction_id');
+            // $table->dropColumn('transaction_id');
         });
 
         DB::unprepared('DROP TRIGGER IF EXISTS reset_yearly_id');

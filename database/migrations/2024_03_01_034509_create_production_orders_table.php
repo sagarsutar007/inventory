@@ -11,6 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('production_orders', function (Blueprint $table) {
+            $table->bigInteger('id')->unsigned();
             $table->uuid('po_id')->primary();
             $table->string('po_number', 20)->unique();
             $table->uuid('material_id')->nullable();
@@ -24,6 +25,8 @@ return new class extends Migration {
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
             $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
         });
+
+        DB::statement('ALTER TABLE production_orders MODIFY COLUMN id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ADD UNIQUE (id)');
     }
 
     /**

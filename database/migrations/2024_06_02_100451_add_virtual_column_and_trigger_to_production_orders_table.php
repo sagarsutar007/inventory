@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('production_orders', function (Blueprint $table) {
-            $table->string('po_number', 20)->virtual()->nullable();
+            // $table->string('po_number', 20)->virtual()->nullable();
         });
 
         DB::unprepared('
@@ -36,7 +36,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('production_orders', function (Blueprint $table) {
-            $table->dropColumn('po_number');
+            // $table->dropColumn('po_number');
         });
 
         DB::unprepared('DROP TRIGGER IF EXISTS reset_yearly_id_po');
