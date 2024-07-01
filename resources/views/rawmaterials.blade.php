@@ -79,7 +79,7 @@
             </x-slot>
         </form>
     </x-adminlte-modal>
-    
+
     <x-modaltabs id="modalView" title="View Raw Material">
         <x-slot name="header">
             <ul class="nav nav-pills nav-fill">
@@ -102,7 +102,7 @@
         </x-slot>
         <x-slot name="body">
             <div class="tab-content" id="view-material-modal">
-                
+
             </div>
         </x-slot>
         <x-slot name="footer">
@@ -204,7 +204,7 @@
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');
                 var modal = $(this)
-                
+
                 $.ajax({
                     url: '/app/raw-materials/' + materialId + '/edit',
                     method: 'GET',
@@ -240,7 +240,7 @@
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');
                 var modal = $(this)
-                
+
                 $.ajax({
                     url: '/app/raw-materials/' + materialId + '/edit',
                     method: 'GET',
@@ -309,6 +309,36 @@
                                 ],
                                 dom: 'lBfrtip',
                             });
+
+                            $("#reserved-table").DataTable({
+                                lengthMenu: datatableLength,
+                                autoWidth: true,
+                                language: {
+                                    lengthMenu: "_MENU_"
+                                },
+                                buttons: [
+                                    {
+                                        extend: 'excel',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'pdf',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    {
+                                        extend: 'print',
+                                        exportOptions: {
+                                            columns: ':visible:not(.exclude)'
+                                        }
+                                    },
+                                    'colvis',
+                                ],
+                                dom: 'lBfrtip',
+                            });
                         }
                     },
                     error: function(error) {
@@ -331,7 +361,7 @@
                 } else {
                     suggestVendor("#modalEdit");
                 }
-                
+
             });
 
             // Function to remove the closest category item
@@ -366,7 +396,7 @@
                 var materialId = $("#material-id").val();
                 var formData = new FormData($('#edit-material-form')[0]);
                 $.ajax({
-                    url: '/app/raw-materials/' + materialId + '/update', 
+                    url: '/app/raw-materials/' + materialId + '/update',
                     type: 'POST',
                     data: formData,
                     processData: false,
@@ -384,13 +414,13 @@
                     }
                 });
 
-                
+
             });
 
             $('.btn-save-clone-material').click(function () {
                 var formData = new FormData($('#clone-material-form')[0]);
                 $.ajax({
-                    url: '{{ route("raw.store") }}', 
+                    url: '{{ route("raw.store") }}',
                     type: 'POST',
                     data: formData,
                     processData: false,
@@ -417,7 +447,7 @@
                     }
                 });
 
-                
+
             });
 
             $(document).on('click', '.btn-destroy-attachment', function() {
@@ -427,7 +457,7 @@
                     url: '/app/material-attachment/' + attachmentId + '/destroy',
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')            
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
                         if (response.status) {

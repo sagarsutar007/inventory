@@ -6,15 +6,21 @@
                 <div class="card-body box-profile">
                     <div class="text-center">
                         @php $imageFound = false; @endphp
-                        @foreach($attachments as $attachment)
-                            @if($attachment->type === 'image')
-                                <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
-                                @php $imageFound = true; break; @endphp
+                        @foreach ($attachments as $attachment)
+                            @if ($attachment->type === 'image')
+                                <img class="profile-user-img img-fluid img-circle"
+                                    src="{{ asset('assets/uploads/materials/' . $attachment->path) }}"
+                                    alt="Attachment Image">
+                                @php
+                                    $imageFound = true;
+                                    break;
+                                @endphp
                             @endif
                         @endforeach
                         @if (!$imageFound)
                             <!-- Default image if no image is found -->
-                            <img class="profile-user-img img-fluid img-circle" src="{{ asset('assets/default-image.jpg') }}" alt="Default Image">
+                            <img class="profile-user-img img-fluid img-circle"
+                                src="{{ asset('assets/default-image.jpg') }}" alt="Default Image">
                         @endif
                     </div>
                     <h3 class="profile-username text-center">{{ $material->description }}</h3>
@@ -30,58 +36,67 @@
                     <hr class="my-2">
                     <p class="text-muted mb-0"><strong class="text-dark">MPN</strong> : {{ $material->mpn }}</p>
                     <hr class="my-2">
-                    <p class="text-muted mb-0"><strong class="text-dark">Commodity</strong> : {{ $commodity->commodity_name }}</p>
+                    <p class="text-muted mb-0"><strong class="text-dark">Commodity</strong> :
+                        {{ $commodity->commodity_name }}</p>
                     <hr class="my-2">
-                    <p class="text-muted mb-0"><strong class="text-dark">Category</strong> : {{ $category->category_name }}</p>
+                    <p class="text-muted mb-0"><strong class="text-dark">Category</strong> :
+                        {{ $category->category_name }}</p>
                     <hr class="my-2">
-                    <p class="text-muted mb-0"><strong class="text-dark">Measurement Unit</strong> : {{ $uom->uom_text }}</p>
+                    <p class="text-muted mb-0"><strong class="text-dark">Measurement Unit</strong> :
+                        {{ $uom->uom_text }}</p>
                     <hr class="my-2">
-                    <p class="text-muted mb-0"><strong class="text-dark">Dependent Material</strong> : {{ $dm?->description }}</p>
+                    <p class="text-muted mb-0"><strong class="text-dark">Dependent Material</strong> :
+                        {{ $dm?->description }}</p>
                     <hr class="my-2">
                     <p class="text-muted mb-0"><strong class="text-dark">Frequency</strong> : {{ $dm?->frequency }}</p>
                     <hr class="my-2">
-                    <p class="text-muted mb-0"><strong class="text-dark">Additional Notes</strong> : {{ $material->additional_notes }}</p>
+                    <p class="text-muted mb-0"><strong class="text-dark">Additional Notes</strong> :
+                        {{ $material->additional_notes }}</p>
                 </div>
             </div>
         </div>
     </div>
-    
+
 </div>
 <div class="tab-pane fade" id="documents" role="tabpanel" aria-labelledby="profile-tab">
     <h6>Uploaded Documents</h6>
     <div class="row">
-        @foreach($attachments as $attachment)
-            @if($attachment->type === 'image')
+        @foreach ($attachments as $attachment)
+            @if ($attachment->type === 'image')
                 <div class="col-md-4">
                     <div class="card card-primary card-outline">
-                        <img class="img-fluid" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}" alt="Attachment Image">
+                        <img class="img-fluid" src="{{ asset('assets/uploads/materials/' . $attachment->path) }}"
+                            alt="Attachment Image">
                         <div class="card-body">
                             <h5 class="card-title">Material Image</h5><br>
-                            <a href="{{ asset('assets/uploads/materials/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                            <a href="{{ asset('assets/uploads/materials/' . $attachment->path) }}" target="_blank"
+                                class="btn btn-primary btn-block mt-3">View</a>
                         </div>
                     </div>
                 </div>
             @endif
 
-            @if($attachment->type === 'pdf')
+            @if ($attachment->type === 'pdf')
                 <div class="col-md-4">
                     <div class="card card-primary card-outline">
                         <img class="img-fluid" src="{{ asset('assets/img/pdf.png') }}" alt="Attachment Image">
                         <div class="card-body">
                             <h5 class="card-title">Material PDF</h5><br>
-                            <a href="{{ asset('assets/uploads/pdf/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                            <a href="{{ asset('assets/uploads/pdf/' . $attachment->path) }}" target="_blank"
+                                class="btn btn-primary btn-block mt-3">View</a>
                         </div>
                     </div>
                 </div>
             @endif
 
-            @if($attachment->type === 'doc')
+            @if ($attachment->type === 'doc')
                 <div class="col-md-4">
                     <div class="card card-primary card-outline">
                         <img class="img-fluid" src="{{ asset('assets/img/documents.jpg') }}" alt="Attachment Image">
                         <div class="card-body">
                             <h5 class="card-title">Material Document</h5><br>
-                            <a href="{{ asset('assets/uploads/doc/' . $attachment->path) }}" target="_blank" class="btn btn-primary btn-block mt-3">View</a>
+                            <a href="{{ asset('assets/uploads/doc/' . $attachment->path) }}" target="_blank"
+                                class="btn btn-primary btn-block mt-3">View</a>
                         </div>
                     </div>
                 </div>
@@ -103,8 +118,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if(count($purchases))
-                            @foreach($purchases as $purchase)
+                        @if (count($purchases))
+                            @foreach ($purchases as $purchase)
                                 <tr>
                                     <td>{{ $loop->iteration }}.</td>
                                     <td>{{ $purchase->vendor->vendor_name }}</td>
@@ -136,8 +151,8 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if(count($used))
-                            @foreach($used as $mat)
+                        @if (count($used))
+                            @foreach ($used as $mat)
                                 <tr>
                                     <td width="6%">{{ $mat['part_code'] }}</td>
                                     <td>{{ $mat['description'] }}</td>
@@ -157,30 +172,39 @@
     </div>
 </div>
 <div class="tab-pane fade" id="reserved" role="tabpanel" aria-labelledby="reserved-tab">
-    <h6>Vendors</h6>
     <div class="card">
-        <div class="card-body p-0">
+        <div class="card-body">
             <div class="table-responsive">
-                <table class="table">
+                <table id="reserved-table" class="table table-bordered table-striped" style="width:100%;">
                     <thead>
                         <tr>
-                            <th>Sno.</th>
-                            <th>Reserved Category</th>
-                            <th>Price</th>
+                            <th width="6%">PO Number</th>
+                            <th width="6%">Part Code</th>
+                            <th width="6%">Quantity</th>
+                            <th>Status</th>
+                            <th>BOM Qty</th>
+                            <th>QPA</th>
+                            <th>Qty Issued</th>
+                            <th>Reserved Qty</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if(count($purchases))
-                            @foreach($purchases as $purchase)
+                        @if (count($reserved))
+                            @foreach ($reserved as $mat)
                                 <tr>
-                                    <td>{{ $loop->iteration }}.</td>
-                                    <td>{{ $purchase->vendor->vendor_name }}</td>
-                                    <td>{{ $purchase->price }}</td>
+                                    <td width="6%">{{ $mat->po_number }}</td>
+                                    <td width="6%">{{ $mat->part_code }}</td>
+                                    <td width="6%">{{ $mat->quantity }}</td>
+                                    <td>{{ $mat->status }}</td>
+                                    <td>{{ formatQuantity($mat->bom_qty) }}</td>
+                                    <td>{{ formatQuantity($mat->qpa) }}</td>
+                                    <td>{{ formatQuantity($mat->qty_issued) }}</td>
+                                    <td>{{ formatQuantity($mat->reserved_qty) }}</td>
                                 </tr>
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="3">No vendors records found!</td>
+                                <td colspan="8">No records found!</td>
                             </tr>
                         @endif
                     </tbody>

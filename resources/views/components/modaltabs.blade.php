@@ -1,5 +1,5 @@
 <div class="modal" tabindex="-1" id="{{ $id }}">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         {{ $header }}

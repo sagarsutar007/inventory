@@ -102,13 +102,13 @@ class RawMaterialController extends Controller
                 $rawmaterials->orderBy($columnName, $columnSortOrder);
             }
         }
-        
+
         if ($length == -1) {
             $materials = $rawmaterials->get();
         } else {
             $materials = $rawmaterials->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
         }
-        
+
         $data = [];
         foreach ($materials as $index => $material) {
 
@@ -123,9 +123,9 @@ class RawMaterialController extends Controller
             }
 
             if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-raw-materials', Auth::user())) {
-                $actions = '<div class="text-center"> <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>'; 
+                $actions = '<div class="text-center"> <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalView"><i class="fas fa-eye" data-toggle="tooltip" data-placement="top" title="View"></i></a>';
             }
-            
+
             if ( Gate::allows('admin', Auth::user()) || Gate::allows('edit-raw-material', Auth::user())) {
                 $actions .= ' / <a href="#" role="button" data-matid="' . $material->material_id . '" class="btn btn-sm btn-link p-0" data-toggle="modal" data-target="#modalEdit"><i class="fas fa-edit" data-toggle="tooltip" data-placement="top" title="Edit"></i></a>';
             }
@@ -315,10 +315,10 @@ class RawMaterialController extends Controller
 
                         $vendor = Vendor::create([
                             'vendor_name' => $validatedData['vendor'][$i],
-                            'vendor_id' => Str::uuid(), 
+                            'vendor_id' => Str::uuid(),
                             'created_at' => Carbon::now()
                         ]);
-    
+
                         MaterialPurchase::create([
                             'material_id' => $rawMaterial->material_id,
                             'vendor_id' => $vendor->vendor_id,
@@ -409,7 +409,7 @@ class RawMaterialController extends Controller
         $category = $material->category()->first();
         $purchases = $material->purchases()->with('vendor')->get();
         $dm = $material->dependant()->first();
-        
+
         $records = BomRecord::with('bom')->where('material_id', '=', $material->material_id)->get();
         foreach ($records as $key => $obj) {
             $temp['part_code'] = $obj->bom->material->part_code;
@@ -425,6 +425,8 @@ class RawMaterialController extends Controller
             $used[] = $temp;
         }
 
+        $reserved = DB::select('CALL get_production_orders_by_material_id(?)', [$material->material_id]);
+
         $context = [
             'material' => $material,
             'attachments' => $attachments,
@@ -436,7 +438,8 @@ class RawMaterialController extends Controller
             'commodities' => $commodities,
             'purchases' => $purchases,
             'dm' => $dm,
-            'used' => $used
+            'used' => $used,
+            'reserved' => $reserved,
         ];
 
         $returnHTML = view('view-raw-material', $context)->render();
@@ -723,7 +726,7 @@ class RawMaterialController extends Controller
             $items = $materials->items();
             $total = $materials->total();
         }
-        
+
         $data = [];
 
         foreach ($items as $index => $item) {
@@ -818,7 +821,7 @@ class RawMaterialController extends Controller
             } else {
                 $query->orderBy($columnName, $columnSortOrder);
             }
-            
+
         }
 
         if ($length == -1) {
@@ -827,7 +830,7 @@ class RawMaterialController extends Controller
             $materials = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
             $result = $materials->items();
         }
-        
+
         $data = [];
 
         foreach ($result as $index => $item) {
@@ -923,7 +926,7 @@ class RawMaterialController extends Controller
             $query->where('warehouse_type', 'issued');
         } else {
             $query->whereNot('warehouse_type', 'issued');
-        }        
+        }
 
         if (!empty ($request->searchTerm)) {
             $query->where('part_code', 'like', '%' . $request->searchTerm . '%');
@@ -1032,7 +1035,7 @@ class RawMaterialController extends Controller
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
         $searchTerm = $request->input('searchTerm');
-        
+
         $material = Material::query()
             ->where('type', 'raw')
             ->with(['category', 'commodity', 'uom'])
@@ -1092,7 +1095,7 @@ class RawMaterialController extends Controller
         } else {
             $materials = $material->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
         }
-        
+
         $data = [];
         foreach ($materials as $index => $item) {
 
@@ -1152,7 +1155,7 @@ class RawMaterialController extends Controller
                         WHERE material_id = m.material_id AND record_date BETWEEN '".$startDate."' AND '".$endDate."'
                     ) AS receipt
                 FROM
-                    materials m 
+                    materials m
                 LEFT OUTER JOIN
                     stocks o ON o.material_id = m.material_id
             WHERE m.material_id = '".$material_id."';
@@ -1216,25 +1219,25 @@ class RawMaterialController extends Controller
                     $q->whereIn('uom_id', $request->input('uom_id'));
                 });
             }
-            
+
             if ($request->has('commodity_id') && $request->input('commodity_id')[0] != 'all') {
                 $query->whereHas('commodity', function ($q) use ($request) {
                     $q->whereIn('commodity_id', $request->input('commodity_id'));
                 });
             }
-            
+
             if ($request->has('category_id') && $request->input('category_id')[0] != 'all') {
                 $query->whereHas('category', function ($q) use ($request) {
                     $q->whereIn('category_id', $request->input('category_id'));
                 });
             }
-            
+
             if ($request->has('dm_id') && $request->input('dm_id')[0] != 'all') {
                 $query->whereHas('dependant', function ($q) use ($request) {
                     $q->whereIn('dm_id', $request->input('dm_id'));
                 });
             }
-            
+
             if ($request->has('vendor_id') && $request->input('vendor_id')[0] != 'all') {
                 $query->whereHas('vendors', function ($q) use ($request) {
                     $q->whereIn('vendors.vendor_id', $request->input('vendor_id'));
@@ -1244,15 +1247,15 @@ class RawMaterialController extends Controller
             if (!empty($request->input('part_code'))) {
                 $query->where('part_code', 'like', '%' . $request->input('part_code') . '%');
             }
-            
+
             if (!empty($request->input('description'))) {
                 $query->where('description', 'like', '%' . $request->input('description') . '%');
             }
-            
+
             if (!empty($request->input('make'))) {
                 $query->where('make', 'like', '%' . $request->input('make') . '%');
             }
-            
+
             if (!empty($request->input('mpn'))) {
                 $query->where('mpn', 'like', '%' . $request->input('mpn') . '%');
             }
@@ -1276,7 +1279,7 @@ class RawMaterialController extends Controller
                         $purArr['price_' . $purchase + 1 ] = formatPrice($pur->price);
                         $integ++;
                     }
-    
+
                     if ($maxVendorNum < $integ) {
                         $maxVendorNum = $integ;
                     }
@@ -1290,7 +1293,7 @@ class RawMaterialController extends Controller
                         'price_3' => null,
                     ];
                 }
-    
+
                 $data[] = array_merge([
                     'serial' => $index + 1,
                     'part_code' => $item->part_code,
@@ -1336,7 +1339,7 @@ class RawMaterialController extends Controller
             abort(403);
         }
     }
-    
+
     public function bulkPrice()
     {
         if ( Gate::allows('admin', Auth::user()) || Gate::allows('import-raw-vendor-price', Auth::user())) {
@@ -1387,7 +1390,7 @@ class RawMaterialController extends Controller
     public function getMaterialsFromRaw(Request $request)
     {
         $partCodes = $request->input('part_code');
-        
+
         if (count($partCodes)) {
             $materials=[];
             foreach ($partCodes as $partCode => $pc) {
