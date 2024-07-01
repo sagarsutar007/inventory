@@ -197,7 +197,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "{{ route('po.fetchPlannedShortage') }}", 
+                    url: "{{ route('po.fetchPlannedShortage') }}",
                     data: formData,
                     success: function(response){
                         if (response.status) {
