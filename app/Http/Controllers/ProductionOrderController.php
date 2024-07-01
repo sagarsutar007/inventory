@@ -142,7 +142,7 @@ class ProductionOrderController extends Controller
             }
         }
 
-        
+
         $bomRecords = array_values($bomRecords);
         return $bomRecords;
     }
@@ -214,7 +214,7 @@ class ProductionOrderController extends Controller
             $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
             $productionOrders = $poQuery->items();
         }
-        
+
         $data = [];
         foreach ($productionOrders as $index => $order) {
             $material = $order->material;
@@ -414,7 +414,7 @@ class ProductionOrderController extends Controller
             return response()->json(['success' => false, 'message' => 'An error occurred while processing your request.'], 500);
         }
     }
-    
+
     public function getISTDate()
     {
         $defaultTimeZone = date_default_timezone_get();
@@ -462,12 +462,12 @@ class ProductionOrderController extends Controller
 
         if(!empty($status)){
             if ($status === "Partially + Pending") {
-                $query->whereNot('status', 'Completed'); 
+                $query->whereNot('status', 'Completed');
             } else {
                 $query->where('status', 'like', $status);
             }
         }
-                    
+
 
         if (!empty($startDate) && !empty($endDate)) {
             $query->whereBetween('record_date', [$startDate, $endDate]);
@@ -500,7 +500,7 @@ class ProductionOrderController extends Controller
             $query->orderBy('status', $columnSortOrder);
         } elseif ($columnName === 'serial') {
             $query->orderBy('created_at', $columnSortOrder=='asc'?'desc':'asc' );
-        } 
+        }
 
         // Paginate the query
         if ($length == -1) {
@@ -510,7 +510,7 @@ class ProductionOrderController extends Controller
             $poQuery = $query->paginate($length, ['*'], 'page', ceil(($start + 1) / $length));
             $productionOrders = $poQuery->items();
         }
-        
+
         $data = [];
         foreach ($productionOrders as $index => $order) {
             $material = $order->material;
@@ -540,7 +540,7 @@ class ProductionOrderController extends Controller
 
         return response()->json($response);
     }
-    
+
     public function poShortageReport()
     {
         if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-po-shortage', Auth::user())) {
@@ -605,14 +605,14 @@ class ProductionOrderController extends Controller
                 ->orWhere('record_date', 'like', '%' . $search . '%');
             });
         }
-        
+
         if ($columnName === 'po_number') {
             $query->orderBy('po_number', $columnSortOrder);
         } elseif ($columnName === 'po_date') {
             $query->orderBy('record_date', $columnSortOrder);
         } elseif ($columnName === 'quantity') {
             $query->orderBy('quantity', $columnSortOrder);
-        } 
+        }
 
         // dd($query->toRawSql());
 
@@ -663,12 +663,12 @@ class ProductionOrderController extends Controller
                 }
             }
         }
-        
+
         usort($data, function ($a, $b) use ($columnName, $columnSortOrder) {
             if (in_array($columnName, ['quantity', 'issued', 'balance', 'stock', 'shortage'])) {
                 $valueA = floatval($a[$columnName]);
                 $valueB = floatval($b[$columnName]);
-                
+
                 // Perform numeric comparison
                 if ($columnSortOrder === 'asc') {
                     return $valueA - $valueB;
@@ -682,7 +682,7 @@ class ProductionOrderController extends Controller
                     return strcmp($b[$columnName], $a[$columnName]);
                 }
             }
-            
+
         });
 
         $totalRecords = count($data);
@@ -690,7 +690,7 @@ class ProductionOrderController extends Controller
         if ($length != -1) {
             $data = array_slice($data, $start, $length);
         }
-        
+
 
         $response = [
             "draw" => intval($draw),
@@ -701,7 +701,7 @@ class ProductionOrderController extends Controller
 
         return response()->json($response);
     }
-    
+
     public function poConsolidatedShortageReport()
     {
         if ( Gate::allows('admin', Auth::user()) || Gate::allows('view-po-short-cons', Auth::user())) {
@@ -741,7 +741,7 @@ class ProductionOrderController extends Controller
     //     // Loop through each production order
     //     foreach ($productionOrders as $orders => $order) {
     //         $bomRecords = $order->material?->bom?->bomRecords;
-            
+
     //         foreach ($bomRecords as $bomKey => $bomRec) {
     //             $prOdrMat = ProdOrdersMaterial::where('po_id', 'like', $order->po_id)
     //                 ->where('material_id', 'like', $bomRec->material_id)
@@ -756,7 +756,7 @@ class ProductionOrderController extends Controller
 
     //                 $matchesSearch = false;
     //                 if (!empty($search)) {
-    //                     $matchesSearch = 
+    //                     $matchesSearch =
     //                         stripos($bomRec->material->description, $search) !== false ||
     //                         stripos($bomRec->material->part_code, $search) !== false ||
     //                         stripos($bomRec->material->mpn, $search) !== false ||
@@ -783,7 +783,7 @@ class ProductionOrderController extends Controller
     //             }
     //         }
     //     }
-        
+
     //     $formattedData = array_values($data);
 
     //     if (in_array($columnName, ['part_code', 'description', 'make', 'mpn', 'stock', 'quantity', 'shortage', 'unit'])) {
@@ -798,7 +798,7 @@ class ProductionOrderController extends Controller
     //     if ($length == -1) {
     //         $length = 900000000000000000;
     //     }
-        
+
     //     $paginatedData = [];
     //     foreach ($formattedData as $key => $obj) {
     //         $index = $start + $key + 1;
@@ -821,7 +821,7 @@ class ProductionOrderController extends Controller
     //             }
     //         }
     //     }
-        
+
     //     $response = [
     //         "draw" => intval($draw),
     //         "recordsTotal" => count($paginatedData),
@@ -877,7 +877,7 @@ class ProductionOrderController extends Controller
         $data = [];
         foreach ($productionOrders as $order) {
             $bomRecords = $order->material->bom->bomRecords ?? [];
-            
+
             foreach ($bomRecords as $bomRec) {
                 $prOdrMat = $order->prod_order_materials->firstWhere('material_id', $bomRec->material_id);
                 $quantity = $order->quantity * $bomRec->quantity;
@@ -941,7 +941,7 @@ class ProductionOrderController extends Controller
             } else {
                 $newArr = $formattedData;
             }
-            
+
         }
 
         foreach ($newArr as $obj) {
@@ -958,7 +958,7 @@ class ProductionOrderController extends Controller
 
                 $paginatedData[] = $obj;
             }
-            
+
         }
 
         $response = [
@@ -999,7 +999,7 @@ class ProductionOrderController extends Controller
                     } else {
                         $shortage = abs($stock - $balance);
                     }
-                    
+
                     $data[] = [
                         'po_id' => $order->po_id,
                         'po_number' => $order->po_number,
@@ -1015,7 +1015,7 @@ class ProductionOrderController extends Controller
                         'unit' => $bomObject->material->uom->uom_shortcode,
                         'status' => $prodOrderMaterial->status,
                     ];
-                } 
+                }
                 else if ($partcode == $bomObject->material->part_code && empty($prodOrderMaterial)) {
                     $quantity = $order->quantity * $bomObject->quantity;
                     $stock = $bomObject->material->stock->closing_balance;
@@ -1066,7 +1066,7 @@ class ProductionOrderController extends Controller
         $partcodes = $request->input('part_code');
         $quantities = $request->input('quantity');
         $materialsArr = [];
-        
+
         $combinedQuantities = [];
         $allMaterials = [];
 
@@ -1086,13 +1086,13 @@ class ProductionOrderController extends Controller
                 }
                 $combinedMaterials[] = $record;
             }
-            
+
             foreach ($materials as $record) {
                 $partCode = $record['part_code'];
                 $record['req_qty'] = $combinedQuantities[$partCode]['req_qty'];
                 $record['short_qty'] = ($record['stock_qty'] < ($record['req_qty'] + $record['reserved_qty'] ))?abs($record['stock_qty'] - ($record['req_qty'] + $record['reserved_qty'] )):0;
                 $record['status'] = ($record['short_qty'] === 0)?"":"Shortage";
-                
+
                 $allMaterials[] = $record;
             }
 
@@ -1124,7 +1124,7 @@ class ProductionOrderController extends Controller
         }
 
         $context = [
-            'materials' => $materialsArr, 
+            'materials' => $materialsArr,
             'combinedMaterials' => $aggMaterials
         ];
 
@@ -1142,13 +1142,15 @@ class ProductionOrderController extends Controller
 
                 $bomQty = $record->quantity;
                 $reqQty = $bomQty * $quantity;
-                $reservedQty = $this->countReservedQty($record->material_id); 
+                // $reservedQty = $this->countReservedQty($record->material_id);
+                $reservedQty = $this->getMaterialReservedQty($record->material_id);
+
 
                 $stockQty = (float)$record->material->stock->closing_balance;
                 $shortQty = ($stockQty < ($reqQty + $reservedQty) )?abs($stockQty - ($reqQty + $reservedQty)):0;
 
                 $status = ($stockQty < ($reqQty + $reservedQty) )?"Shortage":"";
-                        
+
                 $data[] = [
                     'part_code' => $record->material->part_code,
                     'description' => $record->material->description,
@@ -1168,6 +1170,10 @@ class ProductionOrderController extends Controller
         }
 
         return $data;
+    }
+
+    public function getMaterialReservedQty(){
+
     }
 
     protected function countReservedQty($material_id="", $data=false){
@@ -1199,7 +1205,7 @@ class ProductionOrderController extends Controller
                     } else {
                         return $reservedQty;
                     }
-                    
+
                 } else if ($record->material_id == $material_id) {
                     $reservedQty = $order->quantity * $record->quantity;
                     if ($data) {
