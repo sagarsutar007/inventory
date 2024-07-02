@@ -28,7 +28,7 @@ return new class extends Migration
                 INNER JOIN bom_records br ON b.bom_id = br.bom_id
                 LEFT OUTER JOIN prod_orders_materials pom ON po.po_id = pom.po_id AND pom.material_id = br.material_id
                 WHERE po.status != "Completed"
-                AND br.material_id = material_id_key;
+                AND br.material_id = material_id_key COLLATE utf8mb4_unicode_ci;
                 RETURN total_reserved_qty;
             END;
         ');
