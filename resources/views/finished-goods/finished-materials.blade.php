@@ -70,7 +70,7 @@
         </x-slot>
         <x-slot name="body">
             <div class="tab-content" id="view-material-modal">
-                
+
             </div>
         </x-slot>
         <x-slot name="footer">
@@ -244,7 +244,7 @@
                                     },
                                     'colvis'
                                 ],
-                                
+
                             }).buttons().container().appendTo('#boms-table_wrapper .col-md-6:eq(0)');
                         }
                     },
@@ -258,7 +258,7 @@
                 var button = $(event.relatedTarget);
                 var materialId = button.data('matid');
                 var modal = $(this)
-                
+
                 $.ajax({
                     url: '/app/finished-materials/' + materialId + '/edit',
                     method: 'GET',
@@ -331,7 +331,7 @@
                         <div class="row">
                             <div class="col-md-8">
                                 <select class="form-control raw-materials" name="raw[]" style="width:100%;">
-                                    <option value=""></option>  
+                                    <option value=""></option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -342,12 +342,12 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>                            
+                        </div>
                     </div>
                 `;
                 var $newItem = $(newItem);
                 $(".raw-materials-container").append($newItem);
-                
+
                 var newSelect = $newItem.find('.raw-materials');
                 initializeRawMaterialsSelect2(newSelect);
             });
@@ -361,7 +361,7 @@
                 var materialId = $("#material-id").val();
                 var formData = new FormData($('#edit-material-form')[0]);
                 $.ajax({
-                    url: '/app/finished-materials/' + materialId + '/update', 
+                    url: '/app/finished-materials/' + materialId + '/update',
                     type: 'POST',
                     data: formData,
                     processData: false,
@@ -381,7 +381,7 @@
                     }
                 });
 
-                
+
             });
 
             $(document).on('click', '.btn-destroy-attachment', function() {
@@ -391,7 +391,7 @@
                     url: '/app/material-attachment/' + attachmentId + '/destroy',
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')            
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
                         if (response.status) {
@@ -433,7 +433,7 @@
                     url: '/app/material/' + materialId + '/export-bom',
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')            
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
                         var downloadUrl = response.downloadUrl;
@@ -459,7 +459,7 @@
                 $('#upload-bom-form').submit();
             });
 
-            $('#upload-bom-form').submit(function(e) {
+            $('#upload-bom-form').on('submit', function(e) {
                 e.preventDefault();
                 var formData = new FormData(this);
                 var material = $("#emid").val();

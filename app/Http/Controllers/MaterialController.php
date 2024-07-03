@@ -63,7 +63,7 @@ class MaterialController extends Controller
 
                 return response()->json(['status' => true, 'message' => 'BOM records imported successfully.']);
             } else {
-                return response()->json(['status' => false, 'message' => ['No file uploaded.']]);
+                return response()->json(['status' => false, 'message' => 'No file uploaded.']);
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -126,7 +126,7 @@ class MaterialController extends Controller
                         WHERE material_id = m.material_id AND record_date < '".$startDate."'
                     ) AS computedOP
                 FROM
-                    materials m 
+                    materials m
                 LEFT OUTER JOIN
                     stocks o ON o.material_id = m.material_id
             WHERE m.material_id = '".$material->material_id."';
@@ -142,7 +142,7 @@ class MaterialController extends Controller
         ->whereBetween('record_date', [$startDate, $endDate])
         ->orderBy('created_at', 'asc')
         ->get();
-        
+
         $context=[
             'transactions' => $transactions,
             'opening' => $material->stock->opening_balance + $firstResult?->computedOP,
