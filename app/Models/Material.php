@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use DB;
 class Material extends Model
 {
     use HasFactory, HasUuids;
@@ -83,5 +83,11 @@ class Material extends Model
     public function vendors()
     {
         return $this->hasManyThrough(Vendor::class, MaterialPurchase::class, 'material_id', 'vendor_id', 'material_id', 'vendor_id');
+    }
+
+    public static function getReservedQty($materialId)
+    {
+        $result = DB::select("SELECT get_reserved_qty(?) AS get_reserved_qty", [$materialId]);
+        return $result[0]->get_reserved_qty ?? 0;
     }
 }

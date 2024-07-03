@@ -12,7 +12,7 @@
         </tr>
     </thead>
     <tbody>
-        @if ($record) 
+        @if ($record)
         <tr>
             <td>{{ $record['po_number'] }}</td>
             <td>{{ $record['po_status'] }}</td>
