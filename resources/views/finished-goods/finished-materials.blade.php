@@ -209,7 +209,7 @@
                 modal.find(".nav-link:first").addClass('active');
                 $.ajax({
                     url: '/app/finished-materials/' + materialId + '/show',
-                    method: 'GET',
+                    method: 'POST',
                     success: function(response) {
                         if (response.status) {
                             $("#view-material-modal").html(response.html);
@@ -457,6 +457,15 @@
 
             $(".btn-submit-import").on('click', function(e){
                 $('#upload-bom-form').submit();
+            });
+
+            $('#upload-bom-form').on('submit', function(e) {
+                e.preventDefault();
+                var material = $("#emid").val();
+                var url = '{{ route("material.import-bom", ["material" => ":material"]) }}';
+                url = url.replace(':material', material);
+                this.action = url; // Update form action dynamically
+                this.submit(); // Submit the form
             });
 
             $('#upload-bom-form').on('submit', function(e) {
