@@ -1234,14 +1234,21 @@ class ProductionOrderController extends Controller
         return NULL;
     }
 
+    protected function viewReservedQty($material_id = "")
+    {
+        $records = DB::select('CALL get_production_orders_by_material_id(?)', [$material_id]);
+        $recordsArray = json_decode(json_encode($records), true);
+        return $recordsArray;
+    }
+
     public function calcReservedQty(Request $request)
     {
         $partcode = $request->input('partcode');
         $material = Material::where('part_code', $partcode)->first();
-        $record = $this->countReservedQty($material->material_id, TRUE);
-
+        $record = $this->viewReservedQty($material->material_id, TRUE);
+        // dd($material->material_id);
         $context = [
-            'record' => $record
+            'records' => $record
         ];
 
         $returnHTML = view('popup.viewReservedQuantity', $context)->render();

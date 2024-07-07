@@ -426,7 +426,7 @@ class RawMaterialController extends Controller
         }
 
         $reserved = DB::select('CALL get_production_orders_by_material_id(?)', [$material->material_id]);
-
+        $reserved = json_decode(json_encode($reserved), true);
         $context = [
             'material' => $material,
             'attachments' => $attachments,

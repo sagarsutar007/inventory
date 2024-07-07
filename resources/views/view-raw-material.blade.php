@@ -178,34 +178,54 @@
                 <table id="reserved-table" class="table table-bordered table-striped" style="width:100%;">
                     <thead>
                         <tr>
-                            <th width="6%">PO Number</th>
-                            <th width="6%">Part Code</th>
-                            <th width="6%">Quantity</th>
+                            <th>PO Number</th>
                             <th>Status</th>
-                            <th>BOM Qty</th>
+                            <th>FG Code</th>
+                            <th>Description</th>
+                            <th>Unit</th>
+                            <th>Bom Qty</th>
                             <th>QPA</th>
-                            <th>Qty Issued</th>
-                            <th>Reserved Qty</th>
+                            <th>Issued Qty</th>
+                            <th>Quantity</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if (count($reserved))
-                            @foreach ($reserved as $mat)
-                                <tr>
-                                    <td width="6%">{{ $mat->po_number }}</td>
-                                    <td width="6%">{{ $mat->part_code }}</td>
-                                    <td width="6%">{{ $mat->quantity }}</td>
-                                    <td>{{ $mat->status }}</td>
-                                    <td>{{ formatQuantity($mat->bom_qty) }}</td>
-                                    <td>{{ formatQuantity($mat->qpa) }}</td>
-                                    <td>{{ formatQuantity($mat->qty_issued) }}</td>
-                                    <td>{{ formatQuantity($mat->reserved_qty) }}</td>
-                                </tr>
-                            @endforeach
-                        @else
-                            <tr>
-                                <td colspan="8">No records found!</td>
-                            </tr>
+                        @php
+                            $sumQpa = 0;
+                            $sumQtyIssued = 0;
+                            $sumReservedQty = 0;
+                        @endphp
+
+                        @if ($reserved)
+                        @foreach($reserved as $record)
+                        @php
+                            $sumQpa += $record['qpa'];
+                            $sumQtyIssued += $record['qty_issued'];
+                            $sumReservedQty += $record['reserved_qty'];
+                        @endphp
+                        <tr>
+                            <td>{{ $record['po_number'] }}</td>
+                            <td>{{ $record['status'] }}</td>
+                            <td>{{ $record['part_code'] }}</td>
+                            <td>{{ $record['description'] }}</td>
+                            <td>{{ $record['uom'] }}</td>
+                            <td class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
+                            <td class="text-right">{{ formatQuantity($record['qpa']) }}</td>
+                            <td class="text-right">{{ formatQuantity($record['qty_issued']) }}</td>
+                            <td class="text-right">{{ formatQuantity($record['reserved_qty']) }}</td>
+                        </tr>
+                        @endforeach
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="text-right"><strong>{{ formatQuantity($sumQpa) }}</strong></td>
+                            <td class="text-right"><strong>{{ formatQuantity($sumQtyIssued) }}</strong></td>
+                            <td class="text-right"><strong>{{ formatQuantity($sumReservedQty) }}</strong></td>
+                        </tr>
                         @endif
                     </tbody>
                 </table>

@@ -5,23 +5,49 @@
             <th>Status</th>
             <th>FG Code</th>
             <th>Description</th>
-            <th>Type</th>
+            <th>Unit</th>
+            <th>Bom Qty</th>
+            <th>QPA</th>
             <th>Issued Qty</th>
             <th>Quantity</th>
-            <th>Unit</th>
         </tr>
     </thead>
     <tbody>
-        @if ($record)
+        @php
+            $sumQpa = 0;
+            $sumQtyIssued = 0;
+            $sumReservedQty = 0;
+        @endphp
+
+        @if ($records)
+        @foreach($records as $record)
+        @php
+            $sumQpa += $record['qpa'];
+            $sumQtyIssued += $record['qty_issued'];
+            $sumReservedQty += $record['reserved_qty'];
+        @endphp
         <tr>
             <td>{{ $record['po_number'] }}</td>
-            <td>{{ $record['po_status'] }}</td>
-            <td>{{ $record['partcode'] }}</td>
+            <td>{{ $record['status'] }}</td>
+            <td>{{ $record['part_code'] }}</td>
             <td>{{ $record['description'] }}</td>
-            <td>{{ $record['type'] }}</td>
-            <td class="text-right">{{ formatQuantity($record['issued']) }}</td>
-            <td class="text-right">{{ formatQuantity($record['quantity']) }}</td>
-            <td>{{ $record['unit'] }}</td>
+            <td>{{ $record['uom'] }}</td>
+            <td class="text-right">{{ formatQuantity($record['bom_qty']) }}</td>
+            <td class="text-right">{{ formatQuantity($record['qpa']) }}</td>
+            <td class="text-right">{{ formatQuantity($record['qty_issued']) }}</td>
+            <td class="text-right">{{ formatQuantity($record['reserved_qty']) }}</td>
+        </tr>
+        @endforeach
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="text-right"><strong>{{ formatQuantity($sumQpa) }}</strong></td>
+            <td class="text-right"><strong>{{ formatQuantity($sumQtyIssued) }}</strong></td>
+            <td class="text-right"><strong>{{ formatQuantity($sumReservedQty) }}</strong></td>
         </tr>
         @endif
     </tbody>

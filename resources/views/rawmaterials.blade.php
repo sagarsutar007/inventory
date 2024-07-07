@@ -338,6 +338,7 @@
                                     'colvis',
                                 ],
                                 dom: 'lBfrtip',
+                                order: [[0, 'desc']]
                             });
                         }
                     },

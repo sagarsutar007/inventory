@@ -88,6 +88,11 @@ class Material extends Model
     public static function getReservedQty($materialId)
     {
         $result = DB::select("SELECT get_reserved_qty(?) AS get_reserved_qty", [$materialId]);
-        return $result[0]->get_reserved_qty ?? 0;
+        if ($result) {
+            return $result[0]->get_reserved_qty;
+        } else {
+            return 0;
+        }
+        
     }
 }
