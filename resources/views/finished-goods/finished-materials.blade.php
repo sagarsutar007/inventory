@@ -209,7 +209,7 @@
                 modal.find(".nav-link:first").addClass('active');
                 $.ajax({
                     url: '/app/finished-materials/' + materialId + '/show',
-                    method: 'POST',
+                    method: 'GET',
                     success: function(response) {
                         if (response.status) {
                             $("#view-material-modal").html(response.html);

@@ -69,7 +69,7 @@ Route::middleware(['auth', 'checkStatus'])->group(function () {
     Route::post('app/material/get-all-raw-materials', [MaterialController::class, 'getRawMaterials'])->name('materials.getRaw');
     Route::post('app/material/get-details', [MaterialController::class, 'getMaterialDetails'])->name('material.getDetails');
     Route::post('app/material/get-finished-goods', [ProductionOrderController::class, 'getFinishedGoods'])->name('material.getFinishedGoods');
-
+    Route::get('app/material/{material}/import-bom/', [MaterialController::class, 'importBomRecords'])->name('material.import-bom');
     Route::post('app/material/get-stock-detail/', [MaterialController::class, 'stockDetail'])->name('material.stockDetail');
 
     // Commodity Routes
