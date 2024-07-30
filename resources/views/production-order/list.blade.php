@@ -136,12 +136,13 @@
                     { 
                         "data": null,
                         "render": function ( data, type, row ) {
-                            return '<button class="btn btn-link view-btn btn-sm p-0" data-id="' + row.po_id + '"  data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-eye text-primary"></i></button>' 
+                            return '<button class="btn btn-link view-btn btn-sm p-0" data-id="' + row.po_id + '"  data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-fg_partcode="'+ row.fg_partcode +'"><i class="fas fa-eye text-primary"></i></button>' 
                             @can('delete-po')
-                            + ' / <button class="btn btn-link delete-btn btn-sm p-0" data-id="' + row.po_id + '" data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'"><i class="fas fa-trash text-danger"></i></button>'
+                            + ' / <button class="btn btn-link delete-btn btn-sm p-0" data-id="' + row.po_id + '" data-pon="' + row.po_number + '" data-desc="'+ row.description +'" data-qty="'+ row.quantity +'" data-unit="'+ row.unit +'" data-fg_partcode="'+ row.fg_partcode +'"><i class="fas fa-trash text-danger"></i></button>'
                             @endcan
                             ;
                         }
+
                     }
                 ],
                 "lengthMenu": datatableLength,
@@ -189,68 +190,70 @@
             });
 
             $(document).on('click', '.view-btn', function() {
-                let po_id = $(this).data('id');
-                let po_num = $(this).data('pon');
-                let po_desc = $(this).data('desc');
-                let po_qty = $(this).data('qty');
-                let po_unit = $(this).data('unit');
-                $.ajax({
-                    type: "GET",
-                    url: "{{ route('po.viewOrder') }}",
-                    data: {
-                        'po_id': po_id,
+    let po_id = $(this).data('id');
+    let po_num = $(this).data('pon');
+    let po_desc = $(this).data('desc');
+    let fg_partcode = $(this).data('fg_partcode');
+    let po_qty = $(this).data('qty');
+    let po_unit = $(this).data('unit');
+    $.ajax({
+        type: "GET",
+        url: "{{ route('po.viewOrder') }}",
+        data: {
+            'po_id': po_id,
+        },
+        success: function(response) {
+            $('#order-details-section').html(response.html);
+            $("#orderDetailsModal").modal('show');
+            $("#orderDetailsModal").find('.modal-title').html(
+                `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} (${fg_partcode}) ${po_qty} ${po_unit}</span></div>`
+            );
+            $("#bom-table").DataTable({
+                "paging": false,
+                "ordering": true,
+                "info": false,
+                "dom": 'Bfrtip',
+                "columnDefs": [
+                    // {
+                    //     "targets": [9],
+                    //     "orderable": false
+                    // }
+                ],
+                "buttons": [
+                    {
+                        extend: 'excel',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        title: 'Production Order: #' + po_num + " - " + po_desc + " (" + fg_partcode + ") (" + po_qty + po_unit + ")",
                     },
-                    success: function(response) {
-                        $('#order-details-section').html(response.html);
-                        $("#orderDetailsModal").modal('show');
-                        $("#orderDetailsModal").find('.modal-title').html(
-                            `<div class="d-flex align-items-center justify-content-between"><span>#${po_num}</span><span class="ml-auto">${po_desc} ${po_qty} ${po_unit}</span></div>`
-                        );
-                        $("#bom-table").DataTable({
-                            "paging": false,
-                            "ordering": true,
-                            "info": false,
-                            "dom": 'Bfrtip',
-                            "columnDefs": [
-                                // {
-                                //     "targets": [9],
-                                //     "orderable": false
-                                // }
-                            ],
-                            "buttons": [
-                                {
-                                    extend: 'excel',
-                                    exportOptions: {
-                                        columns: ':visible:not(.exclude)'
-                                    },
-                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
-                                },
-                                {
-                                    extend: 'pdf',
-                                    exportOptions: {
-                                        columns: ':visible:not(.exclude)'
-                                    },
-                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
-                                },
-                                {
-                                    extend: 'print',
-                                    exportOptions: {
-                                        columns: ':visible:not(.exclude)'
-                                    },
-                                    title: 'Production Order: #' + po_num + "-" + po_desc + "(" + po_qty + po_unit + ")",
-                                },
-                                'colvis',
-                            ],
-                            stateSave: true,
-                        });
+                    {
+                        extend: 'pdf',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        title: 'Production Order: #' + po_num + " - " + po_desc + " (" + fg_partcode + ") (" + po_qty + po_unit + ")",
                     },
-                    error: function(xhr, status, error) {
-                        var jsonResponse = JSON.parse(xhr.responseText);
-                        console.error(jsonResponse.message);
-                        toastr.error(jsonResponse.message);
-                    }
-                });
+                    {
+                        extend: 'print',
+                        exportOptions: {
+                            columns: ':visible:not(.exclude)'
+                        },
+                        title: 'Production Order: #' + po_num + " - " + po_desc + " (" + fg_partcode + ") (" + po_qty + po_unit + ")",
+                    },
+                    'colvis',
+                ],
+                stateSave: true,
             });
+        },
+        error: function(xhr, status, error) {
+            var jsonResponse = JSON.parse(xhr.responseText);
+            console.error(jsonResponse.message);
+            toastr.error(jsonResponse.message);
+        }
+    });
+});
+
 
             function initializeAutocomplete(element) {
                 element.autocomplete({
