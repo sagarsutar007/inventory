@@ -458,6 +458,8 @@ class ProductionOrderController extends Controller
                 $q->where('description', 'like', '%' . $searchTerm . '%')
                     ->orWhere('part_code', 'like', '%' . $searchTerm . '%');
             });
+
+            
         }
 
         if (!empty($status)) {
@@ -477,6 +479,12 @@ class ProductionOrderController extends Controller
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('description', 'like', '%' . $search . '%');
             });
+<<<<<<< Updated upstream
+=======
+
+            $query->where('po_number', 'like', '%' . $search . '%');
+        }
+>>>>>>> Stashed changes
 
             $query->orWhere('po_number', 'like', '%' . $search . '%');
         }
