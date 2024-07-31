@@ -477,8 +477,10 @@ class ProductionOrderController extends Controller
             $query->whereHas('material', function ($q) use ($search) {
                 $q->where('description', 'like', '%' . $search . '%');
             });
-        }
 
+            $query->orWhere('po_number', 'like', '%' . $search . '%');
+        }
+        
         $totalRecords = $query->count();
 
         if ($columnName === 'description') {
