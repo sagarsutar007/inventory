@@ -1,66 +1,103 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Inventory Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel web application for managing materials, bills of materials (BOMs), warehouse stock, production orders, kitting, vendors, users, and operational reports.
 
-## About Laravel
+## Technology
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.1+ and Laravel 10
+- MariaDB/MySQL and Redis
+- Blade, Bootstrap 4, and Vite
+- PHPUnit and Laravel Pint
+- Docker Compose for containerized local development
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Features
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Raw, semi-finished, and finished material management
+- Categories, commodities, vendors, units of measure, and attachments
+- BOM creation, costing, import, and export
+- Warehouse receipts, issues, stock transactions, and kitting
+- Production orders, reserved quantities, and shortage reporting
+- Role-, permission-, and user-management workflows
 
-## Learning Laravel
+## Local setup
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Prerequisites
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Install PHP 8.1 or newer, Composer, Node.js/npm, and a MariaDB/MySQL database. Redis is required when the configured queue or cache driver uses it.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Install and configure
 
-## Laravel Sponsors
+```bash
+composer install
+npm install
+php artisan key:generate
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Create and configure `.env` with the database and other application settings, then run:
 
-### Premium Partners
+```bash
+php artisan migrate
+npm run dev
+php artisan serve
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Visit `http://127.0.0.1:8000`. The application routes are protected by authentication; registration is disabled by default.
+
+> This repository does not include an `.env.example` file. Obtain the expected environment values from your deployment configuration or maintainers; do not commit `.env`.
+
+## Docker setup
+
+Docker Compose starts the application, migrations, queue worker, Vite, MariaDB, Redis, and phpMyAdmin.
+
+```bash
+docker compose up --build
+```
+
+Services are available at:
+
+- Application: `http://localhost:8000`
+- Vite dev server: `http://localhost:5173`
+- phpMyAdmin: `http://localhost:8080`
+- MariaDB: `localhost:3306`
+- Redis: `localhost:6379`
+
+Set `DB_HOST=db`, `REDIS_HOST=redis`, and the matching database credentials in `.env` when using Docker. The `migrate` service applies migrations automatically during startup.
+
+## Development commands
+
+```bash
+# Run backend tests
+php artisan test
+
+# Format PHP code
+./vendor/bin/pint
+
+# Build production frontend assets
+npm run build
+
+# Run the queue worker locally, when needed
+php artisan queue:work
+```
+
+On Windows, use `vendor\\bin\\pint` if the Unix-style Pint path is not available.
+
+## Project layout
+
+| Path | Purpose |
+| --- | --- |
+| `app/Http/Controllers` | HTTP controllers for inventory workflows |
+| `app/Models` | Eloquent models |
+| `app/Services` | Application service classes |
+| `database/migrations` | Database schema changes |
+| `resources/views` | Blade views |
+| `resources/js` | Frontend JavaScript entry points |
+| `routes/web.php` | Browser routes, primarily under `/app` |
+| `tests` | Unit and feature tests |
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Read [AGENTS.md](AGENTS.md) before making changes. Keep migrations additive, cover behavior changes with tests where practical, run Pint for changed PHP code, and do not commit `.env` files or generated runtime data.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is distributed under the MIT license unless your organization has specified otherwise.

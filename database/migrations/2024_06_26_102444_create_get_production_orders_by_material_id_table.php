@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Keep the migration safe to run after importing a database dump.
+        DB::unprepared('DROP PROCEDURE IF EXISTS get_production_orders_by_material_id');
+
         DB::unprepared('
             CREATE PROCEDURE get_production_orders_by_material_id(IN material_id_key CHAR(36))
             BEGIN

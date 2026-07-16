@@ -1,0 +1,105 @@
+services:
+  app:
+    build:
+      context: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www
+      - vendor:/var/www/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  migrate:
+    build:
+      context: .
+    env_file: .env
+    command: php artisan migrate --force
+    volumes:
+      - .:/var/www
+      - vendor:/var/www/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: "no"
+
+  queue:
+    build:
+      context: .
+    env_file: .env
+    command: php artisan queue:work --verbose --tries=1 --timeout=90
+    volumes:
+      - .:/var/www
+      - vendor:/var/www/vendor
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  vite:
+    image: node:20-alpine
+    working_dir: /var/www
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/var/www
+      - node_modules:/var/www/node_modules
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - app
+
+  db:
+    image: mariadb:10.11
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-inventory_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USERNAME:-root}
+      PMA_PASSWORD: ${DB_PASSWORD:-root}
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8080:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  redis_data:
+  vendor:
+  node_modules:

@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // A restored development dump may already include this routine even
+        // when Laravel's migrations table does not record this migration.
+        DB::unprepared('DROP FUNCTION IF EXISTS get_reserved_qty');
+
         DB::unprepared('
             CREATE FUNCTION get_reserved_qty(material_id_key CHAR(36)) RETURNS DECIMAL(10, 5) DETERMINISTIC
             BEGIN
